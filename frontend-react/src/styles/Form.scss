@@ -1,0 +1,132 @@
+/* Form Styles */
+.form-group {
+  margin-bottom: 20px;
+
+  label {
+    display: block;
+    margin-bottom: 8px;
+    color: #555;
+    font-weight: 500;
+    font-size: 14px;
+
+    .required {
+      color: #dc3545;
+      margin-left: 4px;
+    }
+  }
+
+  .form-control {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    font-family: inherit;
+    transition:
+      border-color 0.3s,
+      box-shadow 0.3s;
+
+    &:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    &.is-invalid {
+      border-color: #dc3545;
+      background-color: #fff5f5;
+
+      &:focus {
+        box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.1);
+      }
+    }
+
+    &.is-valid {
+      border-color: #28a745;
+      background-color: #f1fdf4;
+
+      &:focus {
+        box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.1);
+      }
+    }
+
+    &:disabled {
+      background-color: #f5f5f5;
+      cursor: not-allowed;
+    }
+
+    &::placeholder {
+      color: #999;
+    }
+  }
+
+  textarea.form-control {
+    font-family: 'Courier New', monospace;
+    resize: vertical;
+    min-height: 100px;
+  }
+
+  .help-text {
+    display: block;
+    margin-top: 4px;
+    font-size: 12px;
+    color: #999;
+  }
+
+  .error-text {
+    color: #dc3545;
+    font-size: 12px;
+    margin-top: 4px;
+    display: block;
+    font-weight: 500;
+  }
+
+  .success-text {
+    color: #28a745;
+    font-size: 12px;
+    margin-top: 4px;
+    display: block;
+  }
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+
+  .form-group {
+    margin-bottom: 0;
+  }
+}
+
+.form-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid #eee;
+
+  button {
+    flex: 1;
+    max-width: 200px;
+  }
+}
+
+.checkbox-group,
+.radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  label {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0;
+    cursor: pointer;
+
+    input {
+      margin-right: 8px;
+      cursor: pointer;
+    }
+  }
+}

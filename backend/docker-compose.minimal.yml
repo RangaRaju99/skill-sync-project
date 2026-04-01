@@ -1,0 +1,100 @@
+services:
+  # MySQL Database (ESSENTIAL)
+  mysql:
+    image: mysql:8.0
+    container_name: skillsync-mysql
+    env_file:
+      - .env
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_MAIN_DATABASE}
+      MYSQL_ROOT_HOST: ${MYSQL_ROOT_HOST}
+    ports:
+      - "3308:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - skillsync-network
+    command: --default-authentication-plugin=mysql_native_password
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Auth Service (ESSENTIAL for login)
+  auth-service:
+    image: maven:3.9-eclipse-temurin-17
+    container_name: auth-service
+    restart: on-failure
+    working_dir: /app
+    volumes:
+      - ./auth-service:/app
+      - maven-repo:/root/.m2
+    ports:
+      - "8081:8081"
+    env_file:
+      - .env
+    environment:
+      JAVA_OPTS: "-Xmx512m -Dspring.profiles.active=${SPRING_PROFILES_ACTIVE}"
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
+    command: bash -c "mvn spring-boot:run -Dspring-boot.run.jvmArguments='-Xmx512m -Dspring.profiles.active=${SPRING_PROFILES_ACTIVE}'"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - skillsync-network
+
+  # API Gateway (ESSENTIAL for routing)
+  api-gateway:
+    image: maven:3.9-eclipse-temurin-21
+    container_name: api-gateway
+    restart: on-failure
+    working_dir: /app
+    volumes:
+      - ./api-gateway:/app
+      - maven-repo:/root/.m2
+    ports:
+      - "9090:9090"
+    env_file:
+      - .env
+    environment:
+      JAVA_OPTS: "-Xmx512m -Dspring.profiles.active=${SPRING_PROFILES_ACTIVE}"
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
+    command: bash -c "mvn spring-boot:run -Dspring-boot.run.jvmArguments='-Xmx512m -Dspring.profiles.active=${SPRING_PROFILES_ACTIVE}'"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - skillsync-network
+
+  # User Service (ESSENTIAL for user operations)
+  user-service:
+    image: maven:3.9-eclipse-temurin-17
+    container_name: user-service
+    restart: on-failure
+    working_dir: /app
+    volumes:
+      - ./user-service:/app
+      - maven-repo:/root/.m2
+    ports:
+      - "8082:8082"
+    env_file:
+      - .env
+    environment:
+      JAVA_OPTS: "-Xmx512m -Dspring.profiles.active=${SPRING_PROFILES_ACTIVE}"
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
+    command: bash -c "mvn spring-boot:run -Dspring-boot.run.jvmArguments='-Xmx512m -Dspring.profiles.active=${SPRING_PROFILES_ACTIVE}'"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - skillsync-network
+
+volumes:
+  mysql-data:
+  maven-repo:
+
+networks:
+  skillsync-network:
+    driver: bridge

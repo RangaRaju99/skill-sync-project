@@ -1,0 +1,278 @@
+version: "3.8"
+
+services:
+  # MySQL Database (shared by all microservices)
+  mysql:
+    image: mysql:8.0
+    container_name: skillsync-mysql
+    env_file:
+      - .env
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_MAIN_DATABASE}
+      MYSQL_ROOT_HOST: ${MYSQL_ROOT_HOST}
+    ports:
+      - "3308:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - skillsync-network
+    command: --default-authentication-plugin=mysql_native_password
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # RabbitMQ Message Broker
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - skillsync-network
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis Cache
+  redis:
+    image: redis:latest
+    container_name: redis
+    ports:
+      - "6379:6379"
+    networks:
+      - skillsync-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Eureka Service Registry
+  eureka-server:
+    image: maven:3.9-eclipse-temurin-17
+    container_name: eureka-server
+    restart: on-failure
+    working_dir: /app
+    volumes:
+      - ./eureka-server:/app
+      - maven-repo:/root/.m2
+    ports:
+      - "8761:8761"
+    env_file:
+      - .env
+    environment:
+      JAVA_OPTS: "-Dspring.profiles.active=${SPRING_PROFILES_ACTIVE}"
+    command: bash -c "mvn spring-boot:run -Dspring-boot.run.jvmArguments='-Dspring.profiles.active=${SPRING_PROFILES_ACTIVE}'"
+    networks:
+      - skillsync-network
+
+  # API Gateway
+  api-gateway:
+    image: maven:3.9-eclipse-temurin-21
+    container_name: api-gateway
+    restart: on-failure
+    working_dir: /app
+    volumes:
+      - ./api-gateway:/app
+      - maven-repo:/root/.m2
+    ports:
+      - "9090:9090"
+    env_file:
+      - .env
+    environment:
+      JAVA_OPTS: "-Dspring.profiles.active=${SPRING_PROFILES_ACTIVE}"
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: ${EUREKA_DEFAULT_ZONE}
+    command: bash -c "mvn spring-boot:run -Dspring-boot.run.jvmArguments='-Dspring.profiles.active=${SPRING_PROFILES_ACTIVE}'"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      eureka-server:
+        condition: service_started
+    networks:
+      - skillsync-network
+
+  # Auth Service
+  auth-service:
+    image: maven:3.9-eclipse-temurin-17
+    container_name: auth-service
+    restart: on-failure
+    working_dir: /app
+    volumes:
+      - ./auth-service:/app
+      - maven-repo:/root/.m2
+    ports:
+      - "8081:8081"
+    env_file:
+      - .env
+    environment:
+      JAVA_OPTS: "-Dspring.profiles.active=${SPRING_PROFILES_ACTIVE}"
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: ${EUREKA_DEFAULT_ZONE}
+    command: bash -c "mvn spring-boot:run -Dspring-boot.run.jvmArguments='-Dspring.profiles.active=${SPRING_PROFILES_ACTIVE}'"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      eureka-server:
+        condition: service_started
+    networks:
+      - skillsync-network
+
+  # User Service
+  user-service:
+    image: maven:3.9-eclipse-temurin-17
+    container_name: user-service
+    restart: on-failure
+    working_dir: /app
+    volumes:
+      - ./user-service:/app
+      - maven-repo:/root/.m2
+    ports:
+      - "8082:8082"
+    env_file:
+      - .env
+    environment:
+      JAVA_OPTS: "-Dspring.profiles.active=${SPRING_PROFILES_ACTIVE}"
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: ${EUREKA_DEFAULT_ZONE}
+      SPRING_DATA_REDIS_HOST: ${REDIS_HOST}
+      SPRING_DATA_REDIS_PORT: ${REDIS_PORT}
+    command: bash -c "mvn spring-boot:run -Dspring-boot.run.jvmArguments='-Dspring.profiles.active=${SPRING_PROFILES_ACTIVE}'"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      eureka-server:
+        condition: service_started
+    networks:
+      - skillsync-network
+
+  # Skill Service
+  skill-service:
+    image: maven:3.9-eclipse-temurin-17
+    container_name: skill-service
+    restart: on-failure
+    working_dir: /app
+    volumes:
+      - ./skill-service:/app
+      - maven-repo:/root/.m2
+    ports:
+      - "8083:8083"
+    env_file:
+      - .env
+    environment:
+      JAVA_OPTS: "-Dspring.profiles.active=${SPRING_PROFILES_ACTIVE}"
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: ${EUREKA_DEFAULT_ZONE}
+      SPRING_DATA_REDIS_HOST: ${REDIS_HOST}
+      SPRING_DATA_REDIS_PORT: ${REDIS_PORT}
+    command: bash -c "mvn spring-boot:run -Dspring-boot.run.jvmArguments='-Dspring.profiles.active=${SPRING_PROFILES_ACTIVE}'"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      eureka-server:
+        condition: service_started
+    networks:
+      - skillsync-network
+
+  # Session Service
+  session-service:
+    image: maven:3.9-eclipse-temurin-17
+    container_name: session-service
+    restart: on-failure
+    working_dir: /app
+    volumes:
+      - ./session-service:/app
+      - maven-repo:/root/.m2
+    ports:
+      - "8084:8084"
+    env_file:
+      - .env
+    environment:
+      JAVA_OPTS: "-Dspring.profiles.active=${SPRING_PROFILES_ACTIVE}"
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: ${EUREKA_DEFAULT_ZONE}
+      SPRING_DATA_REDIS_HOST: ${REDIS_HOST}
+      SPRING_DATA_REDIS_PORT: ${REDIS_PORT}
+    command: bash -c "mvn spring-boot:run -Dspring-boot.run.jvmArguments='-Dspring.profiles.active=${SPRING_PROFILES_ACTIVE}'"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      eureka-server:
+        condition: service_started
+    networks:
+      - skillsync-network
+
+  # Mentor Service
+  mentor-service:
+    image: maven:3.9-eclipse-temurin-17
+    container_name: mentor-service
+    restart: on-failure
+    working_dir: /app
+    volumes:
+      - ./mentor-service:/app
+      - maven-repo:/root/.m2
+    ports:
+      - "8085:8085"
+    env_file:
+      - .env
+    environment:
+      JAVA_OPTS: "-Dspring.profiles.active=${SPRING_PROFILES_ACTIVE}"
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: ${EUREKA_DEFAULT_ZONE}
+      SPRING_DATA_REDIS_HOST: ${REDIS_HOST}
+      SPRING_DATA_REDIS_PORT: ${REDIS_PORT}
+    command: bash -c "mvn spring-boot:run -Dspring-boot.run.jvmArguments='-Dspring.profiles.active=${SPRING_PROFILES_ACTIVE}'"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      eureka-server:
+        condition: service_started
+    networks:
+      - skillsync-network
+
+  # Notification Service
+  notification-service:
+    image: maven:3.9-eclipse-temurin-17
+    container_name: notification-service
+    restart: on-failure
+    working_dir: /app
+    volumes:
+      - ./notification-service:/app
+      - maven-repo:/root/.m2
+    ports:
+      - "8088:8088"
+    env_file:
+      - .env
+    environment:
+      JAVA_OPTS: "-Dspring.profiles.active=${SPRING_PROFILES_ACTIVE}"
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: ${EUREKA_DEFAULT_ZONE}
+    command: bash -c "mvn spring-boot:run -Dspring-boot.run.jvmArguments='-Dspring.profiles.active=${SPRING_PROFILES_ACTIVE}'"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      eureka-server:
+        condition: service_started
+    networks:
+      - skillsync-network
+
+volumes:
+  mysql-data:
+  maven-repo:
+
+networks:
+  skillsync-network:
+    driver: bridge
