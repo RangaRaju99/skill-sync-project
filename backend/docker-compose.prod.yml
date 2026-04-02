@@ -378,13 +378,13 @@ services:
     depends_on:
       - prometheus
     networks:
-      - private-network # reaches Prometheus and Loki
-      - proxy-network # ready for Nginx Proxy Manager
+      - private-network   # reaches Prometheus and Loki
+      - proxy-network     # ready for Nginx Proxy Manager
 
 networks:
   private-network:
     driver: bridge
-    internal: true # blocks all external internet access
+    internal: true        # blocks all external internet access
     name: skillsync-private
 
   proxy-network:

@@ -25,7 +25,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.skillsync.mentor.audit.AuditService;
+import com.skillsync.mentor.event.MentorApprovedEvent;
 import com.skillsync.mentor.mapper.MentorMapper;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 
 @Service
 @CacheConfig(cacheNames = "mentor")
@@ -37,16 +39,19 @@ public class MentorServiceImpl implements MentorService {
     private final AuthServiceClient authServiceClient;
     private final MentorMapper mentorMapper;
     private final AuditService auditService;
+    private final RabbitTemplate rabbitTemplate;
 
     @Autowired
     public MentorServiceImpl(MentorRepository mentorRepository,
                              AuthServiceClient authServiceClient,
                              MentorMapper mentorMapper,
-                             AuditService auditService) {
+                             AuditService auditService,
+                             RabbitTemplate rabbitTemplate) {
         this.mentorRepository = mentorRepository;
         this.authServiceClient = authServiceClient;
         this.mentorMapper = mentorMapper;
         this.auditService = auditService;
+        this.rabbitTemplate = rabbitTemplate;
     }
 
     @Override
@@ -110,6 +115,13 @@ public class MentorServiceImpl implements MentorService {
     }
 
     @Override
+    public List<MentorProfileResponseDto> searchMentorsWithFilters(String skill, Integer minExperience, Integer maxExperience, Double maxRate, Double minRating) {
+        log.info("Searching mentors by skill={}, exp={}-{}, rate={}, rating={}", skill, minExperience, maxExperience, maxRate, minRating);
+        return mentorRepository.searchMentorsWithFilters(skill, minExperience, maxExperience, maxRate, minRating)
+                .stream().map(mentorMapper::toDto).collect(Collectors.toList());
+    }
+
+    @Override
     @Transactional
     @CacheEvict(allEntries = true)
     public MentorProfileResponseDto approveMentor(Long mentorId, Long adminId) {
@@ -131,6 +143,15 @@ public class MentorServiceImpl implements MentorService {
 
         MentorProfileResponseDto result = mentorMapper.toDto(mentorRepository.save(profile));
         auditService.log("MentorProfile", mentorId, "APPROVE", adminId.toString(), "approvedBy=" + adminId);
+
+        try {
+            MentorApprovedEvent event = new MentorApprovedEvent(mentorId, profile.getUserId(), profile.getSpecialization());
+            rabbitTemplate.convertAndSend("mentor.exchange", "mentor.approved", event);
+            log.info("Published MENTOR_APPROVED event for mentorId={} userId={}", mentorId, profile.getUserId());
+        } catch (Exception e) {
+            log.error("Failed to publish MENTOR_APPROVED event for mentorId={}: {}", mentorId, e.getMessage());
+        }
+
         return result;
     }
 
