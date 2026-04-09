@@ -25,263 +25,264 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(
-    controllers = UserProfileController.class,
-    excludeAutoConfiguration = {
-        SecurityAutoConfiguration.class,
-        SecurityFilterAutoConfiguration.class
-    },
-    excludeFilters = @ComponentScan.Filter(
-        type = FilterType.ASSIGNABLE_TYPE,
-        classes = com.skillsync.user.filter.GatewayRequestFilter.class
-    )
-)
+@WebMvcTest(controllers = UserProfileController.class, excludeAutoConfiguration = {
+                SecurityAutoConfiguration.class,
+                SecurityFilterAutoConfiguration.class
+}, excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = com.skillsync.user.filter.GatewayRequestFilter.class))
 class UserProfileControllerTest {
 
-    @Autowired MockMvc mockMvc;
-    @Autowired ObjectMapper objectMapper;
-    @MockBean UserProfileService userProfileService;
+        @Autowired
+        MockMvc mockMvc;
+        @Autowired
+        ObjectMapper objectMapper;
+        @MockBean
+        UserProfileService userProfileService;
 
-    private UserProfileResponseDto responseDto;
+        private UserProfileResponseDto responseDto;
 
-    @BeforeEach
-    void setUp() {
-        responseDto = new UserProfileResponseDto();
-        responseDto.setId(1L);
-        responseDto.setUserId(10L);
-        responseDto.setEmail("user@example.com");
-        responseDto.setName("John Doe");
-    }
+        @BeforeEach
+        void setUp() {
+                responseDto = new UserProfileResponseDto();
+                responseDto.setId(1L);
+                responseDto.setUserId(10L);
+                responseDto.setEmail("user@example.com");
+                responseDto.setName("John Doe");
+        }
 
-    // ─── GET /user/profile ───────────────────────────────────────────────────
+        // ─── GET /user/profile ───────────────────────────────────────────────────
 
-    @Test
-    void getProfile_shouldReturn200_whenValidRequest() throws Exception {
-        when(userProfileService.getProfileByUserId(10L)).thenReturn(responseDto);
+        @Test
+        void getProfile_shouldReturn200_whenValidRequest() throws Exception {
+                when(userProfileService.getProfileByUserId(10L)).thenReturn(responseDto);
 
-        mockMvc.perform(get("/user/profile")
-                        .header("X-User-Id", 10L)
-                        .header("roles", "ROLE_LEARNER")
-                        .header("X-Gateway-Request", "true"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.userId").value(10))
-                .andExpect(jsonPath("$.message").value("Profile fetched successfully"));
-    }
+                mockMvc.perform(get("/user/profile")
+                                .header("X-User-Id", 10L)
+                                .header("roles", "ROLE_LEARNER")
+                                .header("X-Gateway-Request", "true"))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.data.userId").value(10))
+                                .andExpect(jsonPath("$.message").value("Profile fetched successfully"));
+        }
 
-    @Test
-    void getProfile_shouldReturn403_whenRolesHeaderMissing() throws Exception {
-        mockMvc.perform(get("/user/profile")
-                        .header("X-User-Id", 10L)
-                        .header("X-Gateway-Request", "true"))
-                .andExpect(status().isForbidden());
+        @Test
+        void getProfile_shouldReturn403_whenRolesHeaderMissing() throws Exception {
+                mockMvc.perform(get("/user/profile")
+                                .header("X-User-Id", 10L)
+                                .header("X-Gateway-Request", "true"))
+                                .andExpect(status().isForbidden());
 
-        verify(userProfileService, never()).getProfileByUserId(anyLong());
-    }
+                verify(userProfileService, never()).getProfileByUserId(anyLong());
+        }
 
-    @Test
-    void getProfile_shouldReturn403_whenRolesHeaderEmpty() throws Exception {
-        mockMvc.perform(get("/user/profile")
-                        .header("X-User-Id", 10L)
-                        .header("roles", "")
-                        .header("X-Gateway-Request", "true"))
-                .andExpect(status().isForbidden());
+        @Test
+        void getProfile_shouldReturn403_whenRolesHeaderEmpty() throws Exception {
+                mockMvc.perform(get("/user/profile")
+                                .header("X-User-Id", 10L)
+                                .header("roles", "")
+                                .header("X-Gateway-Request", "true"))
+                                .andExpect(status().isForbidden());
 
-        verify(userProfileService, never()).getProfileByUserId(anyLong());
-    }
+                verify(userProfileService, never()).getProfileByUserId(anyLong());
+        }
 
-    @Test
-    void getProfile_shouldReturn404_whenProfileNotFound() throws Exception {
-        when(userProfileService.getProfileByUserId(10L))
-                .thenThrow(new UserProfileNotFoundException("Not found"));
+        @Test
+        void getProfile_shouldReturn404_whenProfileNotFound() throws Exception {
+                when(userProfileService.getProfileByUserId(10L))
+                                .thenThrow(new UserProfileNotFoundException("Not found"));
 
-        mockMvc.perform(get("/user/profile")
-                        .header("X-User-Id", 10L)
-                        .header("roles", "ROLE_LEARNER")
-                        .header("X-Gateway-Request", "true"))
-                .andExpect(status().isNotFound());
-    }
+                mockMvc.perform(get("/user/profile")
+                                .header("X-User-Id", 10L)
+                                .header("roles", "ROLE_LEARNER")
+                                .header("X-Gateway-Request", "true"))
+                                .andExpect(status().isNotFound());
+        }
 
-    // ─── GET /user/profile/{userId} ──────────────────────────────────────────
+        // ─── GET /user/profile/{userId} ──────────────────────────────────────────
 
-    @Test
-    void getUserProfile_shouldReturn200_whenProfileExists() throws Exception {
-        when(userProfileService.getProfileByUserId(10L)).thenReturn(responseDto);
+        @Test
+        void getUserProfile_shouldReturn200_whenProfileExists() throws Exception {
+                when(userProfileService.getProfileByUserId(10L)).thenReturn(responseDto);
 
-        mockMvc.perform(get("/user/profile/10")
-                        .header("X-Gateway-Request", "true"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.userId").value(10));
-    }
+                mockMvc.perform(get("/user/profile/10")
+                                .header("X-Gateway-Request", "true"))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.data.userId").value(10));
+        }
 
-    @Test
-    void getUserProfile_shouldReturn404_whenProfileNotFound() throws Exception {
-        when(userProfileService.getProfileByUserId(99L))
-                .thenThrow(new UserProfileNotFoundException("Not found"));
+        @Test
+        void getUserProfile_shouldReturn404_whenProfileNotFound() throws Exception {
+                when(userProfileService.getProfileByUserId(99L))
+                                .thenThrow(new UserProfileNotFoundException("Not found"));
 
-        mockMvc.perform(get("/user/profile/99")
-                        .header("X-Gateway-Request", "true"))
-                .andExpect(status().isNotFound());
-    }
+                mockMvc.perform(get("/user/profile/99")
+                                .header("X-Gateway-Request", "true"))
+                                .andExpect(status().isNotFound());
+        }
 
-    // ─── PUT /user/profile ───────────────────────────────────────────────────
+        // ─── PUT /user/profile ───────────────────────────────────────────────────
 
-    @Test
-    void updateProfile_shouldReturn200_whenValidRequest() throws Exception {
-        UpdateProfileRequestDto request = new UpdateProfileRequestDto("jdoe", "Jane Doe", "bio", "1234567890", "Java", null);
-        when(userProfileService.updateProfile(eq(10L), any())).thenReturn(responseDto);
+        @Test
+        void updateProfile_shouldReturn200_whenValidRequest() throws Exception {
+                UpdateProfileRequestDto request = new UpdateProfileRequestDto("jdoe", "Jane Doe", "bio", "1234567890",
+                                "Java", null);
+                when(userProfileService.updateProfile(eq(10L), any())).thenReturn(responseDto);
 
-        mockMvc.perform(put("/user/profile")
-                        .header("X-User-Id", 10L)
-                        .header("roles", "ROLE_LEARNER")
-                        .header("X-Gateway-Request", "true")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.message").value("Profile updated successfully"))
-                .andExpect(jsonPath("$.data.userId").value(10))
-                .andExpect(jsonPath("$.statusCode").value(200));
-    }
+                mockMvc.perform(put("/user/profile")
+                                .header("X-User-Id", 10L)
+                                .header("roles", "ROLE_LEARNER")
+                                .header("X-Gateway-Request", "true")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(request)))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.success").value(true))
+                                .andExpect(jsonPath("$.message").value("Profile updated successfully"))
+                                .andExpect(jsonPath("$.data.userId").value(10))
+                                .andExpect(jsonPath("$.statusCode").value(200));
+        }
 
-    @Test
-    void updateProfile_shouldReturn403_whenRolesMissing() throws Exception {
-        UpdateProfileRequestDto request = new UpdateProfileRequestDto("jane", "Jane", "bio", "1234567890", "Java", null);
+        @Test
+        void updateProfile_shouldReturn403_whenRolesMissing() throws Exception {
+                UpdateProfileRequestDto request = new UpdateProfileRequestDto("jane", "Jane", "bio", "1234567890",
+                                "Java", null);
 
-        mockMvc.perform(put("/user/profile")
-                        .header("X-User-Id", 10L)
-                        .header("X-Gateway-Request", "true")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isForbidden());
+                mockMvc.perform(put("/user/profile")
+                                .header("X-User-Id", 10L)
+                                .header("X-Gateway-Request", "true")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(request)))
+                                .andExpect(status().isForbidden());
 
-        verify(userProfileService, never()).updateProfile(anyLong(), any());
-    }
+                verify(userProfileService, never()).updateProfile(anyLong(), any());
+        }
 
-    @Test
-    void updateProfile_shouldReturn403_whenRolesEmpty() throws Exception {
-        UpdateProfileRequestDto request = new UpdateProfileRequestDto("jane", "Jane", "bio", "1234567890", "Java", null);
+        @Test
+        void updateProfile_shouldReturn403_whenRolesEmpty() throws Exception {
+                UpdateProfileRequestDto request = new UpdateProfileRequestDto("jane", "Jane", "bio", "1234567890",
+                                "Java", null);
 
-        mockMvc.perform(put("/user/profile")
-                        .header("X-User-Id", 10L)
-                        .header("roles", "")
-                        .header("X-Gateway-Request", "true")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isForbidden());
-    }
+                mockMvc.perform(put("/user/profile")
+                                .header("X-User-Id", 10L)
+                                .header("roles", "")
+                                .header("X-Gateway-Request", "true")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(request)))
+                                .andExpect(status().isForbidden());
+        }
 
-    @Test
-    void updateProfile_shouldReturn400_whenNameBlank() throws Exception {
-        UpdateProfileRequestDto request = new UpdateProfileRequestDto("jane", "", "bio", "1234567890", "Java", null);
+        @Test
+        void updateProfile_shouldReturn400_whenNameBlank() throws Exception {
+                UpdateProfileRequestDto request = new UpdateProfileRequestDto("jane", "", "bio", "1234567890", "Java",
+                                null);
 
-        mockMvc.perform(put("/user/profile")
-                        .header("X-User-Id", 10L)
-                        .header("roles", "ROLE_LEARNER")
-                        .header("X-Gateway-Request", "true")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isBadRequest());
-    }
+                mockMvc.perform(put("/user/profile")
+                                .header("X-User-Id", 10L)
+                                .header("roles", "ROLE_LEARNER")
+                                .header("X-Gateway-Request", "true")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(request)))
+                                .andExpect(status().isBadRequest());
+        }
 
-    @Test
-    void updateProfile_shouldReturn404_whenProfileNotFound() throws Exception {
-        UpdateProfileRequestDto request = new UpdateProfileRequestDto("jane", "Jane", "bio", "1234567890", "Java", null);
-        when(userProfileService.updateProfile(eq(10L), any()))
-                .thenThrow(new UserProfileNotFoundException("Not found"));
+        @Test
+        void updateProfile_shouldReturn404_whenProfileNotFound() throws Exception {
+                UpdateProfileRequestDto request = new UpdateProfileRequestDto("jane", "Jane", "bio", "1234567890",
+                                "Java", null);
+                when(userProfileService.updateProfile(eq(10L), any()))
+                                .thenThrow(new UserProfileNotFoundException("Not found"));
 
-        mockMvc.perform(put("/user/profile")
-                        .header("X-User-Id", 10L)
-                        .header("roles", "ROLE_LEARNER")
-                        .header("X-Gateway-Request", "true")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isNotFound());
-    }
+                mockMvc.perform(put("/user/profile")
+                                .header("X-User-Id", 10L)
+                                .header("roles", "ROLE_LEARNER")
+                                .header("X-Gateway-Request", "true")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(request)))
+                                .andExpect(status().isNotFound());
+        }
 
-    // ─── POST /user/internal/users ───────────────────────────────────────────
+        // ─── POST /user/internal/users ───────────────────────────────────────────
 
-    @Test
-    void createUserProfile_shouldReturn201_whenValidData() throws Exception {
-        Map<String, Object> userData = new HashMap<>();
-        userData.put("userId", 10);
-        userData.put("email", "user@example.com");
-        userData.put("username", "user");
-        when(userProfileService.getProfileByUserId(10L))
-                .thenThrow(new UserProfileNotFoundException("Not found"));
+        @Test
+        void createUserProfile_shouldReturn201_whenValidData() throws Exception {
+                Map<String, Object> userData = new HashMap<>();
+                userData.put("userId", 10);
+                userData.put("email", "user@example.com");
+                userData.put("username", "user");
+                when(userProfileService.getProfileByUserId(10L))
+                                .thenThrow(new UserProfileNotFoundException("Not found"));
 
-        mockMvc.perform(post("/user/internal/users")
-                        .header("X-Gateway-Request", "true")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(userData)))
-                .andExpect(status().isCreated());
+                mockMvc.perform(post("/user/internal/users")
+                                .header("X-Gateway-Request", "true")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(userData)))
+                                .andExpect(status().isCreated());
 
-        verify(userProfileService).createProfile(10L, "user@example.com", "user");
-    }
+                verify(userProfileService).createProfile(10L, "user@example.com", "user");
+        }
 
-    @Test
-    void createUserProfile_shouldReturn200_whenProfileAlreadyExists() throws Exception {
-        Map<String, Object> userData = new HashMap<>();
-        userData.put("userId", 10);
-        userData.put("email", "user@example.com");
-        when(userProfileService.getProfileByUserId(10L)).thenReturn(responseDto);
+        @Test
+        void createUserProfile_shouldReturn200_whenProfileAlreadyExists() throws Exception {
+                Map<String, Object> userData = new HashMap<>();
+                userData.put("userId", 10);
+                userData.put("email", "user@example.com");
+                when(userProfileService.getProfileByUserId(10L)).thenReturn(responseDto);
 
-        mockMvc.perform(post("/user/internal/users")
-                        .header("X-Gateway-Request", "true")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(userData)))
-                .andExpect(status().isOk());
+                mockMvc.perform(post("/user/internal/users")
+                                .header("X-Gateway-Request", "true")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(userData)))
+                                .andExpect(status().isOk());
 
-        verify(userProfileService, never()).createProfile(anyLong(), anyString(), anyString());
-    }
+                verify(userProfileService, never()).createProfile(anyLong(), anyString(), anyString());
+        }
 
-    @Test
-    void createUserProfile_shouldReturn400_whenUserDataEmpty() throws Exception {
-        mockMvc.perform(post("/user/internal/users")
-                        .header("X-Gateway-Request", "true")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{}"))
-                .andExpect(status().isBadRequest());
-    }
+        @Test
+        void createUserProfile_shouldReturn400_whenUserDataEmpty() throws Exception {
+                mockMvc.perform(post("/user/internal/users")
+                                .header("X-Gateway-Request", "true")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("{}"))
+                                .andExpect(status().isBadRequest());
+        }
 
-    @Test
-    void createUserProfile_shouldReturn400_whenUserIdMissing() throws Exception {
-        Map<String, Object> userData = new HashMap<>();
-        userData.put("email", "user@example.com");
+        @Test
+        void createUserProfile_shouldReturn400_whenUserIdMissing() throws Exception {
+                Map<String, Object> userData = new HashMap<>();
+                userData.put("email", "user@example.com");
 
-        mockMvc.perform(post("/user/internal/users")
-                        .header("X-Gateway-Request", "true")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(userData)))
-                .andExpect(status().isBadRequest());
-    }
+                mockMvc.perform(post("/user/internal/users")
+                                .header("X-Gateway-Request", "true")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(userData)))
+                                .andExpect(status().isBadRequest());
+        }
 
-    @Test
-    void createUserProfile_shouldReturn400_whenEmailMissing() throws Exception {
-        Map<String, Object> userData = new HashMap<>();
-        userData.put("userId", 10);
+        @Test
+        void createUserProfile_shouldReturn400_whenEmailMissing() throws Exception {
+                Map<String, Object> userData = new HashMap<>();
+                userData.put("userId", 10);
 
-        mockMvc.perform(post("/user/internal/users")
-                        .header("X-Gateway-Request", "true")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(userData)))
-                .andExpect(status().isBadRequest());
-    }
+                mockMvc.perform(post("/user/internal/users")
+                                .header("X-Gateway-Request", "true")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(userData)))
+                                .andExpect(status().isBadRequest());
+        }
 
-    @Test
-    void createUserProfile_shouldReturn500_whenServiceThrows() throws Exception {
-        Map<String, Object> userData = new HashMap<>();
-        userData.put("userId", 10);
-        userData.put("email", "user@example.com");
-        userData.put("username", "user");
-        when(userProfileService.getProfileByUserId(10L))
-                .thenThrow(new UserProfileNotFoundException("Not found"));
-        doThrow(new RuntimeException("DB error"))
-                .when(userProfileService).createProfile(10L, "user@example.com", "user");
+        @Test
+        void createUserProfile_shouldReturn500_whenServiceThrows() throws Exception {
+                Map<String, Object> userData = new HashMap<>();
+                userData.put("userId", 10);
+                userData.put("email", "user@example.com");
+                userData.put("username", "user");
+                when(userProfileService.getProfileByUserId(10L))
+                                .thenThrow(new UserProfileNotFoundException("Not found"));
+                doThrow(new RuntimeException("DB error"))
+                                .when(userProfileService).createProfile(10L, "user@example.com", "user");
 
-        mockMvc.perform(post("/user/internal/users")
-                        .header("X-Gateway-Request", "true")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(userData)))
-                .andExpect(status().isInternalServerError());
-    }
+                mockMvc.perform(post("/user/internal/users")
+                                .header("X-Gateway-Request", "true")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(userData)))
+                                .andExpect(status().isInternalServerError());
+        }
 }

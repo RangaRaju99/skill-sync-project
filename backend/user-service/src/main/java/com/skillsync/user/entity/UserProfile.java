@@ -22,68 +22,77 @@ import com.skillsync.user.audit.Auditable;
 
 @Entity
 @Table(name = "user_profiles", uniqueConstraints = {
-	@jakarta.persistence.UniqueConstraint(columnNames = "userId")
+        @jakarta.persistence.UniqueConstraint(columnNames = "userId")
 })
 @Data
 @lombok.EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserProfile extends Auditable {
-	
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
 
-	@Column(nullable = false, unique = true)
-	private Long userId;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-	@Column(unique = true)
-	private String username;
+    @Column(nullable = false, unique = true)
+    private Long userId;
 
-	@Column(nullable = false, unique = true)
-	private String email;
+    @Column(unique = true)
+    private String username;
 
-	@Column
-	private String name;
+    @Column(nullable = false, unique = true)
+    private String email;
 
-	@Column(length = 500)
-	private String bio;
+    @Column
+    private String name;
 
-	@Column
-	private String phoneNumber;
+    @Column(length = 500)
+    private String bio;
 
-	@Column
-	private String profileImageUrl;
+    @Column
+    private String phoneNumber;
 
-	@Column(length = 500)
-	private String skills;
+    @Column
+    private String profileImageUrl;
 
-	@Column
-	private Double rating = 0.0;
+    @Column(length = 500)
+    private String skills;
 
-	@Column
-	private Integer totalReviews = 0;
+    @Column
+    private Double rating = 0.0;
 
-	@Column(nullable = false)
-	private Boolean profileComplete = false;
+    @Column
+    private Integer totalReviews = 0;
 
-	@Column(nullable = false, updatable = false)
-	private LocalDateTime createdAt;
+    @Column(nullable = false)
+    private Boolean profileComplete = false;
 
-	@Column(nullable = false)
-	private LocalDateTime updatedAt;
+    @Column(nullable = false)
+    private String status = "ACTIVE"; // ACTIVE, BLOCKED, SUSPENDED
 
-	@PrePersist
-	protected void onCreate() {
-		this.createdAt = LocalDateTime.now();
-		this.updatedAt = LocalDateTime.now();
-		this.rating = 0.0;
-		this.totalReviews = 0;
-		this.profileComplete = false;
-	}
+    @Column(nullable = false)
+    private String role = "LEARNER";
 
-	@PreUpdate
-	protected void onUpdate() {
-		this.updatedAt = LocalDateTime.now();
-	}
+    @Column
+    private String statusReason;
+
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    @Column(nullable = false)
+    private LocalDateTime updatedAt;
+
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+        this.rating = 0.0;
+        this.totalReviews = 0;
+        this.profileComplete = false;
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        this.updatedAt = LocalDateTime.now();
+    }
 }

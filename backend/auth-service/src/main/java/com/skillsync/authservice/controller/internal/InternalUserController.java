@@ -37,10 +37,10 @@ public class InternalUserController {
             @RequestBody AuthProfileUpdateDTO updates,
             @RequestHeader(value = "X-Internal-Service", required = false) String internalService,
             @RequestHeader(value = "X-Service-Auth", required = false) String serviceAuth) {
-        
+
         logger.info("Received profile update from: {}", internalService != null ? internalService : "unknown service");
         logger.info("   userId={}, updates={}", userId, updates);
-        
+
         Optional<User> userOpt = userRepository.findById(userId);
         if (userOpt.isEmpty()) {
             logger.warn("User not found in Auth Service: userId={}", userId);
@@ -66,14 +66,14 @@ public class InternalUserController {
      * Called by Mentor Service when mentor is approved
      * 
      * @param userId User ID
-     * @param role Role to be added
+     * @param role   Role to be added
      */
     @PutMapping("/{userId}/roles")
     public ResponseEntity<Void> addUserRole(
             @PathVariable Long userId,
             @RequestParam String role,
             @RequestHeader(value = "X-Internal-Service", required = false) String internalService) {
-        
+
         logger.info("Received role update from: {}", internalService != null ? internalService : "unknown service");
         Optional<User> userOpt = userRepository.findById(userId);
         if (userOpt.isEmpty()) {
@@ -90,5 +90,45 @@ public class InternalUserController {
             logger.info("   User {} already has role {}", userId, role);
         }
         return ResponseEntity.ok().build();
+    }
+
+    /**
+     * Force update user roles in Auth Service (Admin only)
+     */
+    @PutMapping("/{userId}/role")
+    public ResponseEntity<Void> updateUserRole(
+            @PathVariable Long userId,
+            @RequestBody java.util.Map<String, String> roleData,
+            @RequestHeader(value = "X-Internal-Service", required = false) String internalService) {
+        
+        logger.info("Admin Force Role Update from: {}", internalService);
+        Optional<User> userOpt = userRepository.findById(userId);
+        if (userOpt.isPresent()) {
+            User user = userOpt.get();
+            user.setRole(roleData.get("role"));
+            userRepository.save(user);
+            return ResponseEntity.ok().build();
+        }
+        return ResponseEntity.notFound().build();
+    }
+
+    /**
+     * Force update user status in Auth Service (Admin only)
+     */
+    @PutMapping("/{userId}/status")
+    public ResponseEntity<Void> updateUserStatus(
+            @PathVariable Long userId,
+            @RequestBody java.util.Map<String, Object> statusData,
+            @RequestHeader(value = "X-Internal-Service", required = false) String internalService) {
+        
+        logger.info("Admin Force Status Update from: {}", internalService);
+        Optional<User> userOpt = userRepository.findById(userId);
+        if (userOpt.isPresent()) {
+            User user = userOpt.get();
+            user.setIsActive((Boolean) statusData.get("isActive"));
+            userRepository.save(user);
+            return ResponseEntity.ok().build();
+        }
+        return ResponseEntity.notFound().build();
     }
 }

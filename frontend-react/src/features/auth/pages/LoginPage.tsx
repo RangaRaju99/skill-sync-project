@@ -1,42 +1,38 @@
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuthStore } from '@/store/authStore';
-import { authService } from '@/services/auth.service';
-import { useState } from 'react';
+import { useAuthStore } from '../../../store/authStore';
+import { authService } from '../../../services/auth.service';
+import { Mail, Lock, Eye, EyeOff, ArrowRight, Globe, GraduationCap, Calendar, Users, Ban } from 'lucide-react';
+import { Input } from '../../../components/ui/Input';
+import { Button } from '../../../components/ui/Button';
+import { Icon } from '../../../components/ui/Icon';
 
 export default function LoginPage() {
   const navigate = useNavigate();
   const { setAuth } = useAuthStore();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  const [emailFocused, setEmailFocused] = useState(false);
-  const [pwdFocused, setPwdFocused] = useState(false);
   const [showPwd, setShowPwd] = useState(false);
 
   const features = [
-    { icon: 'school', title: 'Expert Mentors', desc: 'Learn from industry professionals' },
-    { icon: 'event', title: 'Flexible Sessions', desc: 'Book sessions on your schedule' },
-    { icon: 'group', title: 'Learning Groups', desc: 'Collaborate with peers' },
+    { icon: GraduationCap, title: 'Expert Mentors', desc: 'Learn from industry professionals' },
+    { icon: Calendar, title: 'Flexible Sessions', desc: 'Book sessions on your schedule' },
+    { icon: Users, title: 'Learning Groups', desc: 'Collaborate with peers' },
   ];
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    const email = (e.target as any).email.value.trim();
-    const password = (e.target as any).password.value;
+    const form = e.target as HTMLFormElement;
+    const email = form.email.value.trim();
+    const password = form.password.value;
 
     setLoading(true);
-    console.log('Starting login for:', email);
     try {
       const response: any = await authService.login({ email, password });
-      console.log('Login response received:', response);
-
       if (response && response.token) {
-        console.log('Login successful, setting auth...');
         localStorage.setItem('token', response.token);
-
         let roles = response.roles || [];
-        // If roles not in response, try token
         if (!roles.length) {
           try {
             const base64Url = response.token.split('.')[1];
@@ -48,7 +44,6 @@ export default function LoginPage() {
           }
         }
 
-        // Map flattened user data back to our store's User object
         const user = {
           id: String(response.userId),
           name: response.username || response.email,
@@ -58,19 +53,15 @@ export default function LoginPage() {
         };
 
         setAuth(user, response.token);
-
-        // Mirror Angular AuthStore: mentor → dashboard, others → mentors list
         if (roles.includes('ROLE_MENTOR') || roles.includes('ROLE_ADMIN')) {
           navigate('/mentor-dashboard');
         } else {
           navigate('/mentors');
         }
       } else {
-        console.warn('Login response missing token:', response);
         setError('Invalid response from server. Please try again.');
       }
     } catch (err: any) {
-      console.error('Login failed catch block:', err);
       const msg = err?.response?.data?.message || err?.message || 'Login failed. Please check your credentials.';
       setError(msg);
     } finally {
@@ -79,25 +70,25 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen grid grid-cols-1 lg:grid-cols-2 bg-background font-sans">
+    <div className="min-h-screen grid grid-cols-1 lg:grid-cols-2 bg-slate-50 font-sans">
       {/* Left Panel: Branding */}
-      <div className="hidden lg:flex relative bg-gradient-to-br from-primary-600 via-primary-700 to-indigo-800 items-center justify-center overflow-hidden p-12">
+      <div className="hidden lg:flex relative bg-gradient-to-br from-indigo-600 via-indigo-700 to-indigo-900 items-center justify-center overflow-hidden p-12">
         <div className="relative z-10 text-white max-w-md">
-          <div className="w-20 h-20 bg-white/10 rounded-[24px] flex items-center justify-center mb-8 backdrop-blur-xl border border-white/20 shadow-2xl">
+          <div className="w-20 h-20 bg-white/10 rounded-[28px] flex items-center justify-center mb-8 backdrop-blur-xl border border-white/20 shadow-2xl">
             <span className="text-4xl">⚡</span>
           </div>
-          <h1 className="text-5xl font-extrabold mb-3 tracking-tight">SkillSync</h1>
-          <p className="text-xl text-primary-100 mb-12 font-medium">Connect. Learn. Grow.</p>
+          <h1 className="text-5xl font-black mb-3 tracking-tighter uppercase italic">SkillSync</h1>
+          <p className="text-xl text-indigo-100 mb-12 font-bold tracking-tight">Accelerate your growth today.</p>
 
           <div className="space-y-8">
             {features.map((f, i) => (
-              <div className="flex items-start gap-5 hover:-translate-y-1 transition-transform" key={i}>
-                <div className="w-12 h-12 shrink-0 bg-white/10 rounded-2xl flex items-center justify-center backdrop-blur-md border border-white/10">
-                  <span className="material-icons text-white">{f.icon}</span>
+              <div className="flex items-start gap-5 group transition-transform hover:translate-x-1" key={i}>
+                <div className="w-12 h-12 shrink-0 bg-white/10 rounded-2xl flex items-center justify-center backdrop-blur-md border border-white/10 text-white group-hover:bg-white/20 transition-all">
+                  <Icon icon={f.icon} size={22} />
                 </div>
                 <div>
-                  <strong className="block text-lg font-bold mb-1 tracking-tight">{f.title}</strong>
-                  <p className="text-sm text-primary-100 font-medium">{f.desc}</p>
+                  <strong className="block text-lg font-black mb-1 tracking-tight">{f.title}</strong>
+                  <p className="text-sm text-indigo-100 font-bold opacity-80">{f.desc}</p>
                 </div>
               </div>
             ))}
@@ -105,109 +96,88 @@ export default function LoginPage() {
         </div>
 
         {/* Decorative blobs */}
-        <div className="absolute top-[-10%] right-[-10%] w-[400px] h-[400px] bg-indigo-500 rounded-full blur-[80px] opacity-40"></div>
-        <div className="absolute bottom-[-10%] left-[-10%] w-[300px] h-[300px] bg-purple-500 rounded-full blur-[80px] opacity-40"></div>
+        <div className="absolute top-[-10%] right-[-10%] w-[400px] h-[400px] bg-indigo-500 rounded-full blur-[80px] opacity-40 animate-pulse"></div>
+        <div className="absolute bottom-[-10%] left-[-10%] w-[300px] h-[300px] bg-indigo-400 rounded-full blur-[80px] opacity-40 animate-pulse"></div>
       </div>
 
       {/* Right Panel: Form */}
-      <div className="flex items-center justify-center p-6 sm:p-12 bg-background">
-        <div className="w-full max-w-[420px] glass-card p-10 rounded-[2.5xl] animate-fade-in shadow-xl">
+      <div className="flex items-center justify-center p-6 sm:p-12">
+        <div className="w-full max-w-[440px] bg-white p-10 rounded-[2.5rem] shadow-[0_20px_50px_-15px_rgba(0,0,0,0.08)] border border-slate-100 animate-fade-in">
           
-          {/* Mobile logo */}
-          <div className="lg:hidden text-2xl font-extrabold text-primary-600 mb-8 flex items-center gap-2">
+          <div className="lg:hidden text-2xl font-black text-indigo-600 mb-8 flex items-center gap-2 italic uppercase tracking-tighter">
             ⚡ SkillSync
           </div>
 
           <div className="mb-10">
-            <h2 className="text-3xl font-extrabold text-foreground tracking-tight mb-2">Welcome back</h2>
-            <p className="text-muted font-medium text-[15px]">Sign in to continue your learning journey</p>
+            <h2 className="text-3xl font-black text-slate-900 tracking-tight mb-2">Welcome Back</h2>
+            <p className="text-slate-500 font-bold text-[15px] tracking-tight">Sign in to your account with your credentials</p>
           </div>
 
           <form onSubmit={handleLogin} className="space-y-6">
             
-            {/* Email */}
-            <div className="space-y-2">
-              <label className="text-[13px] font-bold text-foreground tracking-wide ml-1">Email address</label>
-              <div className={`flex items-center bg-surface border-[1.5px] rounded-xl px-4 h-14 transition-all ${emailFocused ? 'border-primary-500 ring-4 ring-primary-500/10' : 'border-border-color'}`}>
-                <span className={`material-icons mr-3 transition-colors ${emailFocused ? 'text-primary-500' : 'text-muted'}`}>email</span>
-                <input
-                  type="email"
-                  name="email"
-                  placeholder="you@example.com"
-                  autoComplete="email"
-                  onFocus={() => setEmailFocused(true)}
-                  onBlur={() => setEmailFocused(false)}
-                  className="flex-1 bg-transparent border-none text-[15px] font-medium text-foreground outline-none placeholder:text-muted/60"
-                  required
-                />
+            <Input
+              name="email"
+              type="email"
+              label="Email Address"
+              placeholder="you@skillsync.com"
+              autoComplete="email"
+              required
+              leftIcon={<Icon icon={Mail} size={18} />}
+            />
+
+            <div className="space-y-1">
+              <div className="flex justify-between items-center px-1 mb-1">
+                 <label className="text-[11px] font-black text-slate-500 uppercase tracking-widest leading-none">Password</label>
+                 <Link to="/auth/forgot-password" title="Recover Password" className="text-[11px] text-indigo-600 font-black uppercase tracking-widest hover:text-indigo-700">Forgot?</Link>
               </div>
+              <Input
+                name="password"
+                type={showPwd ? 'text' : 'password'}
+                placeholder="••••••••"
+                autoComplete="current-password"
+                required
+                leftIcon={<Icon icon={Lock} size={18} />}
+                rightIcon={
+                  <button type="button" onClick={() => setShowPwd(!showPwd)} className="focus:outline-none">
+                    <Icon icon={showPwd ? EyeOff : Eye} size={18} />
+                  </button>
+                }
+              />
             </div>
 
-            {/* Password */}
-            <div className="space-y-2">
-              <div className="flex justify-between items-center ml-1">
-                <label className="text-[13px] font-bold text-foreground tracking-wide">Password</label>
-                <Link to="/auth/forgot-password" className="text-[13px] text-primary-600 font-bold hover:underline">Forgot password?</Link>
-              </div>
-              <div className={`flex items-center bg-surface border-[1.5px] rounded-xl px-4 h-14 transition-all ${pwdFocused ? 'border-primary-500 ring-4 ring-primary-500/10' : 'border-border-color'}`}>
-                <span className={`material-icons mr-3 transition-colors ${pwdFocused ? 'text-primary-500' : 'text-muted'}`}>lock</span>
-                <input
-                  type={showPwd ? 'text' : 'password'}
-                  name="password"
-                  placeholder="Enter your password"
-                  autoComplete="current-password"
-                  onFocus={() => setPwdFocused(true)}
-                  onBlur={() => setPwdFocused(false)}
-                  className="flex-1 bg-transparent border-none text-[15px] font-medium text-foreground outline-none placeholder:text-muted/60"
-                  required
-                />
-                <button type="button" className="p-1 ml-2 text-muted hover:text-primary-600 transition-colors" onClick={() => setShowPwd(!showPwd)}>
-                  <span className="material-icons text-[20px]">{showPwd ? 'visibility_off' : 'visibility'}</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Error Banner */}
             {error && (
-              <div className="flex items-center gap-2 bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-900/50 p-4 rounded-xl text-sm font-bold">
-                <span className="material-icons text-[18px]">error_outline</span>
+              <div className="flex items-center gap-3 bg-rose-50 text-rose-600 border border-rose-100 p-4 rounded-2xl text-[11px] font-black uppercase tracking-widest animate-shake">
+                <Icon icon={Ban} size={16} />
                 {error}
               </div>
             )}
 
-            {/* Submit */}
-            <button 
-              type="submit" 
-              className="w-full h-14 bg-gradient-to-r from-primary-600 to-indigo-600 hover:from-primary-700 hover:to-indigo-700 text-white rounded-xl text-base font-bold flex items-center justify-center gap-2 shadow-lg shadow-primary-600/30 dark:shadow-none hover:-translate-y-0.5 active:translate-y-0 transition-all disabled:opacity-70 disabled:cursor-not-allowed"
-              disabled={loading}
+            <Button 
+               type="submit" 
+               className="w-full h-14"
+               isLoading={loading}
+               rightIcon={<Icon icon={ArrowRight} size={20} />}
             >
-              {loading ? (
-                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-              ) : (
-                <>
-                  <span>Sign In</span>
-                  <span className="material-icons text-[20px]">arrow_forward</span>
-                </>
-              )}
-            </button>
+              Sign In
+            </Button>
 
             {/* Divider */}
-            <div className="flex items-center gap-4 text-muted text-sm font-medium">
-              <div className="flex-1 h-px bg-border-color"></div>
-              <span>or continue with</span>
-              <div className="flex-1 h-px bg-border-color"></div>
+            <div className="flex items-center gap-4 py-2">
+              <div className="flex-1 h-px bg-slate-100"></div>
+              <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Or continue with</span>
+              <div className="flex-1 h-px bg-slate-100"></div>
             </div>
 
             {/* Google */}
-            <button type="button" className="w-full flex items-center justify-center gap-3 bg-card border border-border-color text-foreground h-14 rounded-xl font-bold hover:bg-surface transition-colors">
-              <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="w-[20px] h-[20px]" />
+            <button type="button" className="w-full flex items-center justify-center gap-3 bg-white border border-slate-200 text-slate-700 h-14 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-slate-50 transition-all shadow-sm active:scale-95">
+              <Icon icon={Globe} size={20} className="text-slate-900" />
               Sign in with Google
             </button>
 
             {/* Register link */}
-            <p className="text-center text-[15px] text-muted font-medium pt-2">
+            <p className="text-center text-[13px] text-slate-500 font-bold pt-4 tracking-tight">
               Don't have an account? 
-              <Link to="/auth/register" className="text-primary-600 font-bold hover:underline ml-1.5">Create one</Link>
+              <Link to="/auth/register" className="text-indigo-600 font-black hover:text-indigo-700 transition-colors ml-1.5 uppercase text-xs tracking-widest">Register</Link>
             </p>
 
           </form>

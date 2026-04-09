@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import MainLayout from './layouts/MainLayout';
 import AuthLayout from './layouts/AuthLayout';
+import AdminLayout from './layouts/AdminLayout'; // Fixed Import
 import HomePage from './features/public/pages/HomePage';
 import LoginPage from './features/auth/pages/LoginPage';
 import RegisterPage from './features/auth/pages/RegisterPage';
@@ -21,7 +22,13 @@ import GroupDetailPage from './features/groups/pages/GroupDetailPage';
 import MentorReviewsPage from './features/reviews/pages/MentorReviewsPage';
 import CheckoutPage from './features/payment/pages/CheckoutPage';
 import NotificationsPage from './features/notifications/pages/NotificationsPage';
-import AdminPage from './features/admin/pages/AdminPage';
+import AdminAnalyticsPage from './features/admin/pages/AdminAnalyticsPage';
+import AdminDashboardPage from './features/admin/pages/AdminDashboardPage';
+import AdminUsersPage from './features/admin/pages/AdminUsersPage';
+import AdminGroupsPage from './features/admin/pages/AdminGroupsPage';
+import AdminRolesPage from './features/admin/pages/AdminRolesPage';
+import AdminAuditLogsPage from './features/admin/pages/AdminAuditLogsPage';
+import AdminSettingsPage from './features/admin/pages/AdminSettingsPage';
 import MentorDashboardPage from './features/mentor-dashboard/pages/MentorDashboardPage';
 import GrowthDashboardPage from './features/growth-dashboard/pages/GrowthDashboardPage';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -38,7 +45,6 @@ function App() {
     const checkAuth = async () => {
       const token = localStorage.getItem('token');
       if (token) {
-        // Step 1: Decode roles from JWT immediately (synchronous)
         let roles: string[] = [];
         let jwtUserId: string | null = null;
         try {
@@ -52,7 +58,6 @@ function App() {
         }
 
         try {
-          // Step 2: Fetch full profile for name/email (async)
           const response = await userService.getCurrentUser();
           const userData = response.data || response;
 
@@ -64,11 +69,9 @@ function App() {
             roles,
           };
 
-          // setAuth now persists everything to localStorage via authStore
           setAuth(user, token);
         } catch (e) {
           console.error('Initial auth check failed:', e);
-          // If profile call fails but JWT is valid, keep partial auth state
           if (jwtUserId && roles.length) {
             const fallbackUser = {
               id: jwtUserId,
@@ -118,6 +121,7 @@ function App() {
 
         {/* Protected App Routes */}
         <Route element={<ProtectedRoute />}>
+          {/* Main App Layout */}
           <Route path="/" element={<MainLayout />}>
             <Route path="mentors" element={<MentorsPage />} />
             <Route path="mentors/:id" element={<MentorDetailPage />} />
@@ -133,9 +137,20 @@ function App() {
             <Route path="reviews/mentor/:mentorId" element={<MentorReviewsPage />} />
             <Route path="payment" element={<CheckoutPage />} />
             <Route path="notifications" element={<NotificationsPage />} />
-            <Route path="admin" element={<AdminPage />} />
             <Route path="mentor-dashboard" element={<MentorDashboardPage />} />
             <Route path="growth" element={<GrowthDashboardPage />} />
+          </Route>
+
+          {/* Admin Dedicated Layout */}
+          <Route path="/admin" element={<AdminLayout />}>
+            <Route index element={<AdminDashboardPage />} />
+            <Route path="dashboard" element={<AdminDashboardPage />} />
+            <Route path="analytics" element={<AdminAnalyticsPage />} />
+            <Route path="users" element={<AdminUsersPage />} />
+            <Route path="groups" element={<AdminGroupsPage />} />
+            <Route path="roles" element={<AdminRolesPage />} />
+            <Route path="audit-logs" element={<AdminAuditLogsPage />} />
+            <Route path="settings" element={<AdminSettingsPage />} />
           </Route>
         </Route>
 

@@ -2,6 +2,10 @@ import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { useAuthStore } from '@/store/authStore';
 import { authService } from '@/services/auth.service';
+import { Zap, Check, Lock, Eye, EyeOff, CheckCircle, AlertCircle } from 'lucide-react';
+import { Icon } from '../../../components/ui/Icon';
+import { Button } from '../../../components/ui/Button';
+import { Input } from '../../../components/ui/Input';
 
 export default function RegisterDetailsPage() {
   const navigate = useNavigate();
@@ -69,7 +73,7 @@ export default function RegisterDetailsPage() {
       <div className="hidden lg:flex relative bg-gradient-to-br from-primary-600 via-primary-700 to-indigo-800 items-center justify-center overflow-hidden p-12">
         <div className="relative z-10 text-white max-w-md">
           <div className="w-20 h-20 bg-white/10 rounded-[24px] flex items-center justify-center mb-8 backdrop-blur-xl border border-white/20 shadow-2xl">
-            <span className="text-4xl">⚡</span>
+            <Icon icon={Zap} size={40} className="text-white fill-white" />
           </div>
           <h1 className="text-5xl font-extrabold mb-3 tracking-tight">SkillSync</h1>
           <p className="text-xl text-primary-100 mb-12 font-medium">Secure your new account</p>
@@ -107,7 +111,7 @@ export default function RegisterDetailsPage() {
           
           {/* Mobile logo */}
           <div className="lg:hidden text-2xl font-extrabold text-primary-600 mb-8 flex items-center gap-2">
-            ⚡ SkillSync
+            <Icon icon={Zap} size={28} className="fill-primary-600" /> SkillSync
           </div>
 
           <div className="mb-10 text-left">
@@ -117,70 +121,55 @@ export default function RegisterDetailsPage() {
 
           <form onSubmit={handleSubmit} className="space-y-6">
             
-            {/* Password */}
-            <div className="space-y-2">
-              <label className="text-[13px] font-bold text-foreground tracking-wide ml-1">Password</label>
-              <div className={`flex items-center bg-surface border-[1.5px] rounded-xl px-4 h-14 transition-all ${pwdFocused ? 'border-primary-500 ring-4 ring-primary-500/10' : 'border-border-color'} ${error && error.includes('Password') ? 'border-red-500 ring-red-500/10' : ''}`}>
-                <span className={`material-icons mr-3 transition-colors ${pwdFocused ? 'text-primary-500' : 'text-muted'}`}>lock</span>
-                <input 
-                  type={showPwd ? 'text' : 'password'} 
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Min 8 characters"
-                  onFocus={() => setPwdFocused(true)} 
-                  onBlur={() => setPwdFocused(false)} 
-                  className="flex-1 bg-transparent border-none text-[15px] font-medium text-foreground outline-none placeholder:text-muted/60 w-full"
-                  required
-                />
-                <button type="button" className="p-1 ml-2 text-muted hover:text-primary-600 transition-colors" onClick={() => setShowPwd(!showPwd)}>
-                  <span className="material-icons text-[20px]">{showPwd ? 'visibility_off' : 'visibility'}</span>
-                </button>
-              </div>
-            </div>
+             <Input 
+                label="Password"
+                type={showPwd ? 'text' : 'password'} 
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Min 8 characters"
+                required
+                leftIcon={<Icon icon={Lock} size={20} />}
+                rightIcon={
+                    <button type="button" onClick={() => setShowPwd(!showPwd)}>
+                      <Icon icon={showPwd ? EyeOff : Eye} size={20} />
+                    </button>
+                }
+                error={!!error && error.includes('Password')}
+             />
 
-            {/* Confirm Password */}
-            <div className="space-y-2">
-              <label className="text-[13px] font-bold text-foreground tracking-wide ml-1">Confirm Password</label>
-              <div className={`flex items-center bg-surface border-[1.5px] rounded-xl px-4 h-14 transition-all ${confirmPwdFocused ? 'border-primary-500 ring-4 ring-primary-500/10' : 'border-border-color'} ${error && error.includes('Password') ? 'border-red-500 ring-red-500/10' : ''}`}>
-                <span className={`material-icons mr-3 transition-colors ${confirmPwdFocused ? 'text-primary-500' : 'text-muted'}`}>lock_outline</span>
-                <input 
-                  type={showConfirmPwd ? 'text' : 'password'} 
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder="Confirm Password"
-                  onFocus={() => setConfirmPwdFocused(true)} 
-                  onBlur={() => setConfirmPwdFocused(false)} 
-                  className="flex-1 bg-transparent border-none text-[15px] font-medium text-foreground outline-none placeholder:text-muted/60 w-full"
-                  required
-                />
-                <button type="button" className="p-1 ml-2 text-muted hover:text-primary-600 transition-colors" onClick={() => setShowConfirmPwd(!showConfirmPwd)}>
-                  <span className="material-icons text-[20px]">{showConfirmPwd ? 'visibility_off' : 'visibility'}</span>
-                </button>
-              </div>
-              {error === "Passwords must match" && <span className="block text-red-500 font-bold text-sm mt-1 ml-1">Passwords must match</span>}
-            </div>
+             <Input 
+                label="Confirm Password"
+                type={showConfirmPwd ? 'text' : 'password'} 
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Confirm Password"
+                required
+                leftIcon={<Icon icon={Lock} size={20} />}
+                rightIcon={
+                    <button type="button" onClick={() => setShowConfirmPwd(!showConfirmPwd)}>
+                      <Icon icon={showConfirmPwd ? EyeOff : Eye} size={20} />
+                    </button>
+                }
+                error={error === "Passwords must match"}
+                helperText={error === "Passwords must match" ? "Passwords must match" : undefined}
+             />
             
             {error && error !== "Passwords must match" && (
-              <div className="flex items-center gap-2 bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-900/50 p-4 rounded-xl text-sm font-bold w-full">
-                <span className="material-icons text-[18px]">error_outline</span>
+              <div className="flex items-center gap-2 bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-900/50 p-4 rounded-xl text-sm font-bold w-full animate-shake">
+                <Icon icon={AlertCircle} size={18} />
                 {error}
               </div>
             )}
 
-            <button 
+            <Button 
               type="submit" 
-              className="w-full h-14 bg-gradient-to-r from-primary-600 to-indigo-600 hover:from-primary-700 hover:to-indigo-700 text-white rounded-xl text-base font-bold flex items-center justify-center gap-2 shadow-lg shadow-primary-600/30 dark:shadow-none hover:-translate-y-0.5 active:translate-y-0 transition-all disabled:opacity-70 disabled:cursor-not-allowed mt-4"
-              disabled={!password || !confirmPassword || loading}
+              className="w-full h-14 mt-4"
+              loading={loading}
+              disabled={!password || !confirmPassword}
+              rightIcon={<Icon icon={CheckCircle} size={20} />}
             >
-              {loading ? (
-                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-              ) : (
-                <>
-                  <span>Complete Registration</span>
-                  <span className="material-icons text-[20px]">check_circle</span>
-                </>
-              )}
-            </button>
+              Complete Registration
+            </Button>
           </form>
         </div>
       </div>

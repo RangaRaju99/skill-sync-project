@@ -1,6 +1,10 @@
 import { Link } from 'react-router-dom';
 import { useState } from 'react';
 import { authService } from '@/services/auth.service';
+import { ArrowLeft, ArrowRight, Mail, ShieldAlert, MailCheck, Lock, Eye, EyeOff, CheckCircle, AlertCircle } from 'lucide-react';
+import { Icon } from '../../../components/ui/Icon';
+import { Button } from '../../../components/ui/Button';
+import { Input } from '../../../components/ui/Input';
 
 type Step = 'email' | 'otp' | 'reset' | 'done';
 
@@ -74,7 +78,7 @@ export default function ForgotPasswordPage() {
 
       <div className="w-full max-w-[440px] glass-card p-8 sm:p-10 rounded-[2.5xl] animate-fade-in shadow-xl relative z-10">
         <Link to="/auth/login" className="inline-flex items-center gap-1.5 text-sm font-bold text-muted hover:text-primary-600 transition-colors mb-8 group">
-          <span className="material-icons text-[18px] group-hover:-translate-x-1 transition-transform">arrow_back</span> Back to login
+          <Icon icon={ArrowLeft} size={18} className="group-hover:-translate-x-1 transition-transform" /> Back to login
         </Link>
 
         {step !== 'done' && (
@@ -91,44 +95,39 @@ export default function ForgotPasswordPage() {
           <>
             <div className="text-center mb-8">
               <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary-600 to-indigo-600 flex items-center justify-center mx-auto mb-4 shadow-lg shadow-primary-600/30">
-                <span className="material-icons text-white text-[28px]">lock_reset</span>
+                <Icon icon={ShieldAlert} size={28} className="text-white" />
               </div>
               <h2 className="text-2xl font-extrabold text-foreground mb-2 tracking-tight">Forgot password?</h2>
               <p className="text-muted text-[15px] font-medium">Enter your email and we'll send you a reset code</p>
             </div>
             <form onSubmit={sendOtp} className="space-y-6">
-              <div className="space-y-2">
-                <label className="text-[13px] font-bold text-foreground tracking-wide ml-1">Email address</label>
-                <div className={`flex items-center bg-surface border-[1.5px] rounded-xl px-4 h-14 transition-all ${focused ? 'border-primary-500 ring-4 ring-primary-500/10' : 'border-border-color'}`}>
-                  <span className={`material-icons mr-3 transition-colors ${focused ? 'text-primary-500' : 'text-muted'}`}>email</span>
-                  <input 
-                    type="email" 
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="you@example.com"
-                    onFocus={() => setFocused(true)} 
-                    onBlur={() => setFocused(false)} 
-                    className="flex-1 bg-transparent border-none text-[15px] font-medium text-foreground outline-none placeholder:text-muted/60"
-                    required
-                  />
-                </div>
-              </div>
+              <Input 
+                 label="Email address"
+                 type="email" 
+                 value={email}
+                 onChange={(e) => setEmail(e.target.value)}
+                 placeholder="you@example.com"
+                 required
+                 leftIcon={<Icon icon={Mail} size={20} />}
+                 error={!!error}
+              />
               
               {error && (
-                <div className="flex items-center gap-2 bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-900/50 p-4 rounded-xl text-sm font-bold w-full">
-                  <span className="material-icons text-[18px]">error_outline</span>
+                <div className="flex items-center gap-2 bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-900/50 p-4 rounded-xl text-sm font-bold w-full animate-shake">
+                  <Icon icon={AlertCircle} size={18} />
                   {error}
                 </div>
               )}
 
-              <button 
+              <Button 
                 type="submit" 
-                disabled={!email || loading}
-                className="w-full h-14 bg-gradient-to-r from-primary-600 to-indigo-600 hover:from-primary-700 hover:to-indigo-700 text-white rounded-xl text-base font-bold flex items-center justify-center gap-2 shadow-lg shadow-primary-600/30 dark:shadow-none hover:-translate-y-0.5 active:translate-y-0 transition-all disabled:opacity-70 disabled:cursor-not-allowed"
+                disabled={!email}
+                className="w-full h-14"
+                loading={loading}
+                rightIcon={<Icon icon={ArrowRight} size={20} />}
               >
-                {loading ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> : 
-                  <><span>Send Reset Code</span><span className="material-icons text-[20px]">arrow_forward</span></>}
-              </button>
+                Send Reset Code
+              </Button>
             </form>
           </>
         )}
@@ -138,7 +137,7 @@ export default function ForgotPasswordPage() {
           <>
             <div className="text-center mb-8">
               <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center mx-auto mb-4 shadow-lg shadow-blue-500/30">
-                <span className="material-icons text-white text-[28px]">mark_email_read</span>
+                <Icon icon={MailCheck} size={28} className="text-white" />
               </div>
               <h2 className="text-2xl font-extrabold text-foreground mb-2 tracking-tight">Check your email</h2>
               <p className="text-muted text-[15px] font-medium">We sent a 6-digit code to <strong className="text-foreground">{email}</strong></p>
@@ -160,9 +159,9 @@ export default function ForgotPasswordPage() {
                  />
               </div>
 
-              {error && (
-                <div className="flex items-center gap-2 bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-900/50 p-4 rounded-xl text-sm font-bold w-full">
-                  <span className="material-icons text-[18px]">error_outline</span>
+               {error && (
+                <div className="flex items-center gap-2 bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-900/50 p-4 rounded-xl text-sm font-bold w-full animate-shake">
+                  <Icon icon={AlertCircle} size={18} />
                   {error}
                 </div>
               )}
@@ -183,48 +182,45 @@ export default function ForgotPasswordPage() {
           <>
             <div className="text-center mb-8">
               <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center mx-auto mb-4 shadow-lg shadow-emerald-500/30">
-                <span className="material-icons text-white text-[28px]">lock</span>
+                <Icon icon={Lock} size={28} className="text-white" />
               </div>
               <h2 className="text-2xl font-extrabold text-foreground mb-2 tracking-tight">Set new password</h2>
               <p className="text-muted text-[15px] font-medium">Choose a strong password for your account</p>
             </div>
             
             <form onSubmit={resetPassword} className="space-y-6">
-              <div className="space-y-2">
-                <label className="text-[13px] font-bold text-foreground tracking-wide ml-1">New Password</label>
-                <div className={`flex items-center bg-surface border-[1.5px] rounded-xl px-4 h-14 transition-all ${focused ? 'border-primary-500 ring-4 ring-primary-500/10' : 'border-border-color'}`}>
-                  <span className={`material-icons mr-3 transition-colors ${focused ? 'text-primary-500' : 'text-muted'}`}>lock</span>
-                  <input 
-                    type={showPwd ? 'text' : 'password'} 
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                    placeholder="Min 8 characters"
-                    onFocus={() => setFocused(true)} 
-                    onBlur={() => setFocused(false)} 
-                    className="flex-1 bg-transparent border-none text-[15px] font-medium text-foreground outline-none placeholder:text-muted/60"
-                    required
-                  />
-                  <button type="button" className="p-1 ml-2 text-muted hover:text-primary-600 transition-colors" onClick={() => setShowPwd(!showPwd)}>
-                    <span className="material-icons text-[20px]">{showPwd ? 'visibility_off' : 'visibility'}</span>
-                  </button>
-                </div>
-              </div>
+              <Input 
+                 label="New Password"
+                 type={showPwd ? 'text' : 'password'} 
+                 value={newPassword}
+                 onChange={(e) => setNewPassword(e.target.value)}
+                 placeholder="Min 8 characters"
+                 required
+                 leftIcon={<Icon icon={Lock} size={20} />}
+                 rightIcon={
+                    <button type="button" onClick={() => setShowPwd(!showPwd)}>
+                      <Icon icon={showPwd ? EyeOff : Eye} size={20} />
+                    </button>
+                 }
+                 error={!!error}
+              />
               
               {error && (
-                <div className="flex items-center gap-2 bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-900/50 p-4 rounded-xl text-sm font-bold w-full">
-                  <span className="material-icons text-[18px]">error_outline</span>
+                <div className="flex items-center gap-2 bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-900/50 p-4 rounded-xl text-sm font-bold w-full animate-shake">
+                  <Icon icon={AlertCircle} size={18} />
                   {error}
                 </div>
               )}
 
-              <button 
+              <Button 
                 type="submit" 
-                disabled={!newPassword || loading}
-                className="w-full h-14 bg-gradient-to-r from-primary-600 to-indigo-600 hover:from-primary-700 hover:to-indigo-700 text-white rounded-xl text-base font-bold flex items-center justify-center gap-2 shadow-lg shadow-primary-600/30 dark:shadow-none hover:-translate-y-0.5 active:translate-y-0 transition-all disabled:opacity-70 disabled:cursor-not-allowed"
+                disabled={!newPassword}
+                className="w-full h-14"
+                loading={loading}
+                rightIcon={<Icon icon={ArrowRight} size={20} />}
               >
-                {loading ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> : 
-                  <><span>Reset Password</span><span className="material-icons text-[20px]">arrow_forward</span></>}
-              </button>
+                Reset Password
+              </Button>
             </form>
           </>
         )}
@@ -233,15 +229,14 @@ export default function ForgotPasswordPage() {
         {step === 'done' && (
           <div className="flex flex-col items-center gap-4 text-center py-4 animate-fade-in">
             <div className="w-20 h-20 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center shadow-xl shadow-emerald-500/30 mb-2">
-              <span className="material-icons text-[40px] text-white">check</span>
+              <Icon icon={CheckCircle} size={40} className="text-white" />
             </div>
             <h2 className="text-2xl font-extrabold text-foreground tracking-tight">Password reset!</h2>
             <p className="text-muted font-medium text-[15px] mb-4">Your password has been updated successfully.</p>
-            <Link 
-              to="/auth/login" 
-              className="w-full h-14 bg-gradient-to-r from-primary-600 to-indigo-600 hover:from-primary-700 hover:to-indigo-700 text-white rounded-xl text-base font-bold flex items-center justify-center gap-2 shadow-lg shadow-primary-600/30 dark:shadow-none hover:-translate-y-0.5 active:translate-y-0 transition-all mt-2"
-            >
-              <span>Sign In Now</span><span className="material-icons text-[20px]">arrow_forward</span>
+            <Link to="/auth/login" className="w-full">
+               <Button className="w-full h-14" rightIcon={<Icon icon={ArrowRight} size={20} />}>
+                  Sign In Now
+               </Button>
             </Link>
           </div>
         )}

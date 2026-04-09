@@ -36,13 +36,13 @@ export const useMentor = (id: number) => {
         return {
           ...m,
           name: userProfile?.name || userProfile?.username || `Mentor ${m.userId}`,
-          avatar: userProfile?.avatarUrl || `https://apiClient.dicebear.com/7.x/avataaars/svg?seed=${userProfile?.username || m.userId}`,
+          avatar: userProfile?.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${userProfile?.username || m.userId}`,
         } as MentorDto & { name: string; avatar: string };
       } catch (e) {
         return {
           ...m,
           name: `Mentor ${m.userId}`,
-          avatar: `https://apiClient.dicebear.com/7.x/avataaars/svg?seed=${m.userId}`,
+          avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${m.userId}`,
         } as MentorDto & { name: string; avatar: string };
       }
     },
@@ -132,13 +132,13 @@ export const useMentors = (filters: MentorFilters = {}) => {
             return {
               ...m,
               name: userProfile?.name || userProfile?.username || `Mentor ${m.userId}`,
-              avatar: userProfile?.avatarUrl || `https://apiClient.dicebear.com/7.x/avataaars/svg?seed=${userProfile?.username || m.userId}`,
+              avatar: userProfile?.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${userProfile?.username || m.userId}`,
             };
           } catch (e) {
             return {
               ...m,
               name: `Mentor ${m.userId}`,
-              avatar: `https://apiClient.dicebear.com/7.x/avataaars/svg?seed=${m.userId}`,
+              avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${m.userId}`,
             };
           }
         })

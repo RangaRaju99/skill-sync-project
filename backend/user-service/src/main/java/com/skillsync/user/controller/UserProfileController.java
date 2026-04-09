@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import com.skillsync.user.dto.request.UpdateProfileRequestDto;
 import com.skillsync.user.dto.response.ApiResponse;
@@ -40,236 +41,394 @@ import lombok.extern.slf4j.Slf4j;
 @Tag(name = "User Profile", description = "User profile management and retrieval")
 public class UserProfileController {
 
-	private final UserProfileService userProfileService;
-	private final SecurityContextUtil securityUtil;
+    private final UserProfileService userProfileService;
+    private final SecurityContextUtil securityUtil;
 
-	/**
-	 * GET /api/user/profile
-	 * Get user's own profile
-	 */
-	@GetMapping("/profile")
-	@Operation(summary = "Get current user profile", description = "Retrieve the profile of the authenticated user")
-	@ApiResponses(value = {
-			@io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Profile fetched successfully"),
-			@io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Unauthorized - JWT token missing or invalid"),
-			@io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "User profile not found")
-	})
-	@SecurityRequirement(name = "bearerAuth")
-	public ResponseEntity<ApiResponse<UserProfileResponseDto>> getProfile(
-			@Parameter(hidden = true) @RequestHeader("X-User-Id") Long headerUserId,
-			@Parameter(hidden = true) @RequestHeader(value = "loggedInUser", required = false) String headerEmail,
-			@Parameter(hidden = true) @RequestHeader(value = "roles", required = false) String roles,
-			HttpServletRequest request) {
+    /**
+     * GET /api/user/profile
+     * Get user's own profile
+     */
+    @GetMapping("/profile")
+    @Operation(summary = "Get current user profile", description = "Retrieve the profile of the authenticated user")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Profile fetched successfully"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Unauthorized - JWT token missing or invalid"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "User profile not found")
+    })
+    @SecurityRequirement(name = "bearerAuth")
+    public ResponseEntity<ApiResponse<UserProfileResponseDto>> getProfile(
+            @Parameter(hidden = true) @RequestHeader("X-User-Id") Long headerUserId,
+            @Parameter(hidden = true) @RequestHeader(value = "loggedInUser", required = false) String headerEmail,
+            @Parameter(hidden = true) @RequestHeader(value = "roles", required = false) String roles,
+            HttpServletRequest request) {
 
-		// 1. Robust identification from JWT
-		Long userId = securityUtil.extractUserId(request);
-		String email = securityUtil.extractEmail(request);
-		
-		// Fallback to headers (only if secure/internal)
-		if (userId == null) userId = headerUserId;
-		if (email == null) email = headerEmail;
+        // 1. Robust identification from JWT
+        Long userId = securityUtil.extractUserId(request);
+        String email = securityUtil.extractEmail(request);
 
-		if (userId == null && (email == null || email.isEmpty())) {
-			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unidentified user");
-		}
-		log.info("Fetching profile for userId: {} (fallback email: {})", userId, email);
+        // Fallback to headers (only if secure/internal)
+        if (userId == null)
+            userId = headerUserId;
+        if (email == null)
+            email = headerEmail;
 
-		UserProfileResponseDto response;
-		try {
-			response = userProfileService.getProfileByUserId(userId);
-		} catch (Exception e) {
-			if (email != null && !email.trim().isEmpty()) {
-				log.info("Profile not found by userId, attempting fallback with email: {}", email);
-				response = userProfileService.getProfileByEmail(email);
-			} else {
-				throw e;
-			}
-		}
+        if (userId == null && (email == null || email.isEmpty())) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unidentified user");
+        }
+        log.info("Fetching profile for userId: {} (fallback email: {})", userId, email);
 
-		return ResponseEntity
-				.ok(new ApiResponse<>(
-						true,
-						"Profile fetched successfully",
-						response,
-						200));
-	}
+        UserProfileResponseDto response;
+        try {
+            response = userProfileService.getProfileByUserId(userId);
+        } catch (Exception e) {
+            if (email != null && !email.trim().isEmpty()) {
+                log.info("Profile not found by userId, attempting fallback with email: {}", email);
+                response = userProfileService.getProfileByEmail(email);
+            } else {
+                throw e;
+            }
+        }
 
-	/**
-	 * GET /api/user/profile/{userId}
-	 * Get any user's profile (public view)
-	 */
-	@GetMapping("/profile/{userId}")
-	@Operation(summary = "Get user profile by ID", description = "Retrieve the profile of any user (public view)")
-	@ApiResponses(value = {
-			@io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Profile fetched successfully"),
-			@io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "User profile not found")
-	})
-	public ResponseEntity<ApiResponse<UserProfileResponseDto>> getUserProfile(
-			@PathVariable Long userId) {
+        return ResponseEntity
+                .ok(new ApiResponse<>(
+                        true,
+                        "Profile fetched successfully",
+                        response,
+                        200));
+    }
 
-		log.info("Fetching public profile for userId: {}", userId);
+    /**
+     * GET /api/user/profile/{userId}
+     * Get any user's profile (public view)
+     */
+    @GetMapping("/profile/{userId}")
+    @Operation(summary = "Get user profile by ID", description = "Retrieve the profile of any user (public view)")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Profile fetched successfully"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "User profile not found")
+    })
+    public ResponseEntity<ApiResponse<UserProfileResponseDto>> getUserProfile(
+            @PathVariable Long userId) {
 
-		UserProfileResponseDto response;
-		try {
-			response = userProfileService.getProfileByUserId(userId);
-		} catch (Exception e) {
-			log.warn("Public profile for userId={} not found. Returning placeholder.", userId);
-			UserProfileResponseDto placeholder = new UserProfileResponseDto();
-			placeholder.setUserId(userId);
-			placeholder.setUsername("User " + userId);
-			placeholder.setName("Unknown User");
-			placeholder.setEmail("unknown@skillsync.com");
-			placeholder.setBio("Profile details are currently unavailable.");
-			response = placeholder;
-		}
+        log.info("Fetching public profile for userId: {}", userId);
 
-		return ResponseEntity
-				.ok(new ApiResponse<>(
-						true,
-						"Profile fetched successfully",
-						response,
-						200));
-	}
+        UserProfileResponseDto response;
+        try {
+            response = userProfileService.getProfileByUserId(userId);
+        } catch (Exception e) {
+            log.warn("Public profile for userId={} not found. Returning placeholder.", userId);
+            UserProfileResponseDto placeholder = new UserProfileResponseDto();
+            placeholder.setUserId(userId);
+            placeholder.setUsername("User " + userId);
+            placeholder.setName("Unknown User");
+            placeholder.setEmail("unknown@skillsync.com");
+            placeholder.setBio("Profile details are currently unavailable.");
+            response = placeholder;
+        }
 
-	/**
-	 * PUT /api/user/profile
-	 * Update user's profile
-	 */
-	@PutMapping("/profile")
-	@Operation(summary = "Update user profile", description = "Update the profile of the authenticated user")
-	@ApiResponses(value = {
-			@io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Profile updated successfully"),
-			@io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid request body"),
-			@io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Unauthorized - JWT token missing or invalid"),
-			@io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "User profile not found")
-	})
-	@SecurityRequirement(name = "bearerAuth")
-	public ResponseEntity<ApiResponse<UserProfileResponseDto>> updateProfile(
-			@Parameter(hidden = true) @RequestHeader("X-User-Id") Long headerUserId,
-			@Parameter(hidden = true) @RequestHeader(value = "loggedInUser", required = false) String headerEmail,
-			@Parameter(hidden = true) @RequestHeader(value = "roles", required = false) String roles,
-			@Valid @RequestBody UpdateProfileRequestDto requestDto,
-			HttpServletRequest request) {
+        return ResponseEntity
+                .ok(new ApiResponse<>(
+                        true,
+                        "Profile fetched successfully",
+                        response,
+                        200));
+    }
 
-		// 1. Robust identification from JWT
-		Long userId = securityUtil.extractUserId(request);
-		String email = securityUtil.extractEmail(request);
-		
-		// Fallback to headers (only if secure/internal)
-		if (userId == null) userId = headerUserId;
-		if (email == null) email = headerEmail;
+    /**
+     * PUT /api/user/profile
+     * Update user's profile
+     */
+    @PutMapping("/profile")
+    @Operation(summary = "Update user profile", description = "Update the profile of the authenticated user")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Profile updated successfully"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid request body"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Unauthorized - JWT token missing or invalid"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "User profile not found")
+    })
+    @SecurityRequirement(name = "bearerAuth")
+    public ResponseEntity<ApiResponse<UserProfileResponseDto>> updateProfile(
+            @Parameter(hidden = true) @RequestHeader("X-User-Id") Long headerUserId,
+            @Parameter(hidden = true) @RequestHeader(value = "loggedInUser", required = false) String headerEmail,
+            @Parameter(hidden = true) @RequestHeader(value = "roles", required = false) String roles,
+            @Valid @RequestBody UpdateProfileRequestDto requestDto,
+            HttpServletRequest request) {
 
-		if (userId == null && (email == null || email.isEmpty())) {
-			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unidentified user");
-		}
+        // 1. Robust identification from JWT
+        Long userId = securityUtil.extractUserId(request);
+        String email = securityUtil.extractEmail(request);
 
-		log.info("Updating profile for userId: {} (email: {})", userId, email);
+        // Fallback to headers (only if secure/internal)
+        if (userId == null)
+            userId = headerUserId;
+        if (email == null)
+            email = headerEmail;
 
-		UserProfileResponseDto response;
-		try {
-			if (userId != null) {
-				response = userProfileService.updateProfile(userId, requestDto);
-			} else {
-				// We have email but no ID (possibly older OAuth token format)
-				UserProfileResponseDto existing = userProfileService.getProfileByEmail(email);
-				response = userProfileService.updateProfile(existing.getUserId(), requestDto);
-			}
-		} catch (Exception e) {
-			if (email != null && !email.trim().isEmpty()) {
-				log.info("Profile update retry by email: {}", email);
-				UserProfileResponseDto profileByEmail = userProfileService.getProfileByEmail(email);
-				response = userProfileService.updateProfile(profileByEmail.getUserId(), requestDto);
-			} else {
-				throw e;
-			}
-		}
+        if (userId == null && (email == null || email.isEmpty())) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unidentified user");
+        }
 
-		return ResponseEntity
-				.ok(new ApiResponse<>(
-						true,
-						"Profile updated successfully",
-						response,
-						200));
-	}
+        log.info("Updating profile for userId: {} (email: {})", userId, email);
 
-	/**
-	 * POST /user/internal/users
-	 * Internal endpoint for creating profile after registration
-	 * Called by Auth Service via Feign
-	 * Accepts userId, email, username - password is NOT stored here
-	 */
-	@PostMapping("/internal/users")
-	public ResponseEntity<Void> createUserProfile(
-			@RequestBody java.util.Map<String, Object> userData) {
+        UserProfileResponseDto response;
+        try {
+            if (userId != null) {
+                response = userProfileService.updateProfile(userId, requestDto);
+            } else {
+                // We have email but no ID (possibly older OAuth token format)
+                UserProfileResponseDto existing = userProfileService.getProfileByEmail(email);
+                response = userProfileService.updateProfile(existing.getUserId(), requestDto);
+            }
+        } catch (Exception e) {
+            if (email != null && !email.trim().isEmpty()) {
+                log.info("Profile update retry by email: {}", email);
+                UserProfileResponseDto profileByEmail = userProfileService.getProfileByEmail(email);
+                response = userProfileService.updateProfile(profileByEmail.getUserId(), requestDto);
+            } else {
+                throw e;
+            }
+        }
 
-		try {
-			// Safer extraction with null checks
-			if (userData == null || userData.isEmpty()) {
-				log.error("Empty or null userData received");
-				return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-			}
+        return ResponseEntity
+                .ok(new ApiResponse<>(
+                        true,
+                        "Profile updated successfully",
+                        response,
+                        200));
+    }
 
-			Object userIdObj = userData.get("userId");
-			if (userIdObj == null) {
-				log.error("userId is null in userData");
-				return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-			}
+    /**
+     * POST /user/internal/users
+     * Internal endpoint for creating profile after registration
+     * Called by Auth Service via Feign
+     * Accepts userId, email, username - password is NOT stored here
+     */
+    @PostMapping("/internal/users")
+    public ResponseEntity<Void> createUserProfile(
+            @RequestBody java.util.Map<String, Object> userData) {
 
-			Long userId = ((Number) userIdObj).longValue();
-			String email = (String) userData.get("email");
-			String username = (String) userData.get("username");
+        try {
+            // Safer extraction with null checks
+            if (userData == null || userData.isEmpty()) {
+                log.error("Empty or null userData received");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+            }
 
-			if (userId == null || email == null) {
-				log.error("Missing required fields: userId={}, email={}", userId, email);
-				return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-			}
+            Object userIdObj = userData.get("userId");
+            if (userIdObj == null) {
+                log.error("userId is null in userData");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+            }
 
-			log.info("Creating user profile for userId: {} with email: {}, username: {}", userId, email, username);
+            Long userId = ((Number) userIdObj).longValue();
+            String email = (String) userData.get("email");
+            String username = (String) userData.get("username");
 
-			// Check if profile already exists
-			try {
-				if (userProfileService.getProfileByUserId(userId) != null) {
-					log.warn("UserProfile already exists for userId: {}", userId);
-					return ResponseEntity.ok().build();
-				}
-			} catch (Exception e) {
-				// Profile doesn't exist, proceed with creation
-			}
+            if (userId == null || email == null) {
+                log.error("Missing required fields: userId={}, email={}", userId, email);
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+            }
 
-			// Create new UserProfile via service
-			userProfileService.createProfile(userId, email, username);
-			log.info("UserProfile created successfully for userId: {}", userId);
+            log.info("Creating user profile for userId: {} with email: {}, username: {}", userId, email, username);
 
-			return ResponseEntity.status(HttpStatus.CREATED).build();
+            // Check if profile already exists
+            try {
+                if (userProfileService.getProfileByUserId(userId) != null) {
+                    log.warn("UserProfile already exists for userId: {}", userId);
+                    return ResponseEntity.ok().build();
+                }
+            } catch (Exception e) {
+                // Profile doesn't exist, proceed with creation
+            }
 
-		} catch (NullPointerException e) {
-			log.error("NullPointerException creating user profile: {}", e.getMessage());
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-		} catch (Exception e) {
-			log.error("Error creating user profile: {}", e.getMessage(), e);
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-		}
-	}
+            // Create new UserProfile via service
+            userProfileService.createProfile(userId, email, username);
+            log.info("UserProfile created successfully for userId: {}", userId);
 
-	/**
-	 * GET /internal/users/{userId}
-	 * Internal endpoint for service-to-service communication (bypasses gateway filter)
-	 */
-	@GetMapping("/internal/users/{userId}")
-	@Operation(summary = "Internal endpoint: Get user profile", description = "Internal service-to-service endpoint for fetching user profile")
-	public ResponseEntity<ApiResponse<UserProfileResponseDto>> getInternalUserProfile(
-			@PathVariable Long userId) {
+            return ResponseEntity.status(HttpStatus.CREATED).build();
 
-		log.info("Internal: Fetching profile for userId: {}", userId);
+        } catch (NullPointerException e) {
+            log.error("NullPointerException creating user profile: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        } catch (Exception e) {
+            log.error("Error creating user profile: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
 
-		UserProfileResponseDto response = userProfileService.getProfileByUserId(userId);
+    /**
+     * GET /internal/users/{userId}
+     * Internal endpoint for service-to-service communication (bypasses gateway
+     * filter)
+     */
+    @GetMapping("/internal/users/{userId}")
+    @Operation(summary = "Internal endpoint: Get user profile", description = "Internal service-to-service endpoint for fetching user profile")
+    public ResponseEntity<ApiResponse<UserProfileResponseDto>> getInternalUserProfile(
+            @PathVariable Long userId) {
 
-		return ResponseEntity
-				.ok(new ApiResponse<>(
-						true,
-						"Profile fetched successfully",
-						response,
-						200));
-	}
+        log.info("Internal: Fetching profile for userId: {}", userId);
 
+        UserProfileResponseDto response = userProfileService.getProfileByUserId(userId);
+
+        return ResponseEntity
+                .ok(new ApiResponse<>(
+                        true,
+                        "Profile fetched successfully",
+                        response,
+                        200));
+    }
+
+    /**
+     * GET /api/user/admin/users
+     * Get all profiles (Admin only)
+     */
+    @GetMapping("/admin/users")
+    @Operation(summary = "Get all user profiles", description = "Retrieve a listing of all inhabitants (Admin only)")
+    @SecurityRequirement(name = "bearerAuth")
+    public ResponseEntity<ApiResponse<java.util.List<UserProfileResponseDto>>> getAllProfiles(
+            HttpServletRequest request) {
+
+        String roles = securityUtil.extractRoles(request);
+        if (roles == null || !roles.contains("ROLE_ADMIN")) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied. Admin only.");
+        }
+
+        return ResponseEntity
+                .ok(new ApiResponse<>(true, "All profiles fetched", userProfileService.getAllProfiles(), 200));
+    }
+
+    /**
+     * PUT /api/user/admin/role
+     * Change user role (Admin only)
+     */
+    @PutMapping("/admin/role")
+    @Operation(summary = "Change user role", description = "Promote or demote inhabitant rank (Admin only)")
+    @SecurityRequirement(name = "bearerAuth")
+    public ResponseEntity<ApiResponse<UserProfileResponseDto>> changeRole(
+            @RequestParam Long userId,
+            @RequestParam String newRole,
+            @RequestParam String reason,
+            HttpServletRequest request) {
+
+        String roles = securityUtil.extractRoles(request);
+        if (roles == null || !roles.contains("ROLE_ADMIN")) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied. Admin only.");
+        }
+
+        return ResponseEntity.ok(
+                new ApiResponse<>(true, "Role updated", userProfileService.changeRole(userId, newRole, reason), 200));
+    }
+
+    /**
+     * PUT /api/user/admin/status
+     * Block/Unblock user (Admin only)
+     */
+    @PutMapping("/admin/status")
+    @Operation(summary = "Update user status", description = "Block or activate inhabitant status (Admin only)")
+    @SecurityRequirement(name = "bearerAuth")
+    public ResponseEntity<ApiResponse<UserProfileResponseDto>> updateStatus(
+            @RequestParam Long userId,
+            @RequestParam String newStatus,
+            @RequestParam String reason,
+            HttpServletRequest request) {
+
+        String roles = securityUtil.extractRoles(request);
+        if (roles == null || !roles.contains("ROLE_ADMIN")) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied. Admin only.");
+        }
+
+        return ResponseEntity.ok(new ApiResponse<>(true, "Status updated",
+                userProfileService.updateStatus(userId, newStatus, reason), 200));
+    }
+
+    /**
+     * GET /api/user/admin/audit-logs
+     * Get audit feed (Admin only)
+     */
+    @GetMapping("/admin/audit-logs")
+    @Operation(summary = "Get audit logs", description = "Retrieve administrative activity feed (Admin only)")
+    @SecurityRequirement(name = "bearerAuth")
+    public ResponseEntity<ApiResponse<java.util.List<com.skillsync.user.entity.AuditLog>>> getAuditLogs(
+            HttpServletRequest request) {
+
+        String roles = securityUtil.extractRoles(request);
+        if (roles == null || !roles.contains("ROLE_ADMIN")) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied. Admin only.");
+        }
+
+        return ResponseEntity.ok(new ApiResponse<>(true, "Audit logs fetched", userProfileService.getAuditLogs(), 200));
+    }
+
+    /**
+     * GET /api/user/admin/stats
+     * Get matrix distribution (Admin only)
+     */
+    @GetMapping("/admin/stats")
+    @Operation(summary = "Get system stats", description = "Retrieve operational metrics (Admin only)")
+    @SecurityRequirement(name = "bearerAuth")
+    public ResponseEntity<ApiResponse<com.skillsync.user.dto.response.SystemStatsResponse>> getSystemStats(
+            HttpServletRequest request) {
+
+        String roles = securityUtil.extractRoles(request);
+        if (roles == null || !roles.contains("ROLE_ADMIN")) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied. Admin only.");
+        }
+
+        return ResponseEntity.ok(new ApiResponse<>(true, "Stats fetched", userProfileService.getSystemStats(), 200));
+    }
+
+    /**
+     * POST /api/user/admin/bulk-update
+     * Batch operations (Admin only)
+     */
+    @PostMapping("/admin/bulk-update")
+    @Operation(summary = "Bulk update inhabitants", description = "Process batch changes (Admin only)")
+    @SecurityRequirement(name = "bearerAuth")
+    public ResponseEntity<ApiResponse<String>> bulkUpdate(
+            @RequestBody com.skillsync.user.dto.request.BulkUpdateRequest request,
+            HttpServletRequest httpRequest) {
+
+        String roles = securityUtil.extractRoles(httpRequest);
+        if (roles == null || !roles.contains("ROLE_ADMIN")) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied. Admin only.");
+        }
+
+        userProfileService.processBulkUpdate(request);
+        return ResponseEntity.ok(new ApiResponse<>(true, "Bulk update processed", null, 200));
+    }
+
+    @GetMapping("/admin/notifications")
+    @Operation(summary = "Get unread admin notifications", description = "Retrieve pending administrative alerts (Admin only)")
+    @SecurityRequirement(name = "bearerAuth")
+    public ResponseEntity<ApiResponse<java.util.List<com.skillsync.user.entity.AdminNotification>>> getNotifications(
+            HttpServletRequest request) {
+
+        String roles = securityUtil.extractRoles(request);
+        if (roles == null || !roles.contains("ROLE_ADMIN")) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied. Admin only.");
+        }
+
+        return ResponseEntity.ok(new ApiResponse<>(true, "Notifications fetched", userProfileService.getUnreadNotifications(), 200));
+    }
+
+    @PutMapping("/admin/notifications/{id}/read")
+    @Operation(summary = "Mark notification as read", description = "Dismiss an administrative alert (Admin only)")
+    @SecurityRequirement(name = "bearerAuth")
+    public ResponseEntity<ApiResponse<Void>> markAsRead(
+            @PathVariable Long id,
+            HttpServletRequest request) {
+
+        String roles = securityUtil.extractRoles(request);
+        if (roles == null || !roles.contains("ROLE_ADMIN")) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied. Admin only.");
+        }
+
+        userProfileService.markNotificationAsRead(id);
+        return ResponseEntity.ok(new ApiResponse<>(true, "Alert dismissed", null, 200));
+    }
+
+    @GetMapping("/profile-by-email")
+    public ResponseEntity<UserProfileResponseDto> getProfileByEmail(@RequestParam String email) {
+        return ResponseEntity.ok(userProfileService.getProfileByEmail(email));
+    }
 }

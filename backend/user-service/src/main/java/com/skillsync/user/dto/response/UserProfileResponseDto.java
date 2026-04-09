@@ -14,18 +14,21 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class UserProfileResponseDto {
 
-	private Long id;
-	private Long userId;
-	private String username;
-	private String email;
-	private String name;
-	private String bio;
-	private String phoneNumber;
-	private String profileImageUrl;
-	private String skills;
-	private Double rating;
-	private Integer totalReviews;
-	private Boolean isProfileComplete;
-	private LocalDateTime createdAt;
-	private LocalDateTime updatedAt;
+    private Long id;
+    private Long userId;
+    private String username;
+    private String email;
+    private String name;
+    private String bio;
+    private String phoneNumber;
+    private String profileImageUrl;
+    private String skills;
+    private Double rating;
+    private Integer totalReviews;
+    private Boolean isProfileComplete;
+    private String status;
+    private String role;
+    private String statusReason;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 }

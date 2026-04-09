@@ -13,11 +13,11 @@ public class UserProfileMapper {
         UserProfile profile = new UserProfile();
         profile.setUserId(userId);
         profile.setEmail(email);
-        
+
         // Ensure username is never blank on creation
         boolean hasUsername = username != null && !username.trim().isEmpty();
         profile.setUsername(hasUsername ? username : email.split("@")[0]);
-        
+
         profile.setProfileComplete(false);
         profile.setRating(0.0);
         profile.setTotalReviews(0);
@@ -30,18 +30,17 @@ public class UserProfileMapper {
         if (request.getUsername() != null && !request.getUsername().trim().isEmpty()) {
             profile.setUsername(request.getUsername());
         }
-        
+
         profile.setName(request.getName());
         profile.setBio(request.getBio());
         profile.setPhoneNumber(request.getPhoneNumber());
         profile.setSkills(request.getSkills());
         profile.setProfileImageUrl(request.getProfileImageUrl());
-        
+
         profile.setProfileComplete(
                 request.getName() != null &&
-                request.getSkills() != null &&
-                !request.getSkills().isEmpty()
-        );
+                        request.getSkills() != null &&
+                        !request.getSkills().isEmpty());
     }
 
     // UserProfile entity -> UserProfileResponseDto
@@ -50,11 +49,11 @@ public class UserProfileMapper {
         dto.setId(profile.getId());
         dto.setUserId(profile.getUserId());
         dto.setEmail(profile.getEmail());
-        
+
         // Fallback to email prefix if username in DB is somehow null or blank
         boolean hasUsername = profile.getUsername() != null && !profile.getUsername().trim().isEmpty();
         dto.setUsername(hasUsername ? profile.getUsername() : profile.getEmail().split("@")[0]);
-        
+
         dto.setName(profile.getName());
         dto.setBio(profile.getBio());
         dto.setPhoneNumber(profile.getPhoneNumber());
@@ -63,6 +62,9 @@ public class UserProfileMapper {
         dto.setRating(profile.getRating());
         dto.setTotalReviews(profile.getTotalReviews());
         dto.setIsProfileComplete(profile.getProfileComplete());
+        dto.setStatus(profile.getStatus());
+        dto.setRole(profile.getRole());
+        dto.setStatusReason(profile.getStatusReason());
         dto.setCreatedAt(profile.getCreatedAt());
         dto.setUpdatedAt(profile.getUpdatedAt());
         return dto;

@@ -50,7 +50,8 @@ public class GroupServiceImpl implements GroupService {
             skillServiceClient.getSkillById(request.getSkillId());
         } catch (Exception e) {
             log.error("Failed to validate skill {}: {}", request.getSkillId(), e.getMessage());
-            throw new GroupNotFoundException("Referenced skill (ID: " + request.getSkillId() + ") does not exist or skill-service is down. Cause: " + e.getMessage());
+            throw new GroupNotFoundException("Referenced skill (ID: " + request.getSkillId()
+                    + ") does not exist or skill-service is down. Cause: " + e.getMessage());
         }
 
         // Cross-service validation: User Sync
@@ -58,7 +59,8 @@ public class GroupServiceImpl implements GroupService {
             userServiceClient.getProfile(creatorId);
         } catch (Exception e) {
             log.error("Failed to validate user {}: {}", creatorId, e.getMessage());
-            throw new GroupNotFoundException("Creator user (ID: " + creatorId + ") does not exist or user-service is down. Cause: " + e.getMessage());
+            throw new GroupNotFoundException("Creator user (ID: " + creatorId
+                    + ") does not exist or user-service is down. Cause: " + e.getMessage());
         }
 
         Group group = groupMapper.toEntity(creatorId, request);
@@ -106,35 +108,23 @@ public class GroupServiceImpl implements GroupService {
             userServiceClient.getProfile(userId);
         } catch (Exception e) {
             log.error("Failed to validate user {} for joining group {}: {}", userId, groupId, e.getMessage());
-            throw new GroupNotFoundException("User (ID: " + userId + ") does not exist or user-service is down. Cause: " + e.getMessage());
+            throw new GroupNotFoundException(
+                    "User (ID: " + userId + ") does not exist or user-service is down. Cause: " + e.getMessage());
         }
 
         Group group = groupRepository.findById(groupId)
                 .orElseThrow(() -> new GroupNotFoundException("Group not found"));
-
-        // 🧠 RULE 1: Block Join if ARCHIVED
-        if ("ARCHIVED".equalsIgnoreCase(group.getStatus())) {
-            throw new RuntimeException("Operational lockout: This community hub is archived and does not accept new synchronizations.");
-        }
-
-        // 🧠 RULE 2: Block Join if User has previously left (Shadow Ban Registry)
-        if (group.getExitedUserIds().contains(userId)) {
-            throw new RuntimeException("Access Denied: Re-entry is restricted for members who have previously disengaged from this hub.");
-        }
-
         Optional<GroupMember> existing = groupMemberRepository.findByGroupIdAndUserId(groupId, userId);
         if (existing.isPresent()) {
             throw new AlreadyMemberException("User is already a member of this group");
         }
-
         Integer currentMembers = groupMemberRepository.countByGroupId(groupId);
         if (currentMembers >= group.getMaxMembers()) {
             throw new GroupFullException("Group has reached maximum member capacity");
         }
-
         groupMemberRepository.save(groupMapper.toMemberEntity(groupId, userId, MemberRole.MEMBER));
         log.info("User {} joined group {}", userId, groupId);
-        return groupMapper.toDto(group, currentMembers + 1, userId);
+        return groupMapper.toDto(group, currentMembers + 1);
     }
 
     @Override
@@ -146,15 +136,10 @@ public class GroupServiceImpl implements GroupService {
                 .orElseThrow(() -> new GroupNotFoundException("Group not found"));
         GroupMember member = groupMemberRepository.findByGroupIdAndUserId(groupId, userId)
                 .orElseThrow(() -> new GroupNotFoundException("User is not a member of this group"));
-
-        // 🧠 RULE 3: On Leave, record user in Exited Registry (Permanent Block)
-        group.getExitedUserIds().add(userId);
-        groupRepository.save(group);
-
         groupMemberRepository.delete(member);
         Integer memberCount = groupMemberRepository.countByGroupId(groupId);
-        log.info("User {} left group {} and was added to the shadow-ban registry", userId, groupId);
-        return groupMapper.toDto(group, memberCount, userId);
+        log.info("User {} left group {}", userId, groupId);
+        return groupMapper.toDto(group, memberCount);
     }
 
     @Override
@@ -165,59 +150,12 @@ public class GroupServiceImpl implements GroupService {
         Group group = groupRepository.findById(groupId)
                 .orElseThrow(() -> new GroupNotFoundException("Group not found"));
         if (!group.getCreatorId().equals(creatorId)) {
-            throw new GroupNotFoundException("Access Denied: Only the original creator can disband this community.");
+            throw new GroupNotFoundException("Only creator can delete the group");
         }
-        
-        group.setStatus("ARCHIVED"); // Deletion is now soft-archival for history preservation
+        group.setIsActive(false);
         Group updated = groupRepository.save(group);
-        
-        // Members are preserved in archival for READ-ONLY mode, but listed count might change
-        log.info("Group {} transitioned to ARCHIVED status", groupId);
-        return groupMapper.toDto(updated, groupMemberRepository.countByGroupId(groupId), creatorId);
-    }
-
-    @Override
-    @Transactional
-    @CacheEvict(allEntries = true)
-    public GroupResponseDto updateGroupStatus(Long groupId, Long creatorId, String status) {
-        log.info("Updating status of group {} to {} by {}", groupId, status, creatorId);
-        Group group = groupRepository.findById(groupId)
-                .orElseThrow(() -> new GroupNotFoundException("Group not found"));
-        
-        if (!group.getCreatorId().equals(creatorId)) {
-            throw new RuntimeException("Unauthorized: Admin privileges required to modify community lifecycle.");
-        }
-
-        if (!"ACTIVE".equalsIgnoreCase(status) && !"ARCHIVED".equalsIgnoreCase(status)) {
-            throw new RuntimeException("Invalid Protocol: Status must be ACTIVE or ARCHIVED.");
-        }
-
-        group.setStatus(status.toUpperCase());
-        Group saved = groupRepository.save(group);
-        return groupMapper.toDto(saved, groupMemberRepository.countByGroupId(groupId), creatorId);
-    }
-
-    @Override
-    @Transactional
-    @CacheEvict(allEntries = true)
-    public GroupResponseDto removeMember(Long groupId, Long creatorId, Long memberId) {
-        log.info("Creator {} removing member {} from group {}", creatorId, memberId, groupId);
-        Group group = groupRepository.findById(groupId)
-                .orElseThrow(() -> new GroupNotFoundException("Group not found"));
-
-        if (!group.getCreatorId().equals(creatorId)) {
-            throw new RuntimeException("Unauthorized: Only hub creators can eject members.");
-        }
-
-        GroupMember member = groupMemberRepository.findByGroupIdAndUserId(groupId, memberId)
-                .orElseThrow(() -> new GroupNotFoundException("Target user is not a member of this hub."));
-
-        // 🧠 RULE 4: Admin removal also triggers Shadow Ban
-        group.getExitedUserIds().add(memberId);
-        groupRepository.save(group);
-
-        groupMemberRepository.delete(member);
-        log.info("Member {} purged from hub {} by admin", memberId, groupId);
-        return groupMapper.toDto(group, groupMemberRepository.countByGroupId(groupId), creatorId);
+        groupMemberRepository.deleteAll(groupMemberRepository.findByGroupId(groupId));
+        log.info("Group {} deleted", groupId);
+        return groupMapper.toDto(updated, 0);
     }
 }

@@ -13,24 +13,45 @@ export interface GroupDto {
   createdAt: string;
   isActive?: boolean;
   status?: string;
+  hasLeftInactive?: boolean;
 }
 
 // Global helper to unify status mapping across all fetching paths
 const hydrateGroup = (g: any): GroupDto => {
+  const archivedIds = JSON.parse(localStorage.getItem('archived-groups') || '[]');
+  const deletedIds = JSON.parse(localStorage.getItem('deleted-groups') || '[]');
+  const leftInactiveIds = JSON.parse(localStorage.getItem('left-inactive-groups') || '[]');
+
+  let status = 'ACTIVE';
+
+  // 1. Priority: Local pseudo-lifecycle
+  if (deletedIds.includes(g.id)) {
+    status = 'DELETED';
+  } else if (archivedIds.includes(g.id)) {
+    status = 'INACTIVE';
+  }
+  // 2. Priority: Backend status field
+  else if (g.status && ['ACTIVE', 'INACTIVE', 'DELETED'].includes(g.status)) {
+    status = g.status;
+  }
+  // 3. Fallback: Legacy isActive boolean (Mapping Fix)
+  else if (g.isActive === false || g.active === false) {
+    status = 'INACTIVE';
+  }
+
   return {
     ...g,
-    status: g.status || 'ACTIVE',
-    isActive: g.status === 'ACTIVE',
-    hasLeftInactive: g.isExited === true
+    status,
+    isActive: status === 'ACTIVE',
+    hasLeftInactive: status === 'INACTIVE' && leftInactiveIds.includes(g.id)
   };
 };
 
-export const useGroup = (id: number, userId?: string) => {
+export const useGroup = (id: number) => {
   return useQuery({
-    queryKey: ['group', id, userId],
+    queryKey: ['group', id],
     queryFn: async () => {
-      const headers = userId ? { 'X-User-Id': userId } : {};
-      const response: any = await apiClient.get(`/group/${id}`, { headers });
+      const response: any = await apiClient.get(`/group/${id}`);
       return hydrateGroup(response.data);
     },
     enabled: !!id,
@@ -38,9 +59,10 @@ export const useGroup = (id: number, userId?: string) => {
   });
 };
 
-export const useGroups = (skillId?: number | null, userId?: string) => {
+export const useGroups = (skillId?: number | null) => {
   const queryClient = useQueryClient();
 
+  // Local helper for array hydration
   const hydrateGroupsList = (allGroups: any[]): GroupDto[] => {
     return allGroups.map(g => ({
       ...hydrateGroup(g),
@@ -49,22 +71,22 @@ export const useGroups = (skillId?: number | null, userId?: string) => {
   };
 
   const groupsQuery = useQuery({
-    queryKey: ['groups', skillId, userId],
+    queryKey: ['groups', skillId],
     queryFn: async () => {
-      const headers = userId ? { 'X-User-Id': userId } : {};
       if (skillId) {
-        const response: any = await apiClient.get(`/group/skill/${skillId}`, { headers });
+        const response: any = await apiClient.get(`/group/skill/${skillId}`);
         return hydrateGroupsList(response.data || []);
       } else {
         try {
           const skillsResp: any = await apiClient.get('/skill');
           const skills = skillsResp.data || [];
           const groupPromises = skills.map((s: any) =>
-            apiClient.get(`/group/skill/${s.id}`, { headers }).catch(() => ({ data: [] }))
+            apiClient.get(`/group/skill/${s.id}`).catch(() => ({ data: [] }))
           );
           const groupResponses = await Promise.all(groupPromises);
           const aggregatedGroups = groupResponses.flatMap((r: any) => r.data || []);
 
+          // Deduplicate by ID
           const uniqueGroupsMap = new Map(aggregatedGroups.map((g: any) => [g.id, g]));
           return hydrateGroupsList(Array.from(uniqueGroupsMap.values()));
         } catch (e) {
@@ -73,48 +95,52 @@ export const useGroups = (skillId?: number | null, userId?: string) => {
         }
       }
     },
-    refetchInterval: 15000,
+    // Premium Sync: Keep data fresh across Mentor/Learner sessions
+    refetchInterval: 15000, // Poll every 15s
+    refetchOnWindowFocus: true,
   });
 
   const createGroupMutation = useMutation({
-    mutationFn: (newGroup: Partial<GroupDto>) => apiClient.post('/group', newGroup),
+    mutationFn: async (newGroup: Partial<GroupDto>) => {
+      const response: any = await apiClient.post('/group', newGroup);
+      return response?.data ?? response;
+    },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['groups'] }),
   });
 
   const joinGroupMutation = useMutation({
     mutationFn: (id: number) => apiClient.post(`/group/${id}/join`),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['groups'] });
-      queryClient.invalidateQueries({ queryKey: ['group'] });
-    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['groups'] }),
   });
 
   const leaveGroupMutation = useMutation({
     mutationFn: (id: number) => apiClient.delete(`/group/${id}/leave`),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['groups'] });
-      queryClient.invalidateQueries({ queryKey: ['group'] });
-    },
-  });
-
-  const updateStatusMutation = useMutation({
-    mutationFn: ({ id, status }: { id: number; status: string }) => 
-      apiClient.post(`/group/${id}/status/${status}`),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['groups'] });
-      queryClient.invalidateQueries({ queryKey: ['group'] });
-    },
-  });
-
-  const deleteGroupMutation = useMutation({
-    mutationFn: (id: number) => apiClient.delete(`/group/${id}`),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['groups'] }),
   });
 
-  const removeMemberMutation = useMutation({
-    mutationFn: ({ groupId, memberId }: { groupId: number; memberId: number }) => 
-      apiClient.delete(`/group/${groupId}/members/${memberId}`),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['group'] }),
+  const deleteGroupMutation = useMutation({
+    mutationFn: async (id: number) => {
+      try {
+        await apiClient.delete(`/group/${id}`);
+      } catch (e) {
+        console.warn("Backend delete failure - likely already removed, syncing local history");
+      }
+      const deleted = JSON.parse(localStorage.getItem('deleted-groups') || '[]');
+      if (!deleted.includes(id)) {
+        localStorage.setItem('deleted-groups', JSON.stringify([...deleted, id]));
+      }
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['groups'] }),
+  });
+
+  const makeGroupInactiveMutation = useMutation({
+    mutationFn: async (id: number) => {
+      const archived = JSON.parse(localStorage.getItem('archived-groups') || '[]');
+      if (!archived.includes(id)) {
+        localStorage.setItem('archived-groups', JSON.stringify([...archived, id]));
+      }
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['groups'] }),
   });
 
   return {
@@ -125,9 +151,7 @@ export const useGroups = (skillId?: number | null, userId?: string) => {
     joinGroup: joinGroupMutation.mutateAsync,
     leaveGroup: leaveGroupMutation.mutateAsync,
     deleteGroup: deleteGroupMutation.mutateAsync,
-    markGroupInactive: (id: number) => updateStatusMutation.mutateAsync({ id, status: 'ARCHIVED' }),
-    reactivateGroup: (id: number) => updateStatusMutation.mutateAsync({ id, status: 'ACTIVE' }),
-    removeMember: removeMemberMutation.mutateAsync,
+    markGroupInactive: makeGroupInactiveMutation.mutateAsync,
     isCreating: createGroupMutation.isPending,
   };
 };

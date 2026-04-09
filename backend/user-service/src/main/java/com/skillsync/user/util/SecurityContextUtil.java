@@ -80,4 +80,22 @@ public class SecurityContextUtil {
             return false;
         }
     }
+
+    /**
+     * Extracts roles from the JWT claims
+     */
+    public String extractRoles(HttpServletRequest request) {
+        try {
+            Claims claims = extractClaims(request);
+            if (claims == null) return null;
+            
+            Object roles = claims.get("roles");
+            if (roles == null) roles = claims.get("authorities"); // Check alternative claim name
+            
+            return (roles != null) ? roles.toString() : "";
+        } catch (Exception e) {
+            log.error("Failed to extract roles from JWT: {}", e.getMessage());
+            return "";
+        }
+    }
 }

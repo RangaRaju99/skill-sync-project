@@ -14,8 +14,7 @@ public class GroupResponseDto {
     private Integer maxMembers;
     private Integer currentMembers;
     private String description;
-    private String status;
-    private Boolean isExited;
+    private Boolean isActive;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

@@ -111,7 +111,7 @@ export default function GroupsPage() {
     setIsCreating(true);
     try {
       const payload = { ...newGroup };
-      const g = await createGroup(payload);
+      const g: any = await createGroup(payload);
 
       if (g && g.id) {
         const updated = [...joinedGroupIds, g.id];
@@ -177,7 +177,7 @@ export default function GroupsPage() {
         : [];
 
       if (mentorProfile?.specialization) {
-        userSkillsMap.push(...mentorProfile.specialization.split(',').map(s => s.trim().toLowerCase()).filter(Boolean));
+        userSkillsMap.push(...mentorProfile.specialization.split(',').map((s: string) => s.trim().toLowerCase()).filter(Boolean));
       }
 
       try {

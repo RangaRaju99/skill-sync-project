@@ -123,6 +123,14 @@ export const useSessions = () => {
         onSuccess: () => queryClient.invalidateQueries({ queryKey: ['sessions'] }),
     });
 
+    const requestSessionMutation = useMutation({
+        mutationFn: async (req: RequestSessionRequest) => {
+            const response: any = await apiClient.post('/session', req);
+            return response?.data ?? response;
+        },
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: ['sessions'] }),
+    });
+
     return {
         sessions: sessionQuery.data || [],
         mentorSessions: sessionQuery.data || [],  
@@ -131,5 +139,6 @@ export const useSessions = () => {
         acceptSession: acceptMutation.mutateAsync,
         rejectSession: rejectMutation.mutateAsync,
         cancelSession: cancelMutation.mutateAsync,
+        requestSession: requestSessionMutation.mutateAsync,
     };
 };

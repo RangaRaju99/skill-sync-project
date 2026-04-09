@@ -18,7 +18,7 @@ public class GroupMapper {
         group.setSkillId(request.getSkillId());
         group.setMaxMembers(request.getMaxMembers());
         group.setDescription(request.getDescription());
-        group.setStatus("ACTIVE");
+        group.setIsActive(true);
         return group;
     }
 
@@ -33,10 +33,6 @@ public class GroupMapper {
 
     // Group entity + memberCount -> GroupResponseDto
     public GroupResponseDto toDto(Group group, Integer memberCount) {
-        return toDto(group, memberCount, null);
-    }
-
-    public GroupResponseDto toDto(Group group, Integer memberCount, Long userId) {
         return GroupResponseDto.builder()
                 .id(group.getId())
                 .creatorId(group.getCreatorId())
@@ -45,8 +41,7 @@ public class GroupMapper {
                 .maxMembers(group.getMaxMembers())
                 .currentMembers(memberCount != null ? memberCount : 0)
                 .description(group.getDescription())
-                .status(group.getStatus())
-                .isExited(userId != null && group.getExitedUserIds().contains(userId))
+                .isActive(group.getIsActive())
                 .createdAt(group.getCreatedAt())
                 .updatedAt(group.getUpdatedAt())
                 .build();

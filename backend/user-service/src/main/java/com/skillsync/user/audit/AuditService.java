@@ -1,5 +1,7 @@
 package com.skillsync.user.audit;
 
+import com.skillsync.user.entity.AuditLog;
+import com.skillsync.user.repository.AuditLogRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -16,12 +18,13 @@ public class AuditService {
 
     public void log(String entityName, Long entityId, String action, String performedBy, String details) {
         try {
-            AuditLog entry = new AuditLog();
-            entry.setEntityName(entityName);
-            entry.setEntityId(entityId);
-            entry.setAction(action);
-            entry.setPerformedBy(performedBy != null ? performedBy : "system");
-            entry.setDetails(details);
+            AuditLog entry = AuditLog.builder()
+                    .action(action)
+                    .performerEmail(performedBy != null ? performedBy : "system")
+                    .targetId(entityId)
+                    .targetType(entityName)
+                    .description(details)
+                    .build();
             auditLogRepository.save(entry);
             log.debug("[AUDIT] {} {} id={} by={}", action, entityName, entityId, performedBy);
         } catch (Exception e) {

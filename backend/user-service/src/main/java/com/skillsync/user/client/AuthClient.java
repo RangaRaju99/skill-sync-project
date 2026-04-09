@@ -18,6 +18,17 @@ public interface AuthClient {
     ResponseEntity<Void> updateUserProfile(
             @PathVariable("userId") Long userId,
             @RequestBody AuthProfileUpdateDTO updates,
-            @RequestHeader("X-Internal-Service") String internalService
-    );
+            @RequestHeader("X-Internal-Service") String internalService);
+
+    @PutMapping("/internal/users/{userId}/role")
+    ResponseEntity<Void> updateUserRole(
+            @PathVariable("userId") Long userId,
+            @RequestBody java.util.Map<String, String> roleData,
+            @RequestHeader("X-Internal-Service") String internalService);
+
+    @PutMapping("/internal/users/{userId}/status")
+    ResponseEntity<Void> updateUserStatus(
+            @PathVariable("userId") Long userId,
+            @RequestBody java.util.Map<String, Object> statusData,
+            @RequestHeader("X-Internal-Service") String internalService);
 }

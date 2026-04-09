@@ -1,6 +1,10 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { authService } from '@/services/auth.service';
+import { Zap, Mail, ArrowRight, AlertCircle } from 'lucide-react';
+import { Icon } from '../../../components/ui/Icon';
+import { Button } from '../../../components/ui/Button';
+import { Input } from '../../../components/ui/Input';
 
 export default function RegisterPage() {
   const navigate = useNavigate();
@@ -33,7 +37,7 @@ export default function RegisterPage() {
       <div className="hidden lg:flex relative bg-gradient-to-br from-primary-600 via-primary-700 to-indigo-800 items-center justify-center overflow-hidden p-12">
         <div className="relative z-10 text-white max-w-md">
           <div className="w-20 h-20 bg-white/10 rounded-[24px] flex items-center justify-center mb-8 backdrop-blur-xl border border-white/20 shadow-2xl">
-            <span className="text-4xl">⚡</span>
+            <Icon icon={Zap} size={40} className="text-white fill-white" />
           </div>
           <h1 className="text-5xl font-extrabold mb-3 tracking-tight">SkillSync</h1>
           <p className="text-xl text-primary-100 mb-12 font-medium">Join our mentor network today</p>
@@ -71,7 +75,7 @@ export default function RegisterPage() {
           
           {/* Mobile logo */}
           <div className="lg:hidden text-2xl font-extrabold text-primary-600 mb-8 flex items-center gap-2">
-            ⚡ SkillSync
+            <Icon icon={Zap} size={28} className="fill-primary-600" /> SkillSync
           </div>
 
           <div className="mb-10">
@@ -81,44 +85,31 @@ export default function RegisterPage() {
 
           <form onSubmit={handleRegister} className="space-y-6">
             
-            {/* Email */}
-            <div className="space-y-2">
-              <label className="text-[13px] font-bold text-foreground tracking-wide ml-1">Email address</label>
-              <div className={`flex items-center bg-surface border-[1.5px] rounded-xl px-4 h-14 transition-all ${emailFocused ? 'border-primary-500 ring-4 ring-primary-500/10' : 'border-border-color'} ${error ? 'border-red-500' : ''}`}>
-                <span className={`material-icons mr-3 transition-colors ${emailFocused ? 'text-primary-500' : 'text-muted'}`}>email</span>
-                <input 
-                  type="email" 
-                  name="email" 
-                  placeholder="you@example.com"
-                  onFocus={() => setEmailFocused(true)} 
-                  onBlur={() => setEmailFocused(false)} 
-                  className="flex-1 bg-transparent border-none text-[15px] font-medium text-foreground outline-none placeholder:text-muted/60"
-                  required
-                />
-              </div>
-            </div>
+             <Input 
+                label="Email address"
+                type="email" 
+                name="email" 
+                placeholder="you@example.com"
+                required
+                leftIcon={<Icon icon={Mail} size={20} />}
+                error={!!error}
+             />
 
             {error && (
-              <div className="flex items-center gap-2 bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-900/50 p-4 rounded-xl text-sm font-bold">
-                <span className="material-icons text-[18px]">error_outline</span>
+              <div className="flex items-center gap-2 bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-900/50 p-4 rounded-xl text-sm font-bold animate-shake">
+                <Icon icon={AlertCircle} size={18} />
                 {error}
               </div>
             )}
 
-            <button 
+            <Button 
               type="submit" 
-              className="w-full h-14 bg-gradient-to-r from-primary-600 to-indigo-600 hover:from-primary-700 hover:to-indigo-700 text-white rounded-xl text-base font-bold flex items-center justify-center gap-2 shadow-lg shadow-primary-600/30 dark:shadow-none hover:-translate-y-0.5 active:translate-y-0 transition-all disabled:opacity-70 disabled:cursor-not-allowed"
-              disabled={loading}
+              className="w-full h-14"
+              loading={loading}
+              rightIcon={<Icon icon={ArrowRight} size={20} />}
             >
-              {loading ? (
-                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-              ) : (
-                <>
-                  <span>Send OTP</span>
-                  <span className="material-icons text-[20px]">arrow_forward</span>
-                </>
-              )}
-            </button>
+              Send OTP
+            </Button>
           </form>
 
           <p className="text-center text-[15px] text-muted font-medium pt-8">
