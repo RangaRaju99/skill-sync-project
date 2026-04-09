@@ -39,6 +39,12 @@ public class MentorMapper {
                 .totalStudents(profile.getTotalStudents())
                 .availabilityStatus(profile.getAvailabilityStatus() != null
                         ? profile.getAvailabilityStatus().name() : null)
+                .bio(profile.getBio())
+                .riskScore(profile.getRiskScore())
+                .reportCount(profile.getReportCount())
+                .lastActive(profile.getLastActive())
+                .identityVerified(profile.getIdentityVerified())
+                .emailVerified(profile.getEmailVerified())
                 .createdAt(profile.getCreatedAt())
                 .updatedAt(profile.getUpdatedAt())
                 .build();

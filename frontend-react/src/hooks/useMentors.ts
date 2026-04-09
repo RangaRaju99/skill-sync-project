@@ -1,149 +1,210 @@
+import { useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import apiClient from '../services/apiClient';
 
-export interface MentorFilters {
-  skill?: string;
-  minExperience?: number | null;
-  maxExperience?: number | null;
-  maxRate?: number | null;
-  minRating?: number | null;
+export interface MentorProfile {
+    id: number;
+    userId: number;
+    name: string;
+    email: string;
+    roles: string;
+    status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'SUSPENDED';
+    isApproved: boolean;
+    approvedBy?: number;
+    approvalDate?: string;
+    specialization: string;
+    yearsOfExperience: number;
+    bio: string;
+    hourlyRate: number;
+    rating: number;
+    totalStudents: number;
+    availabilityStatus: 'AVAILABLE' | 'BUSY' | 'AWAY';
+    riskScore: number;
+    reportCount: number;
+    lastActive?: string;
+    identityVerified: boolean;
+    emailVerified: boolean;
+    createdAt: string;
+    updatedAt: string;
+    avatar?: string;
 }
 
-export interface MentorDto {
-  id: number;
-  userId: number;
-  specialization: string;
-  yearsOfExperience: number;
-  hourlyRate: number;
-  bio?: string;
-  isApproved?: boolean;
-  status?: string;
-  availabilityStatus?: string;
-  createdAt: string;
-}
-
-export const useMentor = (id: number) => {
-  return useQuery({
-    queryKey: ['mentor', id],
-    queryFn: async () => {
-      const response: any = await apiClient.get(`/mentor/${id}`);
-      const m = response?.data ?? response;
-      if (!m || !m.userId) return null;
-
-      try {
-        const userRes: any = await apiClient.get(`/user/profile/${m.userId}`);
-        const userProfile = userRes?.data ?? userRes;
-        return {
-          ...m,
-          name: userProfile?.name || userProfile?.username || `Mentor ${m.userId}`,
-          avatar: userProfile?.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${userProfile?.username || m.userId}`,
-        } as MentorDto & { name: string; avatar: string };
-      } catch (e) {
-        return {
-          ...m,
-          name: `Mentor ${m.userId}`,
-          avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${m.userId}`,
-        } as MentorDto & { name: string; avatar: string };
-      }
-    },
-    enabled: !!id,
-  });
+/**
+ * Public Mentor Hook
+ */
+export const useMentors = (filters: any = {}) => {
+    return useQuery({
+        queryKey: ['mentors', 'public', filters],
+        queryFn: async () => {
+            const response = await apiClient.get('/mentor/approved');
+            return response.data || response || [];
+        }
+    });
 };
 
-export const useMyMentorProfile = () => {
-  return useQuery({
-    queryKey: ['mentor', 'me'],
-    queryFn: async () => {
-      try {
-        // apiClient interceptor returns `response.data` (the ApiResponse wrapper object)
-        // ApiResponse structure: { success, data: MentorDto, message, statusCode }
-        // So the actual mentor object is at `response.data` (response = ApiResponse)
-        const response: any = await apiClient.get('/mentor/profile/me');
-        const mentorData = response?.data ?? response;
-        if (!mentorData || !mentorData.id) return null;
-        return {
-          ...mentorData,
-          // Normalize: backend may set `isApproved:true` or `status:'APPROVED'`
-          isApproved: mentorData.isApproved === true || mentorData.status === 'APPROVED',
-        };
-      } catch (e: any) {
-        // 404 = no profile, 403 = not a mentor yet — both are expected
-        if (e.response?.status === 404 || e.response?.status === 403) return null;
-        throw e;
-      }
-    },
-    retry: false,
-    staleTime: 30_000,
-  });
+/**
+ * Single Mentor Hook
+ */
+export const useMentor = (mentorId: number) => {
+    return useQuery({
+        queryKey: ['mentors', 'single', mentorId],
+        queryFn: async () => {
+            const response = await apiClient.get(`/mentor/${mentorId}`);
+            return response.data || response;
+        },
+        enabled: !!mentorId
+    });
 };
 
+/**
+ * Admin Mentor Management Hook
+ * Supports real-time refresh and advanced SaaS behaviors
+ */
+export const useAdminMentors = (refreshInterval: number = 0, filters: any = {}) => {
+    const queryClient = useQueryClient();
+
+    // Data-sync invalidation helper
+    const invalidateMentorState = () => {
+        queryClient.invalidateQueries({ queryKey: ['admin', 'mentors'] });
+        queryClient.invalidateQueries({ queryKey: ['admin', 'stats'] });
+        queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
+        queryClient.invalidateQueries({ queryKey: ['admin', 'activity'] });
+    };
+
+    const mentorsQuery = useQuery({
+        queryKey: ['admin', 'mentors', filters],
+        queryFn: async () => {
+            const params = new URLSearchParams();
+            if (filters.search) params.append('search', filters.search);
+            if (filters.status && filters.status !== 'ALL') params.append('status', filters.status);
+            if (filters.skill) params.append('skill', filters.skill);
+            if (filters.experience && filters.experience !== 'ALL') {
+                params.append('experience', filters.experience.replace('+', ''));
+            }
+
+            const response = await apiClient.get(`/mentor/admin?${params.toString()}`);
+            return response.data || response || [];
+        },
+        refetchInterval: refreshInterval > 0 ? refreshInterval : false
+    });
+
+    const pendingCountQuery = useQuery({
+        queryKey: ['admin', 'mentors', 'pending-total'],
+        queryFn: async () => {
+            const response = await apiClient.get('/mentor/pending/count');
+            return response.data ?? response ?? 0;
+        },
+        refetchInterval: 30000 
+    });
+
+    const approveMutation = useMutation({
+        mutationFn: (mentorId: number) => apiClient.put(`/mentor/${mentorId}/approve`, {}),
+        onSuccess: invalidateMentorState
+    });
+
+    const rejectMutation = useMutation({
+        mutationFn: (data: { mentorId: number; reason: string }) => 
+            apiClient.put(`/mentor/${data.mentorId}/reject?reason=${data.reason}`, {}),
+        onSuccess: invalidateMentorState
+    });
+
+    const suspendMutation = useMutation({
+        mutationFn: (data: { mentorId: number; reason: string }) => 
+            apiClient.put(`/mentor/${data.mentorId}/suspend?reason=${data.reason}`, {}),
+        onSuccess: invalidateMentorState
+    });
+
+    const reReviewMutation = useMutation({
+        mutationFn: (mentorId: number) => apiClient.put(`/mentor/${mentorId}/re-review`, {}),
+        onSuccess: invalidateMentorState
+    });
+
+    const bulkActionMutation = useMutation({
+        mutationFn: (data: { ids: number[], action: 'APPROVE' | 'SUSPEND' | 'REJECT' }) => 
+            apiClient.post('/mentor/admin/bulk', data),
+        onSuccess: invalidateMentorState
+    });
+
+    const exportMentors = async () => {
+        const params = new URLSearchParams();
+        if (filters.search) params.append('search', filters.search);
+        if (filters.status && filters.status !== 'ALL') params.append('status', filters.status);
+        if (filters.skill) params.append('skill', filters.skill);
+        if (filters.experience && filters.experience !== 'ALL') {
+            params.append('experience', filters.experience.replace('+', ''));
+        }
+
+        const response = await apiClient.get(`/mentor/admin/export?${params.toString()}`, {
+            responseType: 'blob'
+        });
+        
+        const blob = response instanceof Blob ? response : new Blob([response as any], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', `mentors_export_${new Date().toISOString().split('T')[0]}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.URL.revokeObjectURL(url);
+    };
+
+    const mentors = useMemo(() => (mentorsQuery.data || []) as MentorProfile[], [mentorsQuery.data]);
+    const filteredMentors = mentors; // Backend-driven, so they are the same
+    
+    return {
+        mentors,
+        filteredMentors,
+        isLoading: mentorsQuery.isLoading,
+        isError: mentorsQuery.isError,
+        error: mentorsQuery.error,
+        refetch: mentorsQuery.refetch,
+        lastUpdated: mentorsQuery.dataUpdatedAt,
+        pendingCount: pendingCountQuery.data || 0,
+        
+        // Actions
+        approve: approveMutation.mutateAsync,
+        reject: rejectMutation.mutateAsync,
+        suspend: suspendMutation.mutateAsync,
+        reReview: reReviewMutation.mutateAsync,
+        bulkAction: bulkActionMutation.mutateAsync,
+        exportMentors,
+        
+        // Mutation States
+        isApproving: approveMutation.isPending,
+        isRejecting: rejectMutation.isPending,
+        isSuspending: suspendMutation.isPending,
+        isBulkProcessing: bulkActionMutation.isPending
+    };
+};
+
+/**
+ * Apply as Mentor Mutation
+ */
 export const useApplyMentor = () => {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async (req: { specialization: string; yearsOfExperience: number; hourlyRate: number; bio: string; }) => {
-      const response: any = await apiClient.post('/mentor/apply', req);
-      return response?.data ?? response;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['mentor', 'me'] });
-      queryClient.invalidateQueries({ queryKey: ['mentors'] });
-    }
-  });
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (data: any) => apiClient.post('/mentor/apply', data),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['mentors', 'me'] });
+        }
+    });
 };
 
-export const useMentors = (filters: MentorFilters = {}) => {
-  return useQuery({
-    queryKey: ['mentors', filters],
-    queryFn: async () => {
-      const hasFilter = (filters.skill && filters.skill.length >= 2) ||
-        filters.minExperience != null ||
-        filters.maxExperience != null ||
-        filters.maxRate != null ||
-        filters.minRating != null;
-
-      const unpack = (r: any) => {
-        if (!r) return [];
-        if (Array.isArray(r)) return r;
-        if (Array.isArray(r.data)) return r.data;
-        if (r.data && Array.isArray(r.data.data)) return r.data.data;
-        return [];
-      };
-
-      let mentorsRaw: any[] = [];
-      if (hasFilter) {
-        const response: any = await apiClient.post('/mentor/search', filters);
-        mentorsRaw = unpack(response);
-      } else {
-        const response: any = await apiClient.get('/mentor/approved');
-        mentorsRaw = unpack(response);
-      }
-
-      if (!Array.isArray(mentorsRaw) || mentorsRaw.length === 0) {
-        // Double check: some implementations return the wrapper in response.data.data
-        console.warn('[SkillSync] Mentors list scavenge results:', mentorsRaw);
-      }
-
-      // Enrich with user profiles
-      const enriched = await Promise.all(
-        mentorsRaw.map(async (m: any) => {
-          try {
-            const userRes: any = await apiClient.get(`/user/profile/${m.userId}`);
-            const userProfile = userRes?.data ?? userRes;
-            return {
-              ...m,
-              name: userProfile?.name || userProfile?.username || `Mentor ${m.userId}`,
-              avatar: userProfile?.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${userProfile?.username || m.userId}`,
-            };
-          } catch (e) {
-            return {
-              ...m,
-              name: `Mentor ${m.userId}`,
-              avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${m.userId}`,
-            };
-          }
-        })
-      );
-      return enriched;
-    },
-  });
+/**
+ * Personal Mentor Profile Hook
+ */
+export const useMyMentorProfile = () => {
+    return useQuery({
+        queryKey: ['mentors', 'me'],
+        queryFn: async () => {
+            try {
+                const response = await apiClient.get('/mentor/profile/me');
+                return response.data || response;
+            } catch (err) {
+                return null;
+            }
+        },
+        retry: false
+    });
 };

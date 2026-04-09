@@ -63,4 +63,14 @@ public interface UserProfileService {
     java.util.List<com.skillsync.user.entity.AdminNotification> getUnreadNotifications();
     void markNotificationAsRead(Long id);
     void createNotification(String title, String description, String type);
+
+    /**
+     * Get comprehensive user details including risk and activity metrics
+     */
+    UserProfileResponseDto getDetailedProfile(Long userId);
+
+    /**
+     * Get administrative history for a specific inhabitant
+     */
+    java.util.List<com.skillsync.user.entity.AuditLog> getUserLogs(Long userId);
 }

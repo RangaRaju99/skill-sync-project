@@ -3,7 +3,7 @@ import {
    Users, UserCheck, Shield, Plus, Search,
    Activity, Database, User, AlertCircle,
    ChevronRight, Globe, ShieldCheck, ChevronLeft,
-   Mail, Clock, BarChart, TrendingUp, PieChart, Ban, UserPlus, Lock, Settings
+   Mail, Clock, BarChart, TrendingUp, PieChart, Ban, UserPlus, Lock, Settings, Users2
 } from 'lucide-react';
 import { useAdmin } from '../../../hooks/useAdmin';
 import { useGroups } from '../../../hooks/useGroups';

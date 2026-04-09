@@ -15,7 +15,12 @@ public interface MentorService {
     List<MentorProfileResponseDto> searchMentorsWithFilters(String skill, Integer minExperience, Integer maxExperience, Double maxRate, Double minRating);
     MentorProfileResponseDto approveMentor(Long mentorId, Long adminId);
     MentorProfileResponseDto rejectMentor(Long mentorId, Long adminId);
-    MentorProfileResponseDto updateAvailability(Long userId, UpdateAvailabilityRequestDto request);
     MentorProfileResponseDto suspendMentor(Long mentorId, Long adminId);
+    MentorProfileResponseDto reReviewMentor(Long mentorId, Long adminId);
+    MentorProfileResponseDto updateAvailability(Long userId, UpdateAvailabilityRequestDto request);
     void updateMentorRating(Long mentorId, Double newRating);
+    List<MentorProfileResponseDto> getAllMentors();
+    List<MentorProfileResponseDto> getMentorsForAdmin(String search, String status, String skill, Integer experience);
+    byte[] exportMentors(String search, String status, String skill, Integer experience);
+    Long getPendingCount();
 }

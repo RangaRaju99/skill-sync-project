@@ -7,6 +7,7 @@ import { useToast } from '../../../hooks/useToast';
 import { Icon } from '../../../components/ui/Icon';
 import { Button } from '../../../components/ui/Button';
 import { Input } from '../../../components/ui/Input';
+import { UserDetailsDrawer } from '../components/UserDetailsDrawer';
 
 // Auto-refresh interval options
 const REFRESH_OPTIONS = [
@@ -110,8 +111,10 @@ export default function AdminUsersPage() {
     return users.filter((u: any) => {
       const matchesSearch = u.name?.toLowerCase().includes(searchQuery.toLowerCase()) || 
                            u.email?.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesRole = roleFilter === 'ALL' || u.role === roleFilter;
+      
+      const matchesRole = roleFilter === 'ALL' || u.roles?.includes(roleFilter);
       const matchesStatus = statusFilter === 'ALL' || u.status === statusFilter;
+      
       return matchesSearch && matchesRole && matchesStatus;
     });
   }, [users, searchQuery, roleFilter, statusFilter]);
@@ -365,7 +368,13 @@ export default function AdminUsersPage() {
                       <p className="text-sm font-bold text-gray-900 truncate group-hover/row:text-indigo-600 transition-colors">{u.name || 'Unknown'}</p>
                     </div>
                     <div className="w-40 truncate text-xs font-medium text-gray-500">{u.email}</div>
-                    <div className="w-20 text-center"><span className={`inline-block px-2.5 py-1 rounded-md text-[10px] font-bold border ${role.cls}`}>{role.label}</span></div>
+                    <div className="w-20 text-center flex flex-wrap gap-1 justify-center">
+                      {u.roles?.map((r: string) => (
+                        <span key={r} className={`inline-block px-2 py-0.5 rounded-md text-[9px] font-black border uppercase tracking-wider ${getRoleBadge(r).cls}`}>
+                          {getRoleBadge(r).label}
+                        </span>
+                      ))}
+                    </div>
                     <div className="w-24 text-center">
                       <span className={`inline-flex items-center gap-1.5 text-xs font-bold ${status.cls}`}>
                         {status.dot}
@@ -410,46 +419,18 @@ export default function AdminUsersPage() {
         )}
       </div>
 
-      {/* Drawer */}
-      <SaaSDrawer isOpen={drawerUserId !== null} onClose={() => setDrawerUserId(null)} title="User Profile">
-        {drawerUser && (
-          <div className="space-y-6">
-            <div className="flex items-center gap-4 pb-6 border-b border-gray-100">
-              <div className="w-16 h-16 bg-indigo-50 rounded-full flex items-center justify-center text-2xl font-bold text-indigo-600">{drawerUser.name?.charAt(0)?.toUpperCase() || '?'}</div>
-              <div>
-                <h3 className="text-lg font-bold text-gray-900">{drawerUser.name}</h3>
-                <p className="text-sm font-medium text-gray-500">{drawerUser.email}</p>
-                <div className="flex items-center gap-2 mt-2">
-                  <span className={`px-2 py-0.5 rounded text-[10px] font-bold border ${getRoleBadge(drawerUser.role).cls}`}>{getRoleBadge(drawerUser.role).label}</span>
-                  <span className={`inline-flex items-center gap-1.5 text-xs font-bold ${getStatusBadge(drawerUser.status).cls}`}>
-                    <span className={`w-1.5 h-1.5 rounded-full ${getStatusBadge(drawerUser.status).dot}`} />{getStatusBadge(drawerUser.status).label}
-                  </span>
-                </div>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="bg-gray-50 rounded-xl p-4 border border-gray-100"><p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">User ID</p><p className="text-sm font-bold text-gray-900">{drawerUser.userId}</p></div>
-              <div className="bg-gray-50 rounded-xl p-4 border border-gray-100"><p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Joined</p><p className="text-sm font-bold text-gray-900">{drawerUser.createdAt ? new Date(drawerUser.createdAt).toLocaleDateString() : '—'}</p></div>
-              <div className="bg-gray-50 rounded-xl p-4 border border-gray-100"><p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Phone</p><p className="text-sm font-bold text-gray-900">{drawerUser.phoneNumber || '—'}</p></div>
-              <div className="bg-gray-50 rounded-xl p-4 border border-gray-100"><p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Rating</p><p className="text-sm font-bold text-gray-900">{drawerUser.rating || '0.0'} ⭐</p></div>
-            </div>
-            {drawerUser.bio && <div><h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Bio</h4><p className="text-sm font-medium text-gray-700 bg-gray-50 p-4 rounded-xl border border-gray-100">{drawerUser.bio}</p></div>}
-            <div>
-              <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Quick Actions</h4>
-              <div className="grid grid-cols-2 gap-2">
-                {drawerUser.role === 'LEARNER' && <button onClick={() => { openModal(drawerUser.userId, 'PROMOTE', 'Promote to Mentor', 'info'); setDrawerUserId(null); }} className="p-3 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-xl text-xs font-bold flex items-center justify-center gap-2 hover:bg-emerald-100 transition-all"><UserPlus size={14} /> Promote</button>}
-                {drawerUser.role === 'MENTOR' && <button onClick={() => { openModal(drawerUser.userId, 'DEMOTE', 'Demote to Learner', 'warning'); setDrawerUserId(null); }} className="p-3 bg-amber-50 text-amber-700 border border-amber-200 rounded-xl text-xs font-bold flex items-center justify-center gap-2 hover:bg-amber-100 transition-all"><UserMinus size={14} /> Demote</button>}
-                {drawerUser.status === 'ACTIVE' ? (
-                  <button onClick={() => { openModal(drawerUser.userId, 'BLOCK', 'Block User', 'danger'); setDrawerUserId(null); }} className="p-3 bg-rose-50 text-rose-700 border border-rose-200 rounded-xl text-xs font-bold flex items-center justify-center gap-2 hover:bg-rose-100 transition-all"><Ban size={14} /> Block</button>
-                ) : (
-                  <button onClick={() => { openModal(drawerUser.userId, 'UNBLOCK', 'Unblock User', 'info'); setDrawerUserId(null); }} className="p-3 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-xl text-xs font-bold flex items-center justify-center gap-2 hover:bg-emerald-100 transition-all"><Unlock size={14} /> Unblock</button>
-                )}
-              </div>
-            </div>
-            {drawerUser.statusReason && <div><h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Status Reason</h4><p className="text-sm font-medium text-rose-700 bg-rose-50 p-4 rounded-xl border border-rose-100">{drawerUser.statusReason}</p></div>}
-          </div>
-        )}
-      </SaaSDrawer>
+      {/* Premium User Detail Drawer */}
+      <UserDetailsDrawer 
+        userId={drawerUserId}
+        onClose={() => setDrawerUserId(null)}
+        onAction={(uid, type, val) => setActionModal({ 
+          isOpen: true, 
+          type: type === 'ROLE' ? (val === 'MENTOR' ? 'PROMOTE' : 'DEMOTE') : (val === 'BLOCKED' ? 'BLOCK' : 'UNBLOCK'), 
+          userId: uid, 
+          title: type === 'ROLE' ? 'Adjust Rank' : 'Security Override', 
+          modalType: type === 'ROLE' ? 'info' : 'warning' 
+        })}
+      />
 
       {/* Modal */}
       <SaaSModal isOpen={actionModal.isOpen} onClose={() => { setActionModal({ ...actionModal, isOpen: false }); setReason('Policy Violation'); setMessage(''); }} title={actionModal.title} type={actionModal.modalType} onConfirm={handleAction} confirmLabel="Confirm">

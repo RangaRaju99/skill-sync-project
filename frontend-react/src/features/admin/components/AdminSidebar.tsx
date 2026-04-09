@@ -3,7 +3,8 @@ import { Link, useLocation } from 'react-router-dom';
 import { 
   BarChart, Users, ShieldCheck, 
   Settings, FileText, Lock, Bell, LineChart,
-  LogOut, ChevronLeft, ChevronRight, ArrowLeft, Shield
+  LogOut, ChevronLeft, ChevronRight, ArrowLeft, Shield,
+  GraduationCap
 } from 'lucide-react';
 import { useAuthStore } from '../../../store/authStore';
 
@@ -20,6 +21,7 @@ export default function AdminSidebar({ isCollapsed, onToggle }: SidebarProps) {
     { title: 'Dashboard', path: '/admin/dashboard', icon: <BarChart size={20} /> },
     { title: 'Analytics', path: '/admin/analytics', icon: <LineChart size={20} /> },
     { title: 'Users', path: '/admin/users', icon: <Users size={20} /> },
+    { title: 'Mentors', path: '/admin/mentors', icon: <GraduationCap size={20} /> },
     { title: 'Groups', path: '/admin/groups', icon: <Users size={20} /> },
     { title: 'Roles Overview', path: '/admin/roles', icon: <ShieldCheck size={20} /> },
     { title: 'Notifications', path: '/admin/notifications', icon: <Bell size={20} /> },

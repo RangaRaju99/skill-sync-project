@@ -25,6 +25,7 @@ import NotificationsPage from './features/notifications/pages/NotificationsPage'
 import AdminAnalyticsPage from './features/admin/pages/AdminAnalyticsPage';
 import AdminDashboardPage from './features/admin/pages/AdminDashboardPage';
 import AdminUsersPage from './features/admin/pages/AdminUsersPage';
+import AdminMentorsPage from './features/admin/pages/AdminMentorsPage';
 import AdminGroupsPage from './features/admin/pages/AdminGroupsPage';
 import AdminRolesPage from './features/admin/pages/AdminRolesPage';
 import AdminAuditLogsPage from './features/admin/pages/AdminAuditLogsPage';
@@ -147,6 +148,7 @@ function App() {
             <Route path="dashboard" element={<AdminDashboardPage />} />
             <Route path="analytics" element={<AdminAnalyticsPage />} />
             <Route path="users" element={<AdminUsersPage />} />
+            <Route path="mentors" element={<AdminMentorsPage />} />
             <Route path="groups" element={<AdminGroupsPage />} />
             <Route path="roles" element={<AdminRolesPage />} />
             <Route path="audit-logs" element={<AdminAuditLogsPage />} />

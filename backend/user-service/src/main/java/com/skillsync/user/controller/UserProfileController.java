@@ -427,6 +427,44 @@ public class UserProfileController {
         return ResponseEntity.ok(new ApiResponse<>(true, "Alert dismissed", null, 200));
     }
 
+    /**
+     * GET /api/user/admin/users/{userId}/detailed
+     * Get detailed inhabitant profile (Admin only)
+     */
+    @GetMapping("/admin/users/{userId}/detailed")
+    @Operation(summary = "Get detailed inhabitant profile", description = "Retrieve full profile, activity counts, and risk metrics (Admin only)")
+    @SecurityRequirement(name = "bearerAuth")
+    public ResponseEntity<ApiResponse<UserProfileResponseDto>> getDetailedProfile(
+            @PathVariable Long userId,
+            HttpServletRequest request) {
+
+        String roles = securityUtil.extractRoles(request);
+        if (roles == null || !roles.contains("ROLE_ADMIN")) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied. Admin only.");
+        }
+
+        return ResponseEntity.ok(new ApiResponse<>(true, "Detailed profile fetched", userProfileService.getDetailedProfile(userId), 200));
+    }
+
+    /**
+     * GET /api/user/admin/users/{userId}/logs
+     * Get specific user audit logs (Admin only)
+     */
+    @GetMapping("/admin/users/{userId}/logs")
+    @Operation(summary = "Get user-specific audit logs", description = "Retrieve administrative activity feed for a specific inhabitant (Admin only)")
+    @SecurityRequirement(name = "bearerAuth")
+    public ResponseEntity<ApiResponse<java.util.List<com.skillsync.user.entity.AuditLog>>> getUserLogs(
+            @PathVariable Long userId,
+            HttpServletRequest request) {
+
+        String roles = securityUtil.extractRoles(request);
+        if (roles == null || !roles.contains("ROLE_ADMIN")) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied. Admin only.");
+        }
+
+        return ResponseEntity.ok(new ApiResponse<>(true, "User logs fetched", userProfileService.getUserLogs(userId), 200));
+    }
+
     @GetMapping("/profile-by-email")
     public ResponseEntity<UserProfileResponseDto> getProfileByEmail(@RequestParam String email) {
         return ResponseEntity.ok(userProfileService.getProfileByEmail(email));

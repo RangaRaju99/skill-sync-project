@@ -14,6 +14,7 @@ public interface MentorRepository extends JpaRepository<MentorProfile, Long> {
     Optional<MentorProfile> findByUserId(Long userId);
 
     boolean existsByUserId(Long userId);
+    Long countByStatus(MentorStatus status);
 
     List<MentorProfile> findBySpecializationContainingIgnoreCase(String specialization);
 

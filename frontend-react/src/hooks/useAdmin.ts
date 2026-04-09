@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import apiClient from '../services/apiClient';
+import { normalizeUser } from '../utils/userUtils';
 
 /**
  * Enterprise Admin Hook
@@ -12,7 +13,7 @@ export const useAdmin = () => {
     const statsQuery = useQuery({
         queryKey: ['admin', 'stats'],
         queryFn: async () => apiClient.get('/user/admin/stats'),
-        refetchInterval: 30000, // Sync every 30s
+        refetchInterval: 30000, 
     });
 
     // 2. Global Node Search
@@ -32,7 +33,6 @@ export const useAdmin = () => {
                 const apiLogs = response.data || response || [];
                 return [...localLogs, ...(Array.isArray(apiLogs) ? apiLogs : [])];
             } catch {
-                // Return local mock logs if backend API is offline or 404s
                 return JSON.parse(localStorage.getItem('mock_audit_logs') || '[]');
             }
         },
@@ -46,13 +46,23 @@ export const useAdmin = () => {
         refetchInterval: 10000,
     });
 
+    // 4.1 Pending Mentors Count (Cross-service KPI)
+    const pendingMentorsQuery = useQuery({
+        queryKey: ['admin', 'mentors', 'pending-count'],
+        queryFn: async () => {
+            const res = await apiClient.get('/mentor/pending/count');
+            return res.data ?? res ?? 0;
+        },
+        refetchInterval: 30000,
+    });
+
     // 5. User Management — fetches ALL registered users via admin endpoint
     const usersQuery = useQuery({
         queryKey: ['admin', 'users'],
         queryFn: async () => {
             const response = await apiClient.get('/user/admin/users');
-            // The endpoint returns ApiResponse wrapper: { data: [...], success: true }
-            return response.data || response || [];
+            const rawUsers = response.data || response || [];
+            return Array.isArray(rawUsers) ? rawUsers.map(normalizeUser) : [];
         },
     });
 
@@ -76,8 +86,6 @@ export const useAdmin = () => {
 
     const createAuditLogMutation = useMutation({
         mutationFn: (logData: { action: string; target: string; admin: string; description: string }) => {
-            // Mock API POST. In production, connect this to actual Java audit creation endpoint.
-            // Using localStorage as a fallback to ensure the UI ALWAYS has data for demonstration.
             const storedLogs = JSON.parse(localStorage.getItem('mock_audit_logs') || '[]');
             const newLog = {
                 id: Date.now(),
@@ -86,12 +94,11 @@ export const useAdmin = () => {
             };
             localStorage.setItem('mock_audit_logs', JSON.stringify([newLog, ...storedLogs]));
             return Promise.resolve(newLog);
-            // return apiClient.post('/user/admin/audit-logs', logData);
         },
         onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin', 'activity'] }),
     });
 
-    // 6. Real SaaS Analytics endpoints (Strict Backend Sync via User Service)
+    // Analytics
     const useAnalyticsGrowth = (timeRange: string, userType: string) => useQuery({ 
       queryKey: ['admin', 'analytics', 'users-growth', timeRange, userType], 
       queryFn: async () => apiClient.get(`/user/admin/analytics/users-growth?timeRange=${timeRange}&userType=${userType}`) 
@@ -107,31 +114,56 @@ export const useAdmin = () => {
       queryFn: async () => apiClient.get('/user/admin/analytics/roles') 
     });
 
+    // Detailed User Info
+    const useUserDetailed = (userId: number | null) => useQuery({
+        queryKey: ['admin', 'user-detailed', userId],
+        queryFn: async () => {
+            const res = await apiClient.get(`/user/admin/users/${userId}/detailed`);
+            const normalized = normalizeUser(res.data || res);
+            return normalized;
+        },
+        enabled: !!userId,
+    });
+
+    const useUserLogs = (userId: number | null) => useQuery({
+        queryKey: ['admin', 'user-logs', userId],
+        queryFn: async () => {
+            const res = await apiClient.get(`/user/admin/users/${userId}/logs`);
+            return res.data || res;
+        },
+        enabled: !!userId,
+    });
+
     return {
-        // Data
-        stats: statsQuery.data,
+        stats: {
+           ...(statsQuery.data || {}),
+           pendingMentors: pendingMentorsQuery.data || 0
+        },
+        pendingMentors: pendingMentorsQuery.data || 0,
+        registeredUsers: usersQuery.data || [],
+        auditLogs: activityQuery.data || [],
+        
         isStatsLoading: statsQuery.isLoading,
         activity: activityQuery.data || [],
         isActivityLoading: activityQuery.isLoading,
         notifications: notificationQuery.data || [],
-        users: usersQuery.data || [],
+        users: (usersQuery.data || []) as any[],
         isUsersLoading: usersQuery.isLoading,
         isUsersError: usersQuery.isError,
         refetchUsers: usersQuery.refetch,
         
-        // Hooks for Analytics
         useAnalyticsGrowth,
         useAnalyticsStatus,
         useAnalyticsRoles,
+        useUserDetailed,
+        useUserLogs,
 
-        // Actions
         changeRole: changeRoleMutation.mutateAsync,
         updateStatus: updateStatusMutation.mutateAsync,
         markAsRead: markAsReadMutation.mutateAsync,
         createAuditLog: createAuditLogMutation.mutateAsync,
         useGlobalSearch,
         
-        // Error States
         hasError: statsQuery.isError || usersQuery.isError,
         refetchAll: () => {
             statsQuery.refetch();

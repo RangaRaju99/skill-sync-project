@@ -31,4 +31,11 @@ public class UserProfileResponseDto {
     private String statusReason;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+
+    // Administrative Metrics (Optional/Mocked for now)
+    private Integer totalSessions = 0;
+    private Integer totalGroups = 0;
+    private Integer reportCount = 0;
+    private Integer warningsIssued = 0;
+    private Double riskScore = 0.0; // 0.0 to 10.0
 }
