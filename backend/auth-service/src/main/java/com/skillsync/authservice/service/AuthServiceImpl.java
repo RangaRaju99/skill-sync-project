@@ -153,6 +153,14 @@ public class AuthServiceImpl implements AuthService {
 
         List<String> roles = Arrays.asList(user.getRole().split(","));
         String token = jwtUtil.generateToken(user.getId(), user.getEmail(), roles);
+
+        // Update activity timestamp in user service
+        try {
+            userServiceClient.updateUserActivity(user.getId());
+        } catch (Exception e) {
+            log.warn("Failed to update lastActive for userId {}: {}", user.getId(), e.getMessage());
+        }
+
         auditService.log("User", user.getId(), "LOGIN", user.getId().toString(), "email=" + user.getEmail());
         return new AuthResponse(token, roles, user.getUsername(), user.getId(), user.getEmail());
     }

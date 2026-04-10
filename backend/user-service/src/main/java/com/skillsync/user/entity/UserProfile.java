@@ -82,6 +82,9 @@ public class UserProfile extends Auditable {
     @Column(nullable = false)
     private LocalDateTime updatedAt;
 
+    @Column
+    private LocalDateTime lastActive;
+
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();

@@ -198,6 +198,17 @@ public class UserProfileController {
     }
 
     /**
+     * POST /user/internal/users/{userId}/activity
+     * Update user activity timestamp
+     */
+    @PostMapping("/internal/users/{userId}/activity")
+    public ResponseEntity<Void> updateActivity(@PathVariable Long userId) {
+        log.info("Internal: Updating lastActive for userId: {}", userId);
+        userProfileService.updateLastActive(userId);
+        return ResponseEntity.ok().build();
+    }
+
+    /**
      * POST /user/internal/users
      * Internal endpoint for creating profile after registration
      * Called by Auth Service via Feign
@@ -427,6 +438,29 @@ public class UserProfileController {
         return ResponseEntity.ok(new ApiResponse<>(true, "Alert dismissed", null, 200));
     }
 
+    @GetMapping("/admin/users/{userId}/report")
+    @Operation(summary = "Download user report", description = "Generate and download a structured report in PDF or Image format (Admin only)")
+    @SecurityRequirement(name = "bearerAuth")
+    public ResponseEntity<byte[]> downloadReport(
+            @PathVariable Long userId,
+            @RequestParam String format,
+            @RequestParam(required = false) String imgType,
+            HttpServletRequest request) {
+
+        String roles = securityUtil.extractRoles(request);
+        if (roles == null || !roles.contains("ROLE_ADMIN")) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied. Admin only.");
+        }
+
+        byte[] report = userProfileService.generateReport(userId, format);
+        String contentType = format.equalsIgnoreCase("PDF") ? "application/pdf" : "image/" + (imgType != null ? imgType.toLowerCase() : "png");
+        
+        return ResponseEntity.ok()
+                .header(org.springframework.http.HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=report_" + userId + "." + (format.equalsIgnoreCase("PDF") ? "pdf" : (imgType != null ? imgType.toLowerCase() : "png")))
+                .contentType(org.springframework.http.MediaType.parseMediaType(contentType))
+                .body(report);
+    }
+
     /**
      * GET /api/user/admin/users/{userId}/detailed
      * Get detailed inhabitant profile (Admin only)
@@ -468,5 +502,24 @@ public class UserProfileController {
     @GetMapping("/profile-by-email")
     public ResponseEntity<UserProfileResponseDto> getProfileByEmail(@RequestParam String email) {
         return ResponseEntity.ok(userProfileService.getProfileByEmail(email));
+    }
+
+    @GetMapping("/admin/debug-mail")
+    public ResponseEntity<String> sendDebugMail(@RequestParam String email, jakarta.servlet.http.HttpServletRequest request) {
+        // No strict auth required for this temporary debug endpoint so the user can easily hit it via browser
+        try {
+            org.springframework.context.ApplicationContext context = org.springframework.web.context.support.WebApplicationContextUtils.getRequiredWebApplicationContext(request.getServletContext());
+            org.springframework.mail.javamail.JavaMailSender sender = context.getBean(org.springframework.mail.javamail.JavaMailSender.class);
+            jakarta.mail.internet.MimeMessage msg = sender.createMimeMessage();
+            org.springframework.mail.javamail.MimeMessageHelper helper = new org.springframework.mail.javamail.MimeMessageHelper(msg, false);
+            helper.setTo(email);
+            helper.setSubject("SkillSync - SMTP Live Verification Alert");
+            helper.setText("Hello Administrator!\n\nThis confirms that the JavaMailSender has successfully picked up the `.env` configuration (host, port, username, app password) and successfully handshaked with Google's Gmail SMTP server.\n\nAll mentor actions (Suspend, Approve, Reject) will now reliably trigger this same transport layer securely!");
+            sender.send(msg);
+            return ResponseEntity.ok("Successfully dispatched a test email to " + email);
+        } catch (Exception e) {
+            log.error("Failed to route test email: {}", e.getMessage(), e);
+            return ResponseEntity.status(500).body("SMTP Error: " + e.getMessage());
+        }
     }
 }

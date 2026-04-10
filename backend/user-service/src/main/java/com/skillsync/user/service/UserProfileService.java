@@ -70,6 +70,16 @@ public interface UserProfileService {
     UserProfileResponseDto getDetailedProfile(Long userId);
 
     /**
+     * Update last active timestamp
+     */
+    void updateLastActive(Long userId);
+
+    /**
+     * Generate structured report for a user
+     */
+    byte[] generateReport(Long userId, String format);
+
+    /**
      * Get administrative history for a specific inhabitant
      */
     java.util.List<com.skillsync.user.entity.AuditLog> getUserLogs(Long userId);

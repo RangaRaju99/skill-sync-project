@@ -14,4 +14,6 @@ public interface SessionService {
     SessionResponseDto cancelSession(Long sessionId);
     List<SessionResponseDto> getPendingSessions();
     void updateStatus(Long sessionId, String status);
+
+    long getMentorSessionCount(Long mentorId);
 }

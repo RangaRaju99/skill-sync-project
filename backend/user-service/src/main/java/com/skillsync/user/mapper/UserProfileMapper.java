@@ -67,6 +67,7 @@ public class UserProfileMapper {
         dto.setStatusReason(profile.getStatusReason());
         dto.setCreatedAt(profile.getCreatedAt());
         dto.setUpdatedAt(profile.getUpdatedAt());
+        dto.setLastActive(profile.getLastActive());
         return dto;
     }
 }

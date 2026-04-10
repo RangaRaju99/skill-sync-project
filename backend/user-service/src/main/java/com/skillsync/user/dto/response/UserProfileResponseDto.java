@@ -31,6 +31,7 @@ public class UserProfileResponseDto {
     private String statusReason;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private LocalDateTime lastActive;
 
     // Administrative Metrics (Optional/Mocked for now)
     private Integer totalSessions = 0;

@@ -14,12 +14,16 @@ import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
+import org.springframework.web.reactive.function.client.WebClient;
 
 @Component
 public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
 
     @Autowired
     private JwtUtil jwtUtil;
+
+    @Autowired
+    private WebClient.Builder webClientBuilder;
 
     // List of public endpoints that don't need a JWT
     private static final List<String> PUBLIC_ENDPOINTS = List.of(
@@ -93,6 +97,18 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
                         .header("loggedInUser", email) // Downstream services can use this to identify the user
                         .header("roles", roles)        // Downstream services use this for @PreAuthorize
                         .build();
+
+                // 4. Update lastActive asynchronously
+                if (userId != null) {
+                    webClientBuilder.build().post()
+                            .uri("http://user-service/user/internal/users/" + userId + "/activity")
+                            .retrieve()
+                            .bodyToMono(Void.class)
+                            .subscribe(
+                                    success -> {},
+                                    error -> {} // Ignore errors to avoid spamming logs for activity tracking
+                            );
+                }
 
             } catch (Exception e) {
                 return this.onError(exchange, "Unauthorized access: " + e.getMessage(), HttpStatus.UNAUTHORIZED);

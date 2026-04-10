@@ -153,4 +153,9 @@ public class SessionServiceImpl implements SessionService {
         session.setStatus(SessionStatus.valueOf(status));
         sessionRepository.save(session);
     }
+
+    @Override
+    public long getMentorSessionCount(Long mentorId) {
+        return sessionRepository.countByMentorId(mentorId);
+    }
 }

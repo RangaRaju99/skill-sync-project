@@ -48,12 +48,6 @@ export const SaaSDrawer: React.FC<DrawerProps> = ({ isOpen, onClose, title, chil
           <div className="flex-1 overflow-y-auto p-10 no-scrollbar">
             {children}
           </div>
-          
-          {/* Footer Actions */}
-          <div className="p-8 bg-slate-50 border-t border-slate-100 flex gap-4">
-             <button className="flex-1 py-4 bg-white border border-slate-200 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-100 transition-all">Download Audit</button>
-             <button onClick={onClose} className="flex-1 py-4 bg-indigo-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl shadow-indigo-100 hover:bg-indigo-700 transition-all">Close Instance</button>
-          </div>
         </div>
       </div>
     </>

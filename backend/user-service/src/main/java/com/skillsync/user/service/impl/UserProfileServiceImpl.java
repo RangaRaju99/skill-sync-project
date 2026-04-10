@@ -35,6 +35,7 @@ public class UserProfileServiceImpl implements UserProfileService {
     private final AuthClient authClient;
     private final com.skillsync.user.repository.AuditLogRepository auditLogRepository;
     private final com.skillsync.user.repository.AdminNotificationRepository notificationRepository;
+    private final org.springframework.mail.javamail.JavaMailSender mailSender;
 
     @Override
     @Cacheable(key = "'userId_' + #userId")
@@ -213,6 +214,9 @@ public class UserProfileServiceImpl implements UserProfileService {
                 .targetType("USER")
                 .description("Status changed to " + newStatus + ". Reason: " + reason)
                 .build());
+                
+        // Send Status Email w/ Attachment Asynchronously (Using Thread for safety so it doesn't block transaction)
+        new Thread(() -> sendStatusEmail(updated.getEmail(), updated.getName() != null ? updated.getName() : "User", newStatus, reason, userId)).start();
 
         // Trigger Notification for Blocking
         if ("BLOCKED".equals(newStatus)) {
@@ -288,15 +292,155 @@ public class UserProfileServiceImpl implements UserProfileService {
         
         // 2. Mock some activity for UI completion (ideally fetch from other services if available)
         // Since we don't have direct session/group query in this service, we use reasonable defaults
-        dto.setTotalSessions(dto.getRole().equals("MENTOR") ? 42 : 12);
+        dto.setTotalSessions("MENTOR".equals(dto.getRole()) ? 42 : 12);
         dto.setTotalGroups(5);
         
         return dto;
     }
 
     @Override
+    @Transactional
+    public void updateLastActive(Long userId) {
+        userProfileRepository.findByUserId(userId).ifPresent(profile -> {
+            profile.setLastActive(java.time.LocalDateTime.now());
+            userProfileRepository.save(profile);
+            log.debug("Updated lastActive for userId: {}", userId);
+        });
+    }
+
+    @Override
+    public byte[] generateReport(Long userId, String format) {
+        log.info("Generating {} report for userId: {}", format, userId);
+        UserProfileResponseDto user = getDetailedProfile(userId);
+        List<com.skillsync.user.entity.AuditLog> logs = getUserLogs(userId);
+
+        try {
+            if ("IMAGE".equalsIgnoreCase(format)) {
+                int width = 800;
+                // dynamic height based on logs
+                int height = 400 + (logs.size() * 30);
+                java.awt.image.BufferedImage img = new java.awt.image.BufferedImage(width, height, java.awt.image.BufferedImage.TYPE_INT_RGB);
+                java.awt.Graphics2D g2d = img.createGraphics();
+                
+                // Background
+                g2d.setColor(java.awt.Color.WHITE);
+                g2d.fillRect(0, 0, width, height);
+                
+                // Header
+                g2d.setColor(new java.awt.Color(44, 62, 80));
+                g2d.setFont(new java.awt.Font("SansSerif", java.awt.Font.BOLD, 28));
+                g2d.drawString("SkillSync - Profile Intel Dossier", 50, 60);
+                
+                // Subheader
+                g2d.setFont(new java.awt.Font("SansSerif", java.awt.Font.PLAIN, 18));
+                g2d.setColor(java.awt.Color.GRAY);
+                g2d.drawString("Confidential Inhabitant Report", 50, 90);
+                
+                // Profile Data
+                g2d.setColor(java.awt.Color.BLACK);
+                g2d.setFont(new java.awt.Font("SansSerif", java.awt.Font.BOLD, 16));
+                int y = 140;
+                g2d.drawString("Name: " + (user.getName() != null ? user.getName() : "N/A"), 50, y); y+=30;
+                g2d.drawString("Email: " + (user.getEmail() != null ? user.getEmail() : "N/A"), 50, y); y+=30;
+                g2d.drawString("Role: " + (user.getRole() != null ? user.getRole() : "N/A"), 50, y); y+=30;
+                g2d.drawString("Status: " + (user.getStatus() != null ? user.getStatus() : "N/A"), 50, y); y+=30;
+                g2d.drawString("Last Active: " + (user.getLastActive() != null ? user.getLastActive().toString() : "N/A"), 50, y); y+=30;
+                g2d.drawString("Total Sessions: " + user.getTotalSessions(), 50, y); y+=50;
+                
+                // Logs
+                g2d.setColor(new java.awt.Color(44, 62, 80));
+                g2d.setFont(new java.awt.Font("SansSerif", java.awt.Font.BOLD, 20));
+                g2d.drawString("Recent Action Audit", 50, y); y+=40;
+                
+                g2d.setColor(java.awt.Color.DARK_GRAY);
+                g2d.setFont(new java.awt.Font("Monospaced", java.awt.Font.PLAIN, 14));
+                for(com.skillsync.user.entity.AuditLog logEntry : logs.stream().limit(10).collect(Collectors.toList())) {
+                    String line = "- " + logEntry.getTimestamp() + ": " + logEntry.getAction();
+                    g2d.drawString(line, 50, y); y+=20;
+                    g2d.drawString("  (" + logEntry.getDescription() + ")", 50, y); y+=30;
+                }
+                
+                g2d.dispose();
+                java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
+                javax.imageio.ImageIO.write(img, "png", baos);
+                return baos.toByteArray();
+                
+            } else {
+                // PDF Document
+                com.itextpdf.text.Document document = new com.itextpdf.text.Document();
+                java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
+                com.itextpdf.text.pdf.PdfWriter.getInstance(document, baos);
+                
+                document.open();
+                
+                com.itextpdf.text.Font titleFont = com.itextpdf.text.FontFactory.getFont(com.itextpdf.text.FontFactory.HELVETICA_BOLD, 20, com.itextpdf.text.BaseColor.DARK_GRAY);
+                com.itextpdf.text.Font headerFont = com.itextpdf.text.FontFactory.getFont(com.itextpdf.text.FontFactory.HELVETICA_BOLD, 12, com.itextpdf.text.BaseColor.BLACK);
+                com.itextpdf.text.Font normalFont = com.itextpdf.text.FontFactory.getFont(com.itextpdf.text.FontFactory.HELVETICA, 10, com.itextpdf.text.BaseColor.BLACK);
+                
+                document.add(new com.itextpdf.text.Paragraph("SkillSync - Profile Intel Dossier", titleFont));
+                document.add(new com.itextpdf.text.Paragraph("Confidential Inhabitant Report", normalFont));
+                document.add(new com.itextpdf.text.Paragraph(" "));
+                
+                com.itextpdf.text.pdf.PdfPTable table = new com.itextpdf.text.pdf.PdfPTable(2);
+                table.setWidthPercentage(100);
+                table.addCell(new com.itextpdf.text.Phrase("Name", headerFont)); table.addCell(new com.itextpdf.text.Phrase(user.getName() != null ? user.getName() : "N/A", normalFont));
+                table.addCell(new com.itextpdf.text.Phrase("Email", headerFont)); table.addCell(new com.itextpdf.text.Phrase(user.getEmail() != null ? user.getEmail() : "N/A", normalFont));
+                table.addCell(new com.itextpdf.text.Phrase("Role", headerFont)); table.addCell(new com.itextpdf.text.Phrase(user.getRole() != null ? user.getRole() : "N/A", normalFont));
+                table.addCell(new com.itextpdf.text.Phrase("Status", headerFont)); table.addCell(new com.itextpdf.text.Phrase(user.getStatus() != null ? user.getStatus() : "N/A", normalFont));
+                table.addCell(new com.itextpdf.text.Phrase("Last Active", headerFont)); table.addCell(new com.itextpdf.text.Phrase(user.getLastActive() != null ? user.getLastActive().toString() : "N/A", normalFont));
+                table.addCell(new com.itextpdf.text.Phrase("Total Sessions", headerFont)); table.addCell(new com.itextpdf.text.Phrase(String.valueOf(user.getTotalSessions()), normalFont));
+                
+                document.add(table);
+                document.add(new com.itextpdf.text.Paragraph(" "));
+                document.add(new com.itextpdf.text.Paragraph("Recent Action Audit", headerFont));
+                document.add(new com.itextpdf.text.Paragraph(" "));
+                
+                for(com.skillsync.user.entity.AuditLog logEntry : logs.stream().limit(10).collect(Collectors.toList())) {
+                     document.add(new com.itextpdf.text.Paragraph("- " + logEntry.getTimestamp() + ": " + logEntry.getAction(), headerFont));
+                     document.add(new com.itextpdf.text.Paragraph("  " + logEntry.getDescription(), normalFont));
+                     document.add(new com.itextpdf.text.Paragraph(" "));
+                }
+                
+                document.close();
+                return baos.toByteArray();
+            }
+        } catch (Exception e) {
+            log.error("Error generating report: ", e);
+            throw new RuntimeException("Failed to generate file", e);
+        }
+    }
+
+    @Override
     public List<com.skillsync.user.entity.AuditLog> getUserLogs(Long userId) {
         log.info("Fetching audit trail for userId: {}", userId);
         return auditLogRepository.findByTargetIdAndTargetTypeOrderByTimestampDesc(userId, "USER");
+    }
+    
+    private void sendStatusEmail(String email, String name, String status, String reason, Long userId) {
+        log.info("Preparing status update email for {}", email);
+        if (email == null || email.trim().isEmpty()) return;
+        
+        try {
+            jakarta.mail.internet.MimeMessage message = mailSender.createMimeMessage();
+            org.springframework.mail.javamail.MimeMessageHelper helper = new org.springframework.mail.javamail.MimeMessageHelper(message, true);
+            
+            helper.setTo(email);
+            helper.setSubject("Your account status has been updated");
+            
+            String body = "Hello " + name + ",\n\n" +
+                          "Your mentor account has been " + status.toLowerCase() + ".\n\n" +
+                          "Reason:\n" + reason + "\n\n" +
+                          "If you believe this is a mistake, contact support.\n\n" +
+                          "Regards,\nSkillSync Team";
+            helper.setText(body);
+            
+            byte[] pdfBytes = generateReport(userId, "PDF");
+            helper.addAttachment("Audit_Report_" + status + ".pdf", new org.springframework.core.io.ByteArrayResource(pdfBytes));
+            
+            mailSender.send(message);
+            log.info("Successfully dispatched status update e-mail with Audit attachment to {}", email);
+        } catch (Exception e) {
+            log.error("Failed to dispatch status email to {}: {}", email, e.getMessage());
+        }
     }
 }

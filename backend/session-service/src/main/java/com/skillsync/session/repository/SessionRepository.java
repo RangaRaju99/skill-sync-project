@@ -31,4 +31,7 @@ public interface SessionRepository extends JpaRepository<Session, Long> {
            "AND s.scheduledAt >= :startTime AND s.scheduledAt <= :endTime " +
            "AND s.status IN ('REQUESTED', 'ACCEPTED')")
     List<Session> findSessionsInTimeRange(Long mentorId, LocalDateTime startTime, LocalDateTime endTime);
+
+    @Query("SELECT COUNT(s) FROM Session s WHERE s.mentorId = :mentorId")
+    long countByMentorId(Long mentorId);
 }

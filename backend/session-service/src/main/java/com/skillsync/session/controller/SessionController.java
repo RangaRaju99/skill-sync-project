@@ -217,4 +217,17 @@ public class SessionController {
                 .statusCode(200)
                 .build());
     }
+
+    @GetMapping("/mentor/{mentorId}/count")
+    @Operation(summary = "Get session count for mentor (internal)")
+    public ResponseEntity<ApiResponse<Long>> getMentorSessionCount(@PathVariable Long mentorId) {
+        log.info("GET /mentor/{}/count - internal count request", mentorId);
+        long count = sessionService.getMentorSessionCount(mentorId);
+        return ResponseEntity.ok(ApiResponse.<Long>builder()
+                .success(true)
+                .data(count)
+                .message("Session count retrieved")
+                .statusCode(200)
+                .build());
+    }
 }
