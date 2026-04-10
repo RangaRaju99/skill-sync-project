@@ -2,7 +2,12 @@ import apiClient from './apiClient';
 
 export const authService = {
   login: async (credentials: any) => {
-    return await apiClient.post('/auth/login', credentials);
+    try {
+      return await apiClient.post('/auth/login', credentials);
+    } catch (err: any) {
+      console.error('[SkillSync Auth] Login Failed:', err.response?.data || err.message);
+      throw err;
+    }
   },
   register: async (userData: any) => {
     return await apiClient.post('/auth/register', userData);

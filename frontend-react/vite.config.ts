@@ -9,20 +9,20 @@ export default defineConfig({
     react(),
     tailwindcss(),
   ],
+  optimizeDeps: {
+    include: ['@stomp/stompjs', 'sockjs-client', 'react-is', 'recharts']
+  },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
+      'react-is': path.resolve(__dirname, './node_modules/react-is'),
     },
+  },
+  define: {
+    global: 'window',
   },
   server: {
     port: 4200,
-    proxy: {
-      '/api': {
-        target: 'http://api.20.244.84.62.nip.io',
-        changeOrigin: true,
-        secure: false,
-      },
-    },
   },
 })
 

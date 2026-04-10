@@ -114,7 +114,7 @@ services:
       rabbitmq:
         condition: service_healthy
       eureka-server:
-        condition: service_started
+        condition: service_healthy
     dns:
       - 8.8.8.8
       - 8.8.4.4
@@ -143,7 +143,7 @@ services:
       rabbitmq:
         condition: service_healthy
       eureka-server:
-        condition: service_started
+        condition: service_healthy
     networks:
       - private-network
 
@@ -166,7 +166,7 @@ services:
       redis:
         condition: service_healthy
       eureka-server:
-        condition: service_started
+        condition: service_healthy
     networks:
       - private-network
 
@@ -191,7 +191,7 @@ services:
       rabbitmq:
         condition: service_healthy
       eureka-server:
-        condition: service_started
+        condition: service_healthy
     networks:
       - private-network
 
@@ -216,7 +216,7 @@ services:
       rabbitmq:
         condition: service_healthy
       eureka-server:
-        condition: service_started
+        condition: service_healthy
     networks:
       - private-network
 
@@ -239,7 +239,7 @@ services:
       redis:
         condition: service_healthy
       eureka-server:
-        condition: service_started
+        condition: service_healthy
     networks:
       - private-network
 
@@ -264,7 +264,7 @@ services:
       rabbitmq:
         condition: service_healthy
       eureka-server:
-        condition: service_started
+        condition: service_healthy
     networks:
       - private-network
 
@@ -285,7 +285,7 @@ services:
       rabbitmq:
         condition: service_healthy
       eureka-server:
-        condition: service_started
+        condition: service_healthy
     dns:
       - 8.8.8.8
       - 8.8.4.4
@@ -310,10 +310,42 @@ services:
       rabbitmq:
         condition: service_healthy
       eureka-server:
-        condition: service_started
+        condition: service_healthy
     dns:
       - 8.8.8.8
       - 8.8.4.4
+    networks:
+      - private-network
+      - proxy-network
+
+  chat-service:
+    build: ./chat-service
+    image: ${DOCKER_USERNAME}/skillsync-chat-service:latest
+    container_name: chat-service
+    restart: on-failure
+    env_file: .env
+    environment:
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
+      MANAGEMENT_ZIPKIN_TRACING_ENDPOINT: ${ZIPKIN_ENDPOINT}
+      MANAGEMENT_TRACING_SAMPLING_PROBABILITY: ${TRACING_SAMPLING_PROBABILITY}
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: ${EUREKA_DEFAULT_ZONE}
+      SPRING_DATA_REDIS_HOST: ${REDIS_HOST}
+      SPRING_DATA_REDIS_PORT: ${REDIS_PORT}
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_USERNAME: root
+      DB_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      SERVER_PORT: 8091
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
     networks:
       - private-network
       - proxy-network
@@ -336,6 +368,11 @@ services:
     depends_on:
       zipkin:
         condition: service_started
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8761/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
     networks:
       - private-network
       - proxy-network
@@ -353,7 +390,7 @@ services:
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: ${EUREKA_DEFAULT_ZONE}
     depends_on:
       eureka-server:
-        condition: service_started
+        condition: service_healthy
       zipkin:
         condition: service_started
     networks:

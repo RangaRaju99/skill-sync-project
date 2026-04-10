@@ -25,11 +25,15 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @RestController
 @RequestMapping("/auth")
 @Tag(name = "Authentication", description = "User authentication and token management")
 public class AuthController {
 
+    private static final Logger log = LoggerFactory.getLogger(AuthController.class);
     private final AuthService authService;
     private final OAuthService oAuthService;
 
@@ -75,13 +79,27 @@ public class AuthController {
     @PostMapping("/login")
     @Operation(summary = "Login user", description = "Authenticate user with email and password")
     @ApiResponses(value = {
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Login successful, JWT token provided"),
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid credentials"),
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Unauthorized")
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Login successful"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Invalid credentials"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "User not found")
     })
-    public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
-        AuthResponse response = authService.login(request);
-        return ResponseEntity.ok(response);
+    public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request) {
+        try {
+            AuthResponse response = authService.login(request);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            log.error("Login failed for {}: {}", request.email(), e.getMessage());
+            
+            String msg = e.getMessage();
+            if (msg.contains("User not found")) {
+                return ResponseEntity.status(404).body(new ApiResponse<>(msg, 404));
+            }
+            if (msg.contains("Invalid credentials") || msg.contains("password")) {
+                return ResponseEntity.status(401).body(new ApiResponse<>(msg, 401));
+            }
+            
+            return ResponseEntity.status(400).body(new ApiResponse<>(msg, 400));
+        }
     }
 
     @PostMapping("/refresh")

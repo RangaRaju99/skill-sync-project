@@ -19,6 +19,7 @@ SERVICES=(
   "review-service"
   "notification-service"
   "payment-gateway"
+  "chat-service"
 )
 
 echo "Logging in to Docker Hub..."

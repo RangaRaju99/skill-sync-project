@@ -420,6 +420,14 @@ export default function GroupDetailPage() {
             </div>
 
             <div className="space-y-3">
+              {isJoined && (
+                <button
+                  onClick={() => navigate('/chat', { state: { groupId } })}
+                  className="w-full h-16 bg-indigo-50 text-indigo-600 rounded-[1.5rem] font-black text-xs uppercase tracking-[0.2em] flex items-center justify-center gap-3 border border-indigo-100 hover:bg-indigo-100 transition-all mb-4"
+                >
+                  <MessageSquare className="w-5 h-5" /> Hub Discussion
+                </button>
+              )}
               {isCreator ? (
                 <button
                   onClick={openManageDrawer}

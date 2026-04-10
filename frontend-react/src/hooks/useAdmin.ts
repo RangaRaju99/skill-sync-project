@@ -135,8 +135,8 @@ export const useAdmin = () => {
     });
 
     return {
-        stats: {
-           ...(statsQuery.data || {}),
+        systemStats: {
+           ...(statsQuery.data?.data || statsQuery.data || {}),
            pendingMentors: pendingMentorsQuery.data || 0
         },
         pendingMentors: pendingMentorsQuery.data || 0,

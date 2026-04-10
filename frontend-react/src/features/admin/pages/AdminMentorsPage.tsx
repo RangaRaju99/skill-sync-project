@@ -77,7 +77,7 @@ export default function AdminMentorsPage() {
         showToast('Application rejected', 'info');
       } else if (confirmModal.type === 'SUSPEND' && confirmModal.mentor) {
         await suspend({ mentorId: confirmModal.mentor.id, reason });
-        showToast('Mentor suspended', 'warning');
+        showToast('Mentor suspended', 'info');
       } else if (confirmModal.type === 'RE_REVIEW' && confirmModal.mentor) {
         await reReview(confirmModal.mentor.id);
         showToast('Moved to re-review queue', 'info');
@@ -98,7 +98,7 @@ export default function AdminMentorsPage() {
     }
   };
 
-  const selectedList = mentors.filter(m => selectedMentors.includes(m.id));
+  const selectedList = useMemo(() => mentors.filter(m => selectedMentors.includes(m.id)), [mentors, selectedMentors]);
 
   const bulkActionsValid = useMemo(() => {
     if (selectedList.length === 0) return null;
@@ -118,14 +118,14 @@ export default function AdminMentorsPage() {
     };
   }, [selectedList]);
 
-  const toggleSelect = id => setSelectedMentors(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
+  const toggleSelect = (id: number) => setSelectedMentors(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
 
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'APPROVED': return 'bg-emerald-50 text-emerald-700 border-emerald-200';
       case 'PENDING': return 'bg-amber-50 text-amber-700 border-amber-200';
-      case 'REJECTED': return 'bg-rose-50 text-rose-700 border-rose-200';
-      case 'SUSPENDED': return 'bg-rose-50 text-rose-700 border-rose-200';
+      case 'REJECTED': return 'bg-rose-100 text-rose-800 border-rose-300';
+      case 'SUSPENDED': return 'bg-slate-100 text-slate-700 border-slate-300';
       default: return 'bg-slate-50 text-slate-600 border-slate-200';
     }
   };
@@ -193,7 +193,7 @@ export default function AdminMentorsPage() {
             placeholder="Search mentors (name, email, skill...)"
             className="w-full pl-10 h-10 bg-transparent text-[13px] outline-none"
             value={filters.search}
-            onChange={e => setFilters({ ...filters, search: e.target.value })}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFilters({ ...filters, search: e.target.value })}
           />
         </div>
 
@@ -202,7 +202,7 @@ export default function AdminMentorsPage() {
         <select
           className="h-10 px-3 bg-transparent text-[13px] font-medium text-slate-600 outline-none"
           value={filters.status}
-          onChange={e => setFilters({ ...filters, status: e.target.value })}
+          onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setFilters({ ...filters, status: e.target.value })}
         >
           <option value="ALL">All Status</option>
           <option value="PENDING">Pending</option>
@@ -215,13 +215,13 @@ export default function AdminMentorsPage() {
           placeholder="Skill..."
           className="w-32 h-10 text-[13px] border-none bg-slate-50/50 rounded-lg"
           value={filters.skill}
-          onChange={e => setFilters({ ...filters, skill: e.target.value })}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFilters({ ...filters, skill: e.target.value })}
         />
 
         <select
           className="h-10 px-3 bg-transparent text-[13px] font-medium text-slate-600 outline-none"
           value={filters.experience}
-          onChange={e => setFilters({ ...filters, experience: e.target.value })}
+          onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setFilters({ ...filters, experience: e.target.value })}
         >
           <option value="ALL">All Experience</option>
           <option value="5+">5+ Years</option>
@@ -309,7 +309,7 @@ export default function AdminMentorsPage() {
                 <input
                   type="checkbox"
                   className="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-100"
-                  onChange={e => e.target.checked ? setSelectedMentors(filteredMentors.map(m => m.id)) : setSelectedMentors([])}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => e.target.checked ? setSelectedMentors(filteredMentors.map(m => m.id)) : setSelectedMentors([])}
                   checked={selectedMentors.length > 0 && selectedMentors.length === filteredMentors.length}
                 />
               </th>
@@ -411,7 +411,7 @@ export default function AdminMentorsPage() {
         isLoading={isProcessing}
       >
         <div className="space-y-5 pt-2 pb-2 font-sans text-slate-800">
-          
+
           <div className="text-center bg-transparent">
             <p className="text-[15px] text-slate-600 font-medium">
               You are about to <span className="font-bold text-slate-900 border-b-2 border-indigo-200">{confirmModal.type.replace('BULK_', '').toLowerCase()}</span> this mentor.
@@ -419,15 +419,15 @@ export default function AdminMentorsPage() {
           </div>
 
           <div className="flex flex-col gap-1.5 p-4 bg-white rounded-xl shadow-sm border border-slate-200">
-             {confirmModal.mentor ? (
-                <>
-                  <p className="text-[13px] font-semibold text-slate-800">User: <span className="font-medium text-slate-500 ml-1">{getUserDisplayName(confirmModal.mentor)}</span></p>
-                  <p className="text-[13px] font-semibold text-slate-800">Email: <span className="font-medium text-slate-500 ml-1">{confirmModal.mentor.email}</span></p>
-                  <p className="text-[13px] font-semibold text-slate-800">Current Status: <span className="font-medium text-slate-500 ml-1 capitalize">{confirmModal.mentor.status.toLowerCase()}</span></p>
-                </>
-             ) : (
-                <p className="text-[13px] font-semibold text-slate-600 text-center py-2">Batch Action ({selectedMentors.length} Mentors selected)</p>
-             )}
+            {confirmModal.mentor ? (
+              <>
+                <p className="text-[13px] font-semibold text-slate-800">User: <span className="font-medium text-slate-500 ml-1">{getUserDisplayName(confirmModal.mentor)}</span></p>
+                <p className="text-[13px] font-semibold text-slate-800">Email: <span className="font-medium text-slate-500 ml-1">{confirmModal.mentor.email}</span></p>
+                <p className="text-[13px] font-semibold text-slate-800">Current Status: <span className="font-medium text-slate-500 ml-1 capitalize">{confirmModal.mentor.status.toLowerCase()}</span></p>
+              </>
+            ) : (
+              <p className="text-[13px] font-semibold text-slate-600 text-center py-2">Batch Action ({selectedMentors.length} Mentors selected)</p>
+            )}
           </div>
 
           {(confirmModal.type.includes('REJECT') || confirmModal.type.includes('SUSPEND')) && (
@@ -435,10 +435,10 @@ export default function AdminMentorsPage() {
               <label className="text-[13px] font-bold text-slate-700">
                 Reason (required)
               </label>
-              
+
               <div className="flex gap-2 flex-wrap mb-2">
                 {['Spam activity', 'Inactive', 'Policy violation', 'Low quality', 'Other'].map(suggestion => (
-                  <button 
+                  <button
                     key={suggestion}
                     type="button"
                     onClick={() => setReason(suggestion)}
@@ -459,15 +459,15 @@ export default function AdminMentorsPage() {
           )}
 
           <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 mt-2">
-             <p className="text-[13px] font-bold text-slate-800 mb-2 flex items-center gap-1.5">
-               <Info size={16} className="text-indigo-500"/> Action Preview
-             </p>
-             <p className="text-[12px] text-slate-500 mb-2 font-medium">This will:</p>
-             <ul className="text-[12px] text-slate-600 space-y-1.5 ml-5 list-disc marker:text-indigo-300 font-medium tracking-tight">
-               <li>Change status to <span className="font-bold text-slate-800 uppercase text-[11px] px-1.5 py-0.5 bg-white border rounded shadow-sm mx-1">{confirmModal.type.replace('BULK_', '')}</span></li>
-               <li>Record this action securely in the permanent database log</li>
-               <li>Notify the user immediately via email with attached audit</li>
-             </ul>
+            <p className="text-[13px] font-bold text-slate-800 mb-2 flex items-center gap-1.5">
+              <Info size={16} className="text-indigo-500" /> Action Preview
+            </p>
+            <p className="text-[12px] text-slate-500 mb-2 font-medium">This will:</p>
+            <ul className="text-[12px] text-slate-600 space-y-1.5 ml-5 list-disc marker:text-indigo-300 font-medium tracking-tight">
+              <li>Change status to <span className="font-bold text-slate-800 uppercase text-[11px] px-1.5 py-0.5 bg-white border rounded shadow-sm mx-1">{confirmModal.type.replace('BULK_', '')}</span></li>
+              <li>Record this action securely in the permanent database log</li>
+              <li>Notify the user immediately via email with attached audit</li>
+            </ul>
           </div>
         </div>
       </SaaSModal>

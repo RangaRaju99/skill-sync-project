@@ -9,9 +9,10 @@ interface ModalProps {
   children: React.ReactNode;
   onConfirm?: () => void;
   confirmLabel?: string;
+  isLoading?: boolean;
 }
 
-export const SaaSModal: React.FC<ModalProps> = ({ isOpen, onClose, title, type = 'info', children, onConfirm, confirmLabel = 'Authorize' }) => {
+export const SaaSModal: React.FC<ModalProps> = ({ isOpen, onClose, title, type = 'info', children, onConfirm, confirmLabel = 'Authorize', isLoading }) => {
   if (!isOpen) return null;
 
   const typeConfig = {
@@ -46,9 +47,10 @@ export const SaaSModal: React.FC<ModalProps> = ({ isOpen, onClose, title, type =
           </button>
           <button 
             onClick={onConfirm} 
-            className={`py-5 ${type === 'danger' ? 'bg-rose-600 shadow-rose-100' : 'bg-indigo-600 shadow-indigo-100'} text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-xl hover:opacity-90 transition-all`}
+            disabled={isLoading}
+            className={`py-5 ${type === 'danger' ? 'bg-rose-600 shadow-rose-100' : 'bg-indigo-600 shadow-indigo-100'} text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-xl hover:opacity-90 transition-all ${isLoading ? 'opacity-50 cursor-wait' : ''}`}
           >
-            {confirmLabel}
+            {isLoading ? 'Processing...' : confirmLabel}
           </button>
         </div>
       </div>

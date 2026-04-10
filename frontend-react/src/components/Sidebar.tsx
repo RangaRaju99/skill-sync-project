@@ -15,6 +15,7 @@ const allItems: NavItem[] = [
   { label: 'Skills', icon: 'collections_bookmark', route: '/skills' },
   { label: 'My Sessions', icon: 'event_note', route: '/sessions', roles: ['ROLE_LEARNER'] },
   { label: 'Groups', icon: 'groups', route: '/groups' },
+  { label: 'Chat', icon: 'chat', route: '/chat' },
   { label: 'Notifications', icon: 'notifications_none', route: '/notifications' },
   { label: 'Profile', icon: 'person_outline', route: '/profile' },
   { label: 'Settings', icon: 'settings', route: '/settings' },

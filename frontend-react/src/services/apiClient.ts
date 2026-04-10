@@ -7,7 +7,7 @@ import { tokenHandler } from '../utils/tokenHandler';
  * This respects the backend's internal RBAC (Role-Based Access Control).
  */
 const apiClient = axios.create({
-  baseURL: '/api',
+  baseURL: 'https://api.20.244.84.62.nip.io/api',
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json, text/plain, */*',

@@ -16,7 +16,7 @@ export default function AdminPage() {
    const [activeTab, setActiveTab] = useState<'dashboard' | 'users' | 'groups' | 'mentors' | 'skills' | 'audit' | 'settings' | 'permissions'>('dashboard');
    const {
       pendingMentors,
-      registeredUsers, isRegisteredUsersLoading, changeRole, updateStatus,
+      registeredUsers, isUsersLoading, changeRole, updateStatus,
       auditLogs, systemStats
    } = useAdmin();
    const { groups } = useGroups();
@@ -159,7 +159,7 @@ export default function AdminPage() {
                </div>
                <UserTable
                   users={paginatedUsers}
-                  isLoading={isRegisteredUsersLoading}
+                  isLoading={isUsersLoading}
                   onRoleChange={(id, val) => setActionModal({ show: true, userId: id, type: 'ROLE', value: val, reason: '' })}
                   onStatusChange={(id, status) => setActionModal({ show: true, userId: id, type: 'STATUS', value: status === 'ACTIVE' ? 'BLOCKED' : 'ACTIVE', reason: '' })}
                />

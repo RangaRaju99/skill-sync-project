@@ -6,9 +6,10 @@ interface DrawerProps {
   onClose: () => void;
   title: string;
   children: React.ReactNode;
+  className?: string; // Added support for custom styles
 }
 
-export const SaaSDrawer: React.FC<DrawerProps> = ({ isOpen, onClose, title, children }) => {
+export const SaaSDrawer: React.FC<DrawerProps> = ({ isOpen, onClose, title, children, className }) => {
   useEffect(() => {
     if (isOpen) document.body.style.overflow = 'hidden';
     else document.body.style.overflow = 'unset';
@@ -45,7 +46,7 @@ export const SaaSDrawer: React.FC<DrawerProps> = ({ isOpen, onClose, title, chil
           </div>
 
           {/* Content */}
-          <div className="flex-1 overflow-y-auto p-10 no-scrollbar">
+          <div className={`flex-1 overflow-y-auto no-scrollbar ${className || 'p-10'}`}>
             {children}
           </div>
         </div>

@@ -167,7 +167,7 @@ export const ProfileDrawer = ({ reviewMentor, onClose }: { reviewMentor: MentorP
       <DownloadReportModal
         isOpen={isReportModalOpen}
         onClose={() => setIsReportModalOpen(false)}
-        userId={reviewMentor.id} // Mentor Endpoint handles report via Mentor ID
+        userId={reviewMentor.userId} // CORRECTED: Use User ID for user-service endpoint
         userName={getUserDisplayName(reviewMentor)}
       />
     </>

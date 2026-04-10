@@ -9,6 +9,7 @@ import ForgotPasswordPage from './features/auth/pages/ForgotPasswordPage';
 import OtpVerifyPage from './features/auth/pages/OtpVerifyPage';
 import RegisterDetailsPage from './features/auth/pages/RegisterDetailsPage';
 import AuthSuccessPage from './features/auth/pages/AuthSuccessPage';
+import ChatPage from './features/chat/pages/ChatPage';
 import MentorsPage from './features/mentors/pages/MentorsPage';
 import MentorDetailPage from './features/mentors/pages/MentorDetailPage';
 import ApplyMentorPage from './features/mentors/pages/ApplyMentorPage';
@@ -56,6 +57,15 @@ function App() {
           const claims = JSON.parse(window.atob(base64));
           roles = claims.roles || [];
           jwtUserId = claims.userId ? String(claims.userId) : null;
+
+          // Check for expiration
+          const now = Math.floor(Date.now() / 1000);
+          if (claims.exp && claims.exp < now) {
+            console.warn('Token expired, logging out locally...');
+            logout();
+            window.location.href = '/auth/login';
+            return;
+          }
         } catch (e) {
           console.warn('Failed to decode JWT on startup:', e);
         }
@@ -73,8 +83,10 @@ function App() {
           };
 
           setAuth(user, token);
-        } catch (e) {
-          console.error('Initial auth check failed:', e);
+        } catch (e: any) {
+          if (e.response?.status !== 401) {
+            console.error('Initial auth check failed:', e);
+          }
           if (jwtUserId && roles.length) {
             const fallbackUser = {
               id: jwtUserId,
@@ -143,6 +155,7 @@ function App() {
             <Route path="mentor-dashboard" element={<MentorDashboardPage />} />
             <Route path="growth" element={<GrowthDashboardPage />} />
             <Route path="settings" element={<SettingsPage />} />
+            <Route path="chat" element={<ChatPage />} />
           </Route>
 
           {/* Admin Dedicated Layout */}
