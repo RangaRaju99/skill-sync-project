@@ -79,6 +79,8 @@ public class JwtFilter extends OncePerRequestFilter {
                 || path.contains("/v3/api-docs")
                 || path.contains("/swagger-ui")
                 || path.contains("/swagger-resources")
+                || path.contains("/oauth2/")
+                || path.contains("/login/oauth2/")
                 || path.equals("/auth/swagger-ui.html")
                 || path.contains("/error");
     }

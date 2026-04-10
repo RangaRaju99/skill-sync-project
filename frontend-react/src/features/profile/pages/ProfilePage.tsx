@@ -18,6 +18,7 @@ import ProfileForm from '@/components/profile/ProfileForm';
 import FloatingSaveBar from '@/components/profile/FloatingSaveBar';
 import TodayActivity from '@/features/activity/components/TodayActivity';
 import type { ActivityType } from '@/features/activity/components/ActivityItem';
+import ChangePasswordModal from '@/components/security/ChangePasswordModal';
 
 
 
@@ -48,6 +49,7 @@ export default function ProfilePage() {
   const [availableSkills, setAvailableSkills] = useState<Skill[]>([]);
   const [skillSearchQuery, setSkillSearchQuery] = useState('');
   const [hintsExpanded, setHintsExpanded] = useState(false);
+  const [showChangePassword, setShowChangePassword] = useState(false);
 
   const streakInfo = useMemo(() => loadStreakData(), [activities]);
   const xpData = useMemo(() => loadXPData(), [activities]);
@@ -302,12 +304,14 @@ export default function ProfilePage() {
       setSaveStatus('saved');
       setShowUndo(true);
 
-      setAuth({
-        ...user!,
-        name: updated.name || user!.name,
-        username: updated.username || user!.username,
-        avatar: updated.profileImageUrl || user!.avatar
-      }, token || localStorage.getItem('token')!);
+      if (user) {
+        setAuth({
+          ...user,
+          name: updated.name || user.name,
+          username: updated.username || user.username,
+          avatar: updated.profileImageUrl || user.avatar
+        }, token || localStorage.getItem('token')!);
+      }
 
       addActivity('profile', '✏️ Profile Updated', 'Synchronized identity info');
 
@@ -717,7 +721,10 @@ export default function ProfilePage() {
 
           {/* Quick Actions (Mock) */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="glass-card p-8 rounded-[32px] flex items-center justify-between group hover:border-purple-500/20 transition-all">
+            <div 
+              className="glass-card p-8 rounded-[32px] flex items-center justify-between group hover:border-purple-500/20 transition-all cursor-pointer"
+              onClick={() => setShowChangePassword(true)}
+            >
               <div className="flex items-center gap-6">
                 <div className="w-14 h-14 bg-purple-500/10 border border-purple-500/20 rounded-2xl flex items-center justify-center p-3.5 group-hover:bg-purple-500/20">
                   <Shield className="text-purple-500" />
@@ -745,6 +752,7 @@ export default function ProfilePage() {
           </div>
         </div>
       </div>
+      <ChangePasswordModal isOpen={showChangePassword} onClose={() => setShowChangePassword(false)} />
     </motion.div>
   );
 }

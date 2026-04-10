@@ -61,12 +61,10 @@ public class OAuthService {
         GoogleIdToken.Payload payload = verifyGoogleToken(idToken);
 
         String email      = payload.getEmail();
-        String providerId = payload.getSubject(); // Google's unique user ID
+        String providerId = payload.getSubject();
         String name       = (String) payload.get("name");
 
-        User user = userRepository.findByEmail(email)
-                .map(existing -> handleExistingUser(existing, providerId))
-                .orElseGet(() -> createOAuthUser(email, name, providerId, AuthProvider.GOOGLE));
+        User user = processOAuthUser(email, name, providerId, AuthProvider.GOOGLE);
 
         List<String> roles = Arrays.asList(user.getRole().split(","));
         String token = jwtUtil.generateToken(user.getId(), user.getEmail(), roles);
@@ -76,6 +74,13 @@ public class OAuthService {
         log.info("Google OAuth login successful for email={}", email);
 
         return new AuthResponse(token, roles, user.getUsername(), user.getId(), user.getEmail());
+    }
+
+    @Transactional
+    public User processOAuthUser(String email, String name, String providerId, AuthProvider provider) {
+        return userRepository.findByEmail(email)
+                .map(existing -> handleExistingUser(existing, providerId))
+                .orElseGet(() -> createOAuthUser(email, name, providerId, provider));
     }
 
     // ─────────────────────────────────────────────────────────────

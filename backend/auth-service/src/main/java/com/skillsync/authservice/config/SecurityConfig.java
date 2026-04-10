@@ -16,6 +16,7 @@ import com.skillsync.authservice.security.CustomUserDetailsService;
 import com.skillsync.authservice.security.JwtFilter;
 import com.skillsync.authservice.security.InternalServiceFilter;
 import com.skillsync.authservice.security.SecurityExceptionHandler;
+import com.skillsync.authservice.security.OAuth2SuccessHandler;
 
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -32,12 +33,16 @@ public class SecurityConfig {
     private final CustomUserDetailsService userDetailsService;
     private final InternalServiceFilter internalServiceFilter;
     private final SecurityExceptionHandler securityExceptionHandler;
+    private final OAuth2SuccessHandler oAuth2SuccessHandler;
 
-    public SecurityConfig(JwtFilter jwtFilter, CustomUserDetailsService userDetailsService, InternalServiceFilter internalServiceFilter, SecurityExceptionHandler securityExceptionHandler) {
+    public SecurityConfig(JwtFilter jwtFilter, CustomUserDetailsService userDetailsService, 
+                         InternalServiceFilter internalServiceFilter, SecurityExceptionHandler securityExceptionHandler,
+                         OAuth2SuccessHandler oAuth2SuccessHandler) {
         this.jwtFilter = jwtFilter;
         this.userDetailsService = userDetailsService;
         this.internalServiceFilter = internalServiceFilter;
         this.securityExceptionHandler = securityExceptionHandler;
+        this.oAuth2SuccessHandler = oAuth2SuccessHandler;
     }
 
     @Bean
@@ -50,7 +55,7 @@ public class SecurityConfig {
                 .requestMatchers("/auth/register", "/auth/login", "/auth/refresh",
                         "/auth/send-otp", "/auth/verify-otp",
                         "/auth/forgot-password", "/auth/verify-forgot-password", "/auth/reset-password",
-                        "/auth/oauth/google").permitAll()
+                        "/auth/oauth/google", "/oauth2/**", "/login/oauth2/**").permitAll()
                 .requestMatchers("/internal/**").permitAll()
                 .requestMatchers("/auth/internal/**").permitAll()
                 // Actuator endpoints for Prometheus scraping
@@ -59,9 +64,13 @@ public class SecurityConfig {
                 .requestMatchers("/v3/api-docs", "/v3/api-docs/**").permitAll()
                 .requestMatchers("/swagger-ui.html", "/swagger-ui/**").permitAll()
                 .requestMatchers("/swagger-resources", "/swagger-resources/**").permitAll()
+                .requestMatchers("/error").permitAll()
                 .anyRequest().authenticated()
             )
-            .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
+            .oauth2Login(oauth2 -> oauth2
+                .successHandler(oAuth2SuccessHandler)
+            )
             .exceptionHandling(ex -> ex
                 .authenticationEntryPoint(securityExceptionHandler)
                 .accessDeniedHandler(securityExceptionHandler)
@@ -71,11 +80,6 @@ public class SecurityConfig {
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
-    }
-
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
     }
 
     @Bean

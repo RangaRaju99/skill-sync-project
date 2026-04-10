@@ -239,4 +239,42 @@ public class AuthServiceImpl implements AuthService {
                 "email=" + email);
         log.info("Password reset successfully for email={}", email);
     }
+
+    // ─────────────────────────────────────────────────────────────
+    // Change Password (Authenticated)
+    // ─────────────────────────────────────────────────────────────
+
+    @Override
+    @Transactional
+    public void changePassword(Long userId, String oldPassword, String newPassword) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (Boolean.FALSE.equals(user.getIsActive())) {
+            throw new RuntimeException("Account is deactivated. Please contact support.");
+        }
+
+        // Block OAuth-only users who never set a local password
+        if (user.getAuthProvider() != AuthProvider.LOCAL && user.getPassword() == null) {
+            throw new RuntimeException(
+                "This account uses " + user.getAuthProvider() + " login. " +
+                "Please use 'Forgot Password' to set a local password first."
+            );
+        }
+
+        if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
+            throw new RuntimeException("Incorrect current password");
+        }
+
+        if (passwordEncoder.matches(newPassword, user.getPassword())) {
+            throw new RuntimeException("New password must be different from current password");
+        }
+
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+
+        auditService.log("User", user.getId(), "PASSWORD_CHANGED", user.getId().toString(),
+                "Password changed by authenticated user");
+        log.info("Password changed successfully for userId={}", userId);
+    }
 }

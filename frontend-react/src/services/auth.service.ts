@@ -26,5 +26,8 @@ export const authService = {
   // This is needed when a user is approved as a mentor AFTER they logged in
   refreshToken: async () => {
     return await apiClient.post('/auth/refresh', {});
+  },
+  changePassword: async (oldPassword: string, newPassword: string) => {
+    return await apiClient.post('/auth/change-password', { oldPassword, newPassword });
   }
 };

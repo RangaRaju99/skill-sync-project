@@ -12,6 +12,7 @@ import com.skillsync.authservice.dto.request.OtpRequest;
 import com.skillsync.authservice.dto.request.OtpVerifyRequest;
 import com.skillsync.authservice.dto.request.RegisterRequest;
 import com.skillsync.authservice.dto.request.ResetPasswordRequest;
+import com.skillsync.authservice.dto.request.ChangePasswordRequest;
 import com.skillsync.authservice.dto.response.ApiResponse;
 import com.skillsync.authservice.dto.response.AuthResponse;
 import com.skillsync.authservice.dto.request.GoogleTokenRequest;
@@ -148,5 +149,22 @@ public class AuthController {
     public ResponseEntity<AuthResponse> googleLogin(@Valid @RequestBody GoogleTokenRequest request) {
         AuthResponse response = oAuthService.loginWithGoogle(request.idToken());
         return ResponseEntity.ok(response);
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // Change Password (Authenticated)
+    // ─────────────────────────────────────────────────────────────
+
+    @PostMapping("/change-password")
+    @Operation(summary = "Change password", description = "Change password for authenticated user using current password")
+    @ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Password changed successfully"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Incorrect current password or weak new password")
+    })
+    public ResponseEntity<ApiResponse<Void>> changePassword(
+            @RequestHeader("X-User-Id") Long userId,
+            @Valid @RequestBody ChangePasswordRequest request) {
+        authService.changePassword(userId, request.oldPassword(), request.newPassword());
+        return ResponseEntity.ok(new ApiResponse<>("Password updated successfully", 200));
     }
 }

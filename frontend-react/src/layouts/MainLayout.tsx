@@ -19,7 +19,15 @@ export default function MainLayout() {
   const queryClient = useQueryClient();
   const hasRefreshed = useRef(false);
 
+  // Force clean state on mount
   useEffect(() => {
+    setMobileMenuOpen(false);
+  }, []);
+
+  useEffect(() => {
+    // Safety: Only perform sync/refresh if we have an authenticated user
+    if (!user || !user.id) return;
+
     // Already has ROLE_MENTOR in store
     const hasRoleLocally = user?.roles?.includes('ROLE_MENTOR');
 
@@ -77,7 +85,7 @@ export default function MainLayout() {
         // We already added the role locally above, so the UI will still work
       });
     }
-  }, [mentorProfile, allMentors, user?.id, user?.roles, token, setAuth, addRole, queryClient]);
+  }, [mentorProfile, allMentors, user?.id, user?.roles?.join(','), token, setAuth, addRole, queryClient]);
 
   useEffect(() => {
     setMobileMenuOpen(false);
@@ -139,6 +147,10 @@ export default function MainLayout() {
             <Link to="/profile" className="flex flex-col items-center gap-1 transition-colors hover:text-primary-500 text-slate-500 dark:text-slate-400">
               <span className="material-icons-outlined">person</span>
               <span className="text-[10px] font-medium uppercase tracking-wider">Profile</span>
+            </Link>
+            <Link to="/settings" className="flex flex-col items-center gap-1 transition-colors hover:text-primary-500 text-slate-500 dark:text-slate-400">
+              <span className="material-icons-outlined">settings</span>
+              <span className="text-[10px] font-medium uppercase tracking-wider">Settings</span>
             </Link>
           </nav>
 

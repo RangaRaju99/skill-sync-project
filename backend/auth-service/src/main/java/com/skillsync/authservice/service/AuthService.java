@@ -13,4 +13,5 @@ public interface AuthService {
 	void sendForgotPasswordOtp(String email);
 	void verifyForgotPasswordOtp(String email, String otp);
 	void resetPassword(String email, String newPassword);
+	void changePassword(Long userId, String oldPassword, String newPassword);
 }

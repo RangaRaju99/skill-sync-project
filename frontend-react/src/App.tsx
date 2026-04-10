@@ -8,6 +8,7 @@ import RegisterPage from './features/auth/pages/RegisterPage';
 import ForgotPasswordPage from './features/auth/pages/ForgotPasswordPage';
 import OtpVerifyPage from './features/auth/pages/OtpVerifyPage';
 import RegisterDetailsPage from './features/auth/pages/RegisterDetailsPage';
+import AuthSuccessPage from './features/auth/pages/AuthSuccessPage';
 import MentorsPage from './features/mentors/pages/MentorsPage';
 import MentorDetailPage from './features/mentors/pages/MentorDetailPage';
 import ApplyMentorPage from './features/mentors/pages/ApplyMentorPage';
@@ -15,6 +16,7 @@ import SessionsPage from './features/sessions/pages/SessionsPage';
 import RequestSessionPage from './features/sessions/pages/RequestSessionPage';
 import SessionDetailPage from './features/sessions/pages/SessionDetailPage';
 import ProfilePage from './features/profile/pages/ProfilePage';
+import SettingsPage from './features/profile/pages/SettingsPage';
 import ActivityHistoryPage from './features/activity/pages/ActivityHistoryPage';
 import SkillsPage from './features/skills/pages/SkillsPage';
 import GroupsPage from './features/groups/pages/GroupsPage';
@@ -106,9 +108,9 @@ function App() {
   return (
     <Router>
       <Routes>
-        {/* Public Routes */}
-        <Route path="/" element={<HomePage />} />
+        {/* Base Routes */}
         <Route path="/unauthorized" element={<UnauthorizedPage />} />
+        <Route path="/" element={<HomePage />} />
 
         {/* Auth Routes */}
         <Route path="/auth" element={<AuthLayout />}>
@@ -118,12 +120,12 @@ function App() {
           <Route path="forgot-password" element={<ForgotPasswordPage />} />
           <Route path="verify-otp" element={<OtpVerifyPage />} />
           <Route path="register-details" element={<RegisterDetailsPage />} />
+          <Route path="success" element={<AuthSuccessPage />} />
         </Route>
 
         {/* Protected App Routes */}
         <Route element={<ProtectedRoute />}>
-          {/* Main App Layout */}
-          <Route path="/" element={<MainLayout />}>
+          <Route element={<MainLayout />}>
             <Route path="mentors" element={<MentorsPage />} />
             <Route path="mentors/:id" element={<MentorDetailPage />} />
             <Route path="mentors/apply" element={<ApplyMentorPage />} />
@@ -140,6 +142,7 @@ function App() {
             <Route path="notifications" element={<NotificationsPage />} />
             <Route path="mentor-dashboard" element={<MentorDashboardPage />} />
             <Route path="growth" element={<GrowthDashboardPage />} />
+            <Route path="settings" element={<SettingsPage />} />
           </Route>
 
           {/* Admin Dedicated Layout */}

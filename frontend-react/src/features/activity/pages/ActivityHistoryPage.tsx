@@ -84,16 +84,18 @@ const ActivityHistoryPage: React.FC = () => {
      return { 
        id: l.id, 
        type, 
-       title: l.text, 
-       subtitle: l.subtitle,
+       title: l.text || l.title || 'System Activity', 
+       subtitle: l.subtitle || '',
        timestamp: l.timestamp 
      };
   };
 
   // Memoized Search & Filter (Step 19 Performance)
   const filteredActivities = useMemo(() => {
+    const safeQuery = (query || '').toLowerCase();
     return activities.filter(act => {
-      const matchesQuery = act.title.toLowerCase().includes(query.toLowerCase());
+      const safeTitle = (act.title || '').toLowerCase();
+      const matchesQuery = safeTitle.includes(safeQuery);
       const matchesFilter = activeFilter === 'all' || 
                             (activeFilter === 'achievements' && (act.type === 'badge' || act.type === 'level')) ||
                             (activeFilter === 'profile' && act.type === 'profile') ||

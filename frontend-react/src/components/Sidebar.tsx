@@ -17,6 +17,7 @@ const allItems: NavItem[] = [
   { label: 'Groups', icon: 'groups', route: '/groups' },
   { label: 'Notifications', icon: 'notifications_none', route: '/notifications' },
   { label: 'Profile', icon: 'person_outline', route: '/profile' },
+  { label: 'Settings', icon: 'settings', route: '/settings' },
   { label: 'Dashboard', icon: 'dashboard_customize', route: '/mentor-dashboard', roles: ['ROLE_MENTOR'] },
   { label: 'Admin', icon: 'admin_panel_settings', route: '/admin', roles: ['ROLE_ADMIN'] },
 ];
