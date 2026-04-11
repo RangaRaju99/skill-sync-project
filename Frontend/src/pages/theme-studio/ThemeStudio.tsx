@@ -7,22 +7,17 @@ import {
   Layout as LayoutIcon, 
   Component, 
   Download, 
-  Upload, 
   RotateCcw, 
-  ChevronLeft, 
   Smartphone, 
   Tablet, 
   Monitor,
   Undo2,
   Redo2,
-  Moon,
-  Sun,
-  Eye,
   Sparkles,
   Share2
 } from 'lucide-react';
 
-import { RootState } from '../../store';
+import type { RootState } from '../../store';
 import { 
   updateColors, 
   updateTypography, 
@@ -69,7 +64,7 @@ const ThemeStudio: React.FC = () => {
     dispatch(updateColors({ [key]: color }));
   };
 
-  const handlePresetChange = (preset: 'minimal' | 'neon') => {
+  const handlePresetChange = (preset: 'minimal' | 'neon' | 'hacker' | 'corporate' | 'auto') => {
     dispatch(setPresetTheme(preset));
   };
 
@@ -137,9 +132,12 @@ const ThemeStudio: React.FC = () => {
                     <div className="color-field" onClick={() => setShowColorPicker(showColorPicker === 'primary' ? null : 'primary')}>
                       <div className="color-preview" style={{ backgroundColor: theme.colors.primary }}></div>
                       {showColorPicker === 'primary' && (
-                        <div className="picker-popover" onClick={e => e.stopPropagation()}>
-                          <HexColorPicker color={theme.colors.primary} onChange={(c) => handleColorChange('primary', c)} />
-                        </div>
+                        <>
+                          <div className="picker-overlay" onClick={() => setShowColorPicker(null)}></div>
+                          <div className="picker-popover" onClick={e => e.stopPropagation()}>
+                            <HexColorPicker color={theme.colors.primary} onChange={(c) => handleColorChange('primary', c)} />
+                          </div>
+                        </>
                       )}
                     </div>
                   </div>
@@ -148,9 +146,12 @@ const ThemeStudio: React.FC = () => {
                     <div className="color-field" onClick={() => setShowColorPicker(showColorPicker === 'secondary' ? null : 'secondary')}>
                       <div className="color-preview" style={{ backgroundColor: theme.colors.secondary }}></div>
                       {showColorPicker === 'secondary' && (
-                        <div className="picker-popover" onClick={e => e.stopPropagation()}>
-                          <HexColorPicker color={theme.colors.secondary} onChange={(c) => handleColorChange('secondary', c)} />
-                        </div>
+                        <>
+                          <div className="picker-overlay" onClick={() => setShowColorPicker(null)}></div>
+                          <div className="picker-popover" onClick={e => e.stopPropagation()}>
+                            <HexColorPicker color={theme.colors.secondary} onChange={(c) => handleColorChange('secondary', c)} />
+                          </div>
+                        </>
                       )}
                     </div>
                   </div>
@@ -161,9 +162,12 @@ const ThemeStudio: React.FC = () => {
                     <div className="color-field" onClick={() => setShowColorPicker(showColorPicker === 'background' ? null : 'background')}>
                       <div className="color-preview" style={{ backgroundColor: theme.colors.background }}></div>
                       {showColorPicker === 'background' && (
-                        <div className="picker-popover" onClick={e => e.stopPropagation()}>
-                          <HexColorPicker color={theme.colors.background} onChange={(c) => handleColorChange('background', c)} />
-                        </div>
+                        <>
+                          <div className="picker-overlay" onClick={() => setShowColorPicker(null)}></div>
+                          <div className="picker-popover" onClick={e => e.stopPropagation()}>
+                            <HexColorPicker color={theme.colors.background} onChange={(c) => handleColorChange('background', c)} />
+                          </div>
+                        </>
                       )}
                     </div>
                   </div>
@@ -172,9 +176,12 @@ const ThemeStudio: React.FC = () => {
                     <div className="color-field" onClick={() => setShowColorPicker(showColorPicker === 'surface' ? null : 'surface')}>
                       <div className="color-preview" style={{ backgroundColor: theme.colors.surface }}></div>
                       {showColorPicker === 'surface' && (
-                        <div className="picker-popover" onClick={e => e.stopPropagation()}>
-                          <HexColorPicker color={theme.colors.surface} onChange={(c) => handleColorChange('surface', c)} />
-                        </div>
+                        <>
+                          <div className="picker-overlay" onClick={() => setShowColorPicker(null)}></div>
+                          <div className="picker-popover" onClick={e => e.stopPropagation()}>
+                            <HexColorPicker color={theme.colors.surface} onChange={(c) => handleColorChange('surface', c)} />
+                          </div>
+                        </>
                       )}
                     </div>
                   </div>

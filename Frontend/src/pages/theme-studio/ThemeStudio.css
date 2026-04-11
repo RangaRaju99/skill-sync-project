@@ -208,6 +208,12 @@
   background: white;
 }
 
+.picker-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 99;
+}
+
 /* Viewport Controls */
 .viewport-controls {
   position: absolute;

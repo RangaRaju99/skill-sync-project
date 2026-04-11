@@ -1,5 +1,5 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { AppTheme, ThemeHistory } from '../../types/theme';
+import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
+import type { AppTheme, ThemeHistory } from '../../types/theme';
 
 const DEFAULT_THEME: AppTheme = {
   id: 'default-minimal',
