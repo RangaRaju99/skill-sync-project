@@ -30,7 +30,7 @@ import {
 } from '../../store/slices/themeSlice';
 
 import './ThemeStudio.css';
-import { hexToRgba, exportTheme } from '../../utils/themeUtils';
+import { exportTheme } from '../../utils/themeUtils';
 import { HexColorPicker } from 'react-colorful';
 
 // Sub-components
