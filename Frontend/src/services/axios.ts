@@ -27,22 +27,27 @@ const api = axios.create({
   headers: { 'Content-Type': 'application/json' },
 });
 
-// REQUEST INTERCEPTOR — we no longer manually attach the token.
-// The browser will automatically send the HttpOnly 'accessToken' cookie.
+// REQUEST INTERCEPTOR — Manually attach the Bearer token from Redux state.
+// This is required for cross-domain functionality (skillsync.rangaraju.dev) 
+// where HttpOnly cookies from api.skillsync.mraks.dev are not accessible.
 api.interceptors.request.use((config) => {
+  const token = store.getState().auth.accessToken;
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
   return config;
 });
 
 // RESPONSE INTERCEPTOR — handle 401 with silent token refresh + retry
 let isRefreshing = false;
-let failedQueue: Array<{ resolve: () => void; reject: (err: any) => void }> = [];
+let failedQueue: Array<{ resolve: (token: string) => void; reject: (err: any) => void }> = [];
 
 const isInvalidSessionStatus = (status?: number): boolean => status === 401 || status === 403;
 
-const processQueue = (error: any) => {
+const processQueue = (error: any, token: string | null = null) => {
   failedQueue.forEach(({ resolve, reject }) => {
     if (error) reject(error);
-    else resolve();
+    else resolve(token!);
   });
   failedQueue = [];
 };
@@ -65,11 +70,11 @@ api.interceptors.response.use(
       originalRequest._retry = true;
 
       if (isRefreshing) {
-        return new Promise<void>((resolve, reject) => {
+        return new Promise<string>((resolve, reject) => {
           failedQueue.push({ resolve, reject });
-        }).then(() => {
+        }).then((token) => {
           if (originalRequest.headers) {
-            delete originalRequest.headers.Authorization;
+            originalRequest.headers.Authorization = `Bearer ${token}`;
           }
           return api(originalRequest);
         });
@@ -90,55 +95,31 @@ api.interceptors.response.use(
         );
 
         const refreshed = refreshResponse?.data;
-        if (refreshed?.user) {
+        if (refreshed?.accessToken) {
           store.dispatch(
             setCredentials({
-              user: refreshed.user,
-              accessToken: refreshed.accessToken || '',
+              user: refreshed.user || store.getState().auth.user,
+              accessToken: refreshed.accessToken,
               refreshToken: refreshed.refreshToken || currentRefreshToken || '',
             }),
           );
-        }
 
-        // Refresh was successful. Tokens are cookie-based, so queued requests
-        // should be replayed without forcing an Authorization header.
-        processQueue(null);
-        
-        // Re-run original request without altering authorization header
-        if (originalRequest.headers) {
-          delete originalRequest.headers.Authorization;
+          const newToken = refreshed.accessToken;
+          processQueue(null, newToken);
+          
+          if (originalRequest.headers) {
+            originalRequest.headers.Authorization = `Bearer ${newToken}`;
+          }
+          return api(originalRequest);
         }
-        return api(originalRequest);
+        
+        throw new Error('No access token returned');
       } catch (refreshError) {
         processQueue(refreshError);
         const refreshStatus = (refreshError as any)?.response?.status;
 
         // Only force logout when the refresh token is definitely invalid/expired.
         if (isInvalidSessionStatus(refreshStatus)) {
-          try {
-            // Multi-tab or timing races can briefly fail refresh while a valid cookie session still exists.
-            const meResponse = await api.get('/api/auth/me', {
-              _skipErrorRedirect: true,
-              _skipAuthRedirect: true,
-            } as any);
-
-            if (meResponse?.data) {
-              const currentRefreshToken = store.getState().auth.refreshToken;
-              store.dispatch(setCredentials({
-                user: meResponse.data,
-                accessToken: store.getState().auth.accessToken || '',
-                refreshToken: currentRefreshToken || '',
-              }));
-
-              if (originalRequest.headers) {
-                delete originalRequest.headers.Authorization;
-              }
-              return api(originalRequest);
-            }
-          } catch {
-            // Fall through to forced logout only when sanity check also fails.
-          }
-
           store.dispatch(logout());
           window.location.href = '/login?reason=session_expired';
         }
