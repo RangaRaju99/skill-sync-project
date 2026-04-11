@@ -1,0 +1,243 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary-50: #f5f3ff;
+  --color-primary-100: #ede9fe;
+  --color-primary-200: #ddd6fe;
+  --color-primary-300: #c4b5fd;
+  --color-primary-400: #a78bfa;
+  --color-primary-500: #8b5cf6;
+  --color-primary-600: #7c3aed;
+  --color-primary-700: #6d28d9;
+  --color-primary-800: #5b21b6;
+  --color-primary-900: #4c1d95;
+  --color-primary-950: #2e1065;
+  --color-primary: var(--color-primary-600);
+
+  --color-secondary-50: #fdf4ff;
+  --color-secondary-100: #fae8ff;
+  --color-secondary-200: #f5d0fe;
+  --color-secondary-300: #f0abfc;
+  --color-secondary-400: #e879f9;
+  --color-secondary-500: #d946ef;
+  --color-secondary-600: #c026d3;
+  --color-secondary-700: #a21caf;
+  --color-secondary-800: #86198f;
+  --color-secondary-900: #701a75;
+  --color-secondary-950: #4a044e;
+
+  /* Theme color mappings */
+  --color-background: var(--bg-primary);
+  --color-surface: var(--bg-surface);
+  --color-card: var(--bg-card);
+  --color-foreground: var(--text-primary);
+  --color-muted: var(--text-muted);
+  --color-border-color: var(--border-color);
+  
+  --font-sans: 'Inter', 'Outfit', 'system-ui', 'sans-serif';
+}
+
+@layer base {
+  :root {
+    --bg-primary: #f8fafc;
+    --bg-surface: #f1f5f9;
+    --bg-card: #ffffff;
+    --text-primary: #0f172a;
+    --text-muted: #64748b;
+    --border-color: #e2e8f0;
+  }
+
+  .dark {
+    --bg-primary: #020617;
+    --bg-surface: #0f172a;
+    --bg-card: #1e293b;
+    --text-primary: #f8fafc;
+    --text-muted: #94a3b8;
+    --border-color: #334155;
+  }
+
+  body {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-family: 'Inter', 'Outfit', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    transition: color 0.3s, background-color 0.3s;
+    margin: 0;
+  }
+}
+/* Dynamic Glass Effect */
+@utility glass-effect {
+  backdrop-filter: blur(12px);
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s;
+}
+
+@utility glass-card {
+  backdrop-filter: blur(12px);
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  border-radius: 1rem;
+  overflow: hidden;
+  transition: all 0.3s;
+}
+
+/* Neumorphism Base */
+@utility neu-panel {
+  background: var(--bg-surface);
+  box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.1), -4px -4px 10px rgba(255, 255, 255, 0.8);
+  border-radius: 1rem;
+  transition: all 0.3s;
+}
+
+@utility neu-panel-inset {
+  background: var(--bg-surface);
+  box-shadow: inset 4px 4px 10px rgba(0, 0, 0, 0.1), inset -4px -4px 10px rgba(255, 255, 255, 0.8);
+  border-radius: 0.75rem;
+  transition: all 0.3s;
+}
+
+/* Hover Lifting */
+@utility hover-lift {
+  transition: transform 0.3s, box-shadow 0.3s;
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  }
+}
+
+/* Dark mode overrides for glass/neu */
+.dark .glass-effect,
+.dark .glass-card {
+  background: rgba(15, 23, 42, 0.6);
+  border-color: rgba(51, 65, 85, 0.4);
+}
+
+.dark .neu-panel {
+  box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4), -4px -4px 10px rgba(255, 255, 255, 0.05);
+}
+
+.dark .neu-panel-inset {
+  box-shadow: inset 4px 4px 10px rgba(0, 0, 0, 0.4), inset -4px -4px 10px rgba(255, 255, 255, 0.05);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+  transition: background-color 0.2s;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+.dark ::-webkit-scrollbar-thumb {
+  background: #334155;
+}
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}
+
+/* Common Animations */
+@keyframes drop-in {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-drop-in {
+  animation: drop-in 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.animate-fade-in {
+  animation: fade-in 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes pulse-soft {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+.animate-pulse-soft {
+  animation: pulse-soft 2s infinite;
+}
+
+@keyframes bounce-slow {
+  0%, 100% { transform: translateY(-5%); animation-timing-function: cubic-bezier(0.8, 0, 1, 1); }
+  50% { transform: translateY(0); animation-timing-function: cubic-bezier(0, 0, 0.2, 1); }
+}
+.animate-bounce-slow {
+  animation: bounce-slow 4s infinite;
+}
+
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+.animate-spin-slow {
+  animation: spin-slow 8s linear infinite;
+}
+
+@keyframes slide-in {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}
+.animate-slide-in {
+  animation: slide-in 0.3s cubic-bezier(0, 0, 0.2, 1);
+}
+
+@keyframes slide-in-right {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+.animate-slide-in-right {
+  animation: slide-in-right 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Ripple click effect */
+.ripple {
+  position: relative;
+  overflow: hidden;
+}
+.ripple::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle, rgba(255,255,255,0.3) 10%, transparent 70%);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.ripple:active::after {
+  opacity: 1;
+  transition: opacity 0s;
+}
+
+/* Discovery Animations */
+@keyframes heart-pop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.4); }
+  100% { transform: scale(1); }
+}
+.animate-heart-pop {
+  animation: heart-pop 0.4s cubic-bezier(0.17, 0.67, 0.83, 0.67);
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.shimmer {
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
