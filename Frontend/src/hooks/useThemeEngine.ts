@@ -11,38 +11,31 @@ export const useThemeEngine = () => {
     const { colors, typography, components, layout } = theme;
 
     // --- Colors ---
-    Object.entries(colors).forEach(([key, value]) => {
-      if (value) {
-        root.style.setProperty(`--${key}`, value);
-      }
-    });
+    // Mapping to your original index.css variable names
+    root.style.setProperty('--color-primary', colors.primary);
+    root.style.setProperty('--color-surface', colors.background);
+    root.style.setProperty('--color-surface-container-lowest', colors.surface);
+    root.style.setProperty('--color-on-surface', colors.text);
+    root.style.setProperty('--color-on-surface-variant', colors.textSecondary);
+    root.style.setProperty('--color-outline-variant', colors.border);
+    root.style.setProperty('--color-secondary', colors.secondary);
+    root.style.setProperty('--color-error', colors.error);
+    
+    // Gradient support (used in your buttons)
+    root.style.setProperty('--gradient-btn-start', colors.primary);
+    root.style.setProperty('--gradient-btn-end', colors.accent);
 
-    // Auto-contrast for text on surface/background if not explicitly set
-    root.style.setProperty('--on-background', getContrastColor(colors.background));
-    root.style.setProperty('--on-surface', getContrastColor(colors.surface));
-    root.style.setProperty('--on-primary', getContrastColor(colors.primary));
-
-    // RGB versions for opacity use
-    const hexToRgbValues = (hex: string) => {
-      const r = parseInt(hex.slice(1, 3), 16);
-      const g = parseInt(hex.slice(3, 5), 16);
-      const b = parseInt(hex.slice(5, 7), 16);
-      return `${r}, ${g}, ${b}`;
-    };
-
-    root.style.setProperty('--primary-rgb', hexToRgbValues(colors.primary));
-    root.style.setProperty('--background-rgb', hexToRgbValues(colors.background));
+    // Dynamic glow support for your original background
+    root.style.setProperty('--app-bg-glow-a', `${colors.primary}24`); // 14% opacity
+    root.style.setProperty('--app-bg-glow-b', `${colors.accent}1A`);  // 10% opacity
 
     // --- Typography ---
-    root.style.setProperty('--font-family', typography.fontFamily);
-    root.style.setProperty('--heading-font-family', typography.headingFontFamily);
+    root.style.setProperty('--font-sans', typography.fontFamily);
     root.style.setProperty('--base-font-size', `${typography.baseFontSize}px`);
 
     // --- Components ---
-    root.style.setProperty('--button-radius', components.buttonRadius);
-    root.style.setProperty('--card-radius', components.cardRadius);
-    root.style.setProperty('--card-shadow', components.cardShadow);
-    root.style.setProperty('--input-radius', components.inputRadius);
+    root.style.setProperty('--radius-xl', components.buttonRadius);
+    root.style.setProperty('--radius-full', components.cardRadius);
     
     const transitionTime = 0.3 * components.animationSpeed;
     root.style.setProperty('--transition-speed', `${transitionTime}s`);
