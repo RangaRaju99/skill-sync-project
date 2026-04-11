@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../store';
-import { getContrastColor, hexToRgba } from '../utils/themeUtils';
+import { hexToRgba } from '../utils/themeUtils';
 
 export const useThemeEngine = () => {
   const theme = useSelector((state: RootState) => state.theme.present);
