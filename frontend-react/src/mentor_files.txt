@@ -1,0 +1,11 @@
+﻿C:\Users\hp\OneDrive\Desktop\SkillSync\frontend-react\src\mentor_files.txt
+C:\Users\hp\OneDrive\Desktop\SkillSync\frontend-react\src\api\mentors.ts
+C:\Users\hp\OneDrive\Desktop\SkillSync\frontend-react\src\features\mentor-dashboard
+C:\Users\hp\OneDrive\Desktop\SkillSync\frontend-react\src\features\mentors
+C:\Users\hp\OneDrive\Desktop\SkillSync\frontend-react\src\features\mentor-dashboard\pages\MentorDashboardPage.tsx
+C:\Users\hp\OneDrive\Desktop\SkillSync\frontend-react\src\features\mentors\components\MentorCard.tsx
+C:\Users\hp\OneDrive\Desktop\SkillSync\frontend-react\src\features\mentors\pages\ApplyMentorPage.tsx
+C:\Users\hp\OneDrive\Desktop\SkillSync\frontend-react\src\features\mentors\pages\MentorDetailPage.tsx
+C:\Users\hp\OneDrive\Desktop\SkillSync\frontend-react\src\features\mentors\pages\MentorsPage.tsx
+C:\Users\hp\OneDrive\Desktop\SkillSync\frontend-react\src\features\reviews\pages\MentorReviewsPage.tsx
+C:\Users\hp\OneDrive\Desktop\SkillSync\frontend-react\src\hooks\useMentors.ts
