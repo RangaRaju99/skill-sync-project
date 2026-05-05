@@ -1,5 +1,5 @@
-import React, { ButtonHTMLAttributes, ReactNode } from 'react';
-import { motion, HTMLMotionProps } from 'framer-motion';
+import React, { type ReactNode } from 'react';
+import { motion, type HTMLMotionProps } from 'framer-motion';
 import { Loader2 } from 'lucide-react';
 
 interface ButtonProps extends Omit<HTMLMotionProps<"button">, "children"> {
