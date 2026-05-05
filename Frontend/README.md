@@ -2,7 +2,7 @@
 
 ## SkillSync Production Notes
 
-This frontend is deployed on Vercel (`https://skillsync.mraks.dev`), while backend APIs are served directly from the gateway API domain (`https://api.skillsync.mraks.dev`).
+This frontend is deployed on Vercel (`https://skillsync.rangaraju.dev`), while backend APIs are served directly from the gateway API domain (`https://api.skillsync.mraks.dev`).
 
 - API calls should target `https://api.skillsync.mraks.dev` (gateway ingress on EC2).
 - Vercel should not proxy backend APIs via rewrites.

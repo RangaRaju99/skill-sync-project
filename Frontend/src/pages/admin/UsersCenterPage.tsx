@@ -4,12 +4,23 @@ import PageLayout from '../../components/layout/PageLayout';
 import api from '../../services/axios';
 import { useToast } from '../../components/ui/Toast';
 import { useActionConfirm } from '../../components/ui/ActionConfirm';
-import { Button } from '../../components/ui/Button';
-import { GlassCard } from '../../components/ui/GlassCard';
-import { Input } from '../../components/ui/Input';
-import { Search, Users, ShieldAlert, User, ShieldCheck } from 'lucide-react';
 
 const PAGE_SIZE = 20;
+
+type AdminUser = {
+  id: number;
+  email: string;
+  firstName?: string;
+  lastName?: string;
+  role: string;
+};
+
+type AdminUsersPage = {
+  content: AdminUser[];
+  totalElements?: number;
+  totalPages?: number;
+  number?: number;
+};
 
 const UsersCenterPage = () => {
   const queryClient = useQueryClient();
@@ -20,7 +31,6 @@ const UsersCenterPage = () => {
   const [roleFilter, setRoleFilter] = useState('');
   const [searchText, setSearchText] = useState('');
   const [searchInput, setSearchInput] = useState('');
-  const [isDebouncing, setIsDebouncing] = useState(false);
   const debounceTimerRef = useRef<number | null>(null);
   const firstDebounceRunRef = useRef(true);
 
@@ -38,7 +48,7 @@ const UsersCenterPage = () => {
       if (roleFilter) params.append('role', roleFilter);
       if (searchText) params.append('search', searchText);
       const { data } = await api.get(`/api/admin/users?${params.toString()}`, { signal });
-      return data;
+      return data as AdminUsersPage;
     },
   });
 
@@ -52,10 +62,8 @@ const UsersCenterPage = () => {
       window.clearTimeout(debounceTimerRef.current);
     }
 
-    setIsDebouncing(true);
     debounceTimerRef.current = window.setTimeout(() => {
       applySearchValue(searchInput);
-      setIsDebouncing(false);
     }, 500);
 
     return () => {
@@ -89,7 +97,7 @@ const UsersCenterPage = () => {
     onError: () => showToast({ message: 'Failed to update role', type: 'error' }),
   });
 
-  const users = [...(usersData?.content || [])].sort((a: any, b: any) => {
+  const users = [...(usersData?.content || [])].sort((a, b) => {
     const aId = Number(a?.id || 0);
     const bId = Number(b?.id || 0);
     return aId - bId;
@@ -103,7 +111,6 @@ const UsersCenterPage = () => {
       window.clearTimeout(debounceTimerRef.current);
       debounceTimerRef.current = null;
     }
-    setIsDebouncing(false);
     applySearchValue(searchInput);
   };
 
@@ -114,6 +121,7 @@ const UsersCenterPage = () => {
     }
   };
 
+  const isDebouncing = searchInput.trim() !== searchText;
   const isSearching = isDebouncing || isFetching;
 
   const handleDeleteUser = async (id: number, email: string) => {
@@ -133,11 +141,11 @@ const UsersCenterPage = () => {
   const getRoleBadgeStyle = (role: string) => {
     switch (role) {
       case 'ROLE_ADMIN':
-        return 'bg-danger/10 text-danger border-danger/20';
+        return 'bg-red-100 text-red-700 border-red-200';
       case 'ROLE_MENTOR':
-        return 'bg-accent-violet/10 text-accent-violet border-accent-violet/20';
+        return 'bg-purple-100 text-purple-700 border-purple-200';
       default:
-        return 'bg-brand/10 text-brand border-brand/20';
+        return 'bg-blue-100 text-blue-700 border-blue-200';
     }
   };
 
@@ -145,43 +153,27 @@ const UsersCenterPage = () => {
     return role?.replace('ROLE_', '') || 'LEARNER';
   };
 
-  const getRoleIcon = (role: string) => {
-    switch (role) {
-      case 'ROLE_ADMIN':
-        return <ShieldAlert className="w-3 h-3 mr-1" />;
-      case 'ROLE_MENTOR':
-        return <ShieldCheck className="w-3 h-3 mr-1" />;
-      default:
-        return <User className="w-3 h-3 mr-1" />;
-    }
-  };
-
   return (
     <PageLayout>
-      <div className="space-y-6 max-w-7xl mx-auto">
+      <div className="space-y-6">
         {/* Header */}
-        <GlassCard className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-extrabold text-text-main tracking-tight flex items-center">
-              <Users className="w-8 h-8 mr-3 text-brand" />
-              Manage Users
-            </h1>
-            <p className="text-text-muted mt-2">View, filter, search, and manage all platform users securely.</p>
-          </div>
-        </GlassCard>
+        <div className="bg-surface-container-lowest border border-outline-variant/10 rounded-2xl p-6 shadow-sm">
+          <h1 className="text-3xl font-extrabold text-on-surface tracking-tight">Manage Users</h1>
+          <p className="text-on-surface-variant mt-2">View, filter, search, and manage all platform users</p>
+        </div>
 
         {/* Controls */}
-        <GlassCard className="flex flex-col md:flex-row items-end gap-4 p-5">
+        <div className="bg-surface-container-lowest border border-outline-variant/10 rounded-2xl p-4 shadow-sm flex flex-col md:flex-row items-end gap-4">
           {/* Left: Role filter */}
           <div className="w-full md:w-48">
-            <label className="mb-1.5 text-sm font-medium text-text-main block">Role Filter</label>
+            <label className="text-[10px] font-black text-on-surface-variant uppercase tracking-widest block mb-1 pl-1">Role Filter</label>
             <select
               value={roleFilter}
               onChange={(e) => {
                 setRoleFilter(e.target.value);
                 setPage(0);
               }}
-              className="w-full h-[42px] bg-surface px-4 rounded-xl text-sm font-semibold text-text-main outline-none focus:ring-2 focus:ring-brand/50 focus:border-brand border border-border transition-colors cursor-pointer"
+              className="w-full h-10 bg-surface-container px-3 rounded-lg text-sm font-semibold text-on-surface outline-none focus:ring-1 focus:ring-primary border border-transparent"
             >
               <option value="">All Roles</option>
               <option value="ROLE_LEARNER">Learner</option>
@@ -191,98 +183,97 @@ const UsersCenterPage = () => {
           </div>
 
           {/* Right: Search */}
-          <div className="flex-1 w-full flex flex-col md:flex-row gap-4 md:items-end">
+          <div className="flex-1 w-full flex gap-2">
             <div className="flex-1">
-              <Input
-                label="Search by Email"
+              <label className="text-[10px] font-black text-on-surface-variant uppercase tracking-widest block mb-1 pl-1">Search by Email</label>
+              <input
+                type="text"
                 placeholder="Type email to search..."
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
                 onKeyDown={handleKeyDown}
-                leftIcon={<Search className="w-4 h-4" />}
+                className="w-full h-10 bg-surface-container px-3 rounded-lg text-sm font-semibold text-on-surface outline-none focus:ring-1 focus:ring-primary border border-transparent placeholder:text-on-surface-variant/50"
               />
             </div>
-            <Button
+            <button
               onClick={handleSearch}
-              isLoading={isSearching}
-              className="w-full md:w-auto mt-auto"
+              className="h-10 px-5 gradient-btn text-white font-bold rounded-lg shadow-sm hover:shadow-md transition-all active:scale-95 self-end"
             >
-              Search
-            </Button>
+              {isSearching ? 'Searching...' : 'Search'}
+            </button>
           </div>
-        </GlassCard>
+        </div>
+
+        {isSearching && (
+          <div className="flex items-center gap-2 text-xs font-semibold text-on-surface-variant px-1">
+            <span className="material-symbols-outlined text-[16px] animate-spin">autorenew</span>
+            Running search...
+          </div>
+        )}
 
         {/* Table */}
-        <GlassCard className="p-0 overflow-hidden">
+        <div className="bg-surface-container-lowest border border-outline-variant/10 rounded-2xl shadow-sm overflow-hidden">
           {isLoading ? (
-            <div className="p-12 flex flex-col items-center justify-center text-text-muted">
-              <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-brand mb-4"></div>
-              <p className="font-medium">Loading users...</p>
+            <div className="p-8 text-center text-on-surface-variant">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-3"></div>
+              Loading users...
             </div>
           ) : users.length === 0 ? (
-            <div className="p-12 flex flex-col items-center justify-center text-text-muted">
-              <Search className="w-12 h-12 text-border mb-4" />
-              <p className="font-medium text-lg">No users found</p>
-              <p className="text-sm">Try adjusting your filters or search query.</p>
+            <div className="p-8 text-center text-on-surface-variant">
+              <span className="material-symbols-outlined text-4xl text-outline-variant mb-2 block">search_off</span>
+              No users found matching your criteria.
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead className="bg-surface/50 border-b border-border">
+              <table className="w-full">
+                <thead className="bg-surface-container border-b border-outline-variant/10">
                   <tr>
-                    <th className="py-4 px-6 text-xs font-bold text-text-muted uppercase tracking-wider">ID</th>
-                    <th className="py-4 px-6 text-xs font-bold text-text-muted uppercase tracking-wider">Email</th>
-                    <th className="py-4 px-6 text-xs font-bold text-text-muted uppercase tracking-wider">Name</th>
-                    <th className="py-4 px-6 text-xs font-bold text-text-muted uppercase tracking-wider">Role</th>
-                    <th className="py-4 px-6 text-xs font-bold text-text-muted uppercase tracking-wider text-right">Actions</th>
+                    <th className="text-left py-3 px-5 text-[10px] font-black text-on-surface-variant uppercase tracking-widest">ID</th>
+                    <th className="text-left py-3 px-5 text-[10px] font-black text-on-surface-variant uppercase tracking-widest">Email</th>
+                    <th className="text-left py-3 px-5 text-[10px] font-black text-on-surface-variant uppercase tracking-widest">Name</th>
+                    <th className="text-left py-3 px-5 text-[10px] font-black text-on-surface-variant uppercase tracking-widest">Role</th>
+                    <th className="text-right py-3 px-5 text-[10px] font-black text-on-surface-variant uppercase tracking-widest">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-border/50">
-                  {users.map((user: any) => (
-                    <tr key={user.id} className="hover:bg-surface-hover/50 transition-colors">
-                      <td className="py-4 px-6 text-sm font-bold text-text-main">#{user.id}</td>
-                      <td className="py-4 px-6 text-sm font-semibold text-text-main">{user.email}</td>
-                      <td className="py-4 px-6 text-sm text-text-muted">{user.firstName} {user.lastName}</td>
-                      <td className="py-4 px-6">
-                        <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border ${getRoleBadgeStyle(user.role)}`}>
-                          {getRoleIcon(user.role)}
+                <tbody>
+                  {users.map((user) => (
+                    <tr key={user.id} className="border-b border-outline-variant/5 hover:bg-surface-container-low/50 transition-colors">
+                      <td className="py-3 px-5 text-sm font-bold text-on-surface">#{user.id}</td>
+                      <td className="py-3 px-5 text-sm font-semibold text-on-surface">{user.email}</td>
+                      <td className="py-3 px-5 text-sm text-on-surface-variant">{user.firstName} {user.lastName}</td>
+                      <td className="py-3 px-5">
+                        <span className={`inline-block px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-widest border ${getRoleBadgeStyle(user.role)}`}>
                           {getRoleLabel(user.role)}
                         </span>
                       </td>
-                      <td className="py-4 px-6 text-right">
+                      <td className="py-3 px-5 text-right">
                         <div className="flex gap-2 justify-end">
                           {user.role === 'ROLE_LEARNER' && (
-                            <Button
-                              variant="ghost"
-                              size="sm"
+                            <button
                               onClick={() => roleMutation.mutate({ id: user.id, role: 'ROLE_MENTOR' })}
                               disabled={roleMutation.isPending}
-                              className="text-accent-violet hover:text-accent-violet hover:bg-accent-violet/10"
+                              className="text-[10px] font-bold bg-purple-100 text-purple-700 hover:bg-purple-200 px-3 py-1.5 rounded-lg transition disabled:opacity-50"
                             >
                               Promote
-                            </Button>
+                            </button>
                           )}
                           {user.role === 'ROLE_MENTOR' && (
-                            <Button
-                              variant="ghost"
-                              size="sm"
+                            <button
                               onClick={() => roleMutation.mutate({ id: user.id, role: 'ROLE_LEARNER' })}
                               disabled={roleMutation.isPending}
-                              className="text-warning hover:text-warning hover:bg-warning/10"
+                              className="text-[10px] font-bold bg-orange-100 text-orange-700 hover:bg-orange-200 px-3 py-1.5 rounded-lg transition disabled:opacity-50"
                             >
                               Demote
-                            </Button>
+                            </button>
                           )}
                           {user.role !== 'ROLE_ADMIN' && (
-                            <Button
-                              variant="ghost"
-                              size="sm"
+                            <button
                               onClick={() => void handleDeleteUser(user.id, user.email)}
                               disabled={deleteMutation.isPending}
-                              className="text-danger hover:text-danger hover:bg-danger/10"
+                              className="text-[10px] font-bold bg-red-100 text-red-700 hover:bg-red-200 px-3 py-1.5 rounded-lg transition disabled:opacity-50"
                             >
                               Delete
-                            </Button>
+                            </button>
                           )}
                         </div>
                       </td>
@@ -292,39 +283,37 @@ const UsersCenterPage = () => {
               </table>
             </div>
           )}
-          
           {!isLoading && users.length > 0 && (
-            <div className="px-6 py-4 border-t border-border bg-surface/30 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div className="text-xs font-semibold text-text-muted">
+            <>
+              <div className="px-5 py-3 border-t border-outline-variant/10 bg-surface-container-low/30 text-xs font-semibold text-on-surface-variant">
                 Showing {users.length} of {totalElements} user{totalElements !== 1 ? 's' : ''}
                 {roleFilter && ` • Role: ${getRoleLabel(roleFilter)}`}
                 {searchText && ` • Search: "${searchText}"`}
+                {' • Sorted by ID'}
               </div>
 
-              <div className="flex items-center gap-3">
-                <Button
-                  variant="secondary"
-                  size="sm"
+              <div className="px-5 py-3 border-t border-outline-variant/10 bg-surface-container-lowest flex items-center justify-between gap-3">
+                <button
                   onClick={() => setPage((p) => Math.max(0, p - 1))}
                   disabled={currentPage <= 0}
+                  className="px-3 py-1.5 rounded-md text-sm font-bold bg-surface-container hover:bg-surface-container-high text-on-surface disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Previous
-                </Button>
-                <p className="text-xs font-semibold text-text-muted">
+                </button>
+                <p className="text-xs font-semibold text-on-surface-variant">
                   Page {currentPage + 1} of {totalPages}
                 </p>
-                <Button
-                  variant="secondary"
-                  size="sm"
+                <button
                   onClick={() => setPage((p) => p + 1)}
                   disabled={currentPage >= totalPages - 1}
+                  className="px-3 py-1.5 rounded-md text-sm font-bold bg-surface-container hover:bg-surface-container-high text-on-surface disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Next
-                </Button>
+                </button>
               </div>
-            </div>
+            </>
           )}
-        </GlassCard>
+        </div>
       </div>
     </PageLayout>
   );

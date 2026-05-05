@@ -15,6 +15,7 @@ import ServerErrorPage from '../pages/error/ServerErrorPage';
 
 import LandingPage from '../pages/LandingPage.tsx';
 import PptLandingPage from '../pages/PptLandingPage.tsx';
+import LearnDocsPage from '../pages/docs/LearnDocsPage';
 
 import LearnerDashboardPage from '../pages/learner/LearnerDashboardPage';
 import MentorDashboardPage from '../pages/mentor/MentorDashboardPage';
@@ -37,7 +38,6 @@ import GroupDetailPage from '../pages/groups/GroupDetailPage';
 import NotificationsPage from '../pages/notifications/NotificationsPage';
 import SettingsPage from '../pages/settings/SettingsPage';
 import HelpCenterPage from '../pages/support/HelpCenterPage';
-import ThemeStudio from '../pages/theme-studio/ThemeStudio';
 
 import DashboardRedirect from './DashboardRedirect';
 
@@ -46,7 +46,7 @@ const AppRoutes = () => {
     <Routes>
       <Route path="/" element={<LandingPage />} />
       <Route path="/ppt" element={<PptLandingPage />} />
-      <Route path="/theme-studio" element={<ThemeStudio />} />
+      <Route path="/learn" element={<LearnDocsPage />} />
       <Route path="/feppt" element={<Navigate to="/skillsync_study_guide.html" replace />} />
 
       <Route element={<AuthLayout />}>

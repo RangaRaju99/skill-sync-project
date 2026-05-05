@@ -6,7 +6,6 @@ import mentorsReducer from './slices/mentorsSlice';
 import groupsReducer from './slices/groupsSlice';
 import notificationsReducer from './slices/notificationsSlice';
 import reviewsReducer from './slices/reviewsSlice';
-import themeReducer from './slices/themeSlice';
 
 export const store = configureStore({
   reducer: {
@@ -17,7 +16,6 @@ export const store = configureStore({
     groups: groupsReducer,
     notifications: notificationsReducer,
     reviews: reviewsReducer,
-    theme: themeReducer,
   },
 });
 

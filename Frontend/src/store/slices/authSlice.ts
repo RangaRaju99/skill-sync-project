@@ -12,28 +12,7 @@ interface AuthState {
   role: UserRole;
 }
 
-const getStoredAuth = () => {
-  try {
-    const user = localStorage.getItem('ss_user');
-    const accessToken = localStorage.getItem('ss_access_token');
-    const refreshToken = localStorage.getItem('ss_refresh_token');
-    
-    if (user && accessToken) {
-      return {
-        user: JSON.parse(user),
-        accessToken,
-        refreshToken,
-        isAuthenticated: true,
-        role: (JSON.parse(user) as UserSummary).role as UserRole,
-      };
-    }
-  } catch (e) {
-    console.error('Failed to load auth from localStorage', e);
-  }
-  return null;
-};
-
-const initialState: AuthState = getStoredAuth() || {
+const initialState: AuthState = {
   user: null,
   accessToken: null,
   refreshToken: null,
@@ -53,23 +32,23 @@ const authSlice = createSlice({
   reducers: {
     setCredentials(state, action: PayloadAction<SetCredentialsPayload>) {
       const { user, accessToken, refreshToken } = action.payload;
-      
-      if (user) {
-        state.user = user;
-        state.role = user.role as UserRole;
-        state.isAuthenticated = true;
-        localStorage.setItem('ss_user', JSON.stringify(user));
-      }
+      state.user = user;
 
-      if (accessToken) {
+      // Preserve existing token values when callers only want to update user identity.
+      if (typeof accessToken !== 'undefined' && accessToken !== null && accessToken !== '') {
         state.accessToken = accessToken;
-        localStorage.setItem('ss_access_token', accessToken);
       }
 
-      if (refreshToken) {
+      if (typeof refreshToken !== 'undefined' && refreshToken !== null && refreshToken !== '') {
         state.refreshToken = refreshToken;
-        localStorage.setItem('ss_refresh_token', refreshToken);
       }
+
+      state.isAuthenticated = true;
+      if (user) {
+        state.role = user.role as UserRole;
+      }
+
+      // Removed localStorage persistence for security (XSS mitigation)
     },
     logout(state) {
       state.user = null;
@@ -78,9 +57,7 @@ const authSlice = createSlice({
       state.isAuthenticated = false;
       state.role = null;
 
-      localStorage.removeItem('ss_user');
-      localStorage.removeItem('ss_access_token');
-      localStorage.removeItem('ss_refresh_token');
+      // Removed localStorage persistence for security
     },
     updateUserName(state, action: PayloadAction<{ firstName: string; lastName: string }>) {
       if (!state.user) {

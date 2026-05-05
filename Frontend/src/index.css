@@ -3,25 +3,26 @@
 
 @import "tailwindcss";
 
+/* ─── Tailwind v4 Theme Configuration ─── */
 @theme {
-  /* Dynamic Semantic Colors */
-  --color-bg-base: var(--theme-bg-base);
-  --color-surface: var(--theme-surface);
-  --color-surface-hover: var(--theme-surface-hover);
-  --color-text-main: var(--theme-text-main);
-  --color-text-muted: var(--theme-text-muted);
-  --color-border: var(--theme-border);
-
-  /* Brand Colors */
-  --color-brand: #2563EB;
-  --color-brand-hover: #1D4ED8;
-  --color-brand-light: #60A5FA;
-  
-  /* Accent Colors */
-  --color-accent-violet: #8B5CF6;
-  --color-success: #10B981;
-  --color-warning: #F59E0B;
-  --color-danger: #EF4444;
+  /* Colors */
+  --color-primary: #004ac6;
+  --color-primary-container: #2563eb;
+  --color-on-primary: #ffffff;
+  --color-surface: #f7f9fb;
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-container-low: #f2f4f6;
+  --color-surface-container: #eceef0;
+  --color-surface-container-high: #e6e8ea;
+  --color-surface-container-highest: #e0e3e5;
+  --color-on-surface: #191c1e;
+  --color-on-surface-variant: #434655;
+  --color-secondary-container: #acbfff;
+  --color-on-secondary-container: #394c84;
+  --color-outline: #737686;
+  --color-outline-variant: #c3c6d7;
+  --color-secondary: #495c95;
+  --color-error: #ba1a1a;
 
   /* Font Family */
   --font-sans: 'Inter', sans-serif;
@@ -30,49 +31,50 @@
   --radius: 0.125rem;
   --radius-lg: 0.25rem;
   --radius-xl: 0.5rem;
-  --radius-2xl: 1rem;
-  --radius-full: 9999px;
+  --radius-full: 0.75rem;
 }
 
-/* Base Theme Variables */
 :root {
-  --theme-bg-base: #F8FAFC;
-  --theme-surface: rgba(255, 255, 255, 0.85);
-  --theme-surface-hover: rgba(241, 245, 249, 0.85);
-  --theme-text-main: #0F172A;
-  --theme-text-muted: #64748B;
-  --theme-border: rgba(226, 232, 240, 0.8);
-  
-  --gradient-btn-start: #2563EB;
-  --gradient-btn-end: #1D4ED8;
-  --app-bg-glow-a: rgba(37, 99, 235, 0.1);
-  --app-bg-glow-b: rgba(139, 92, 246, 0.1);
+  --gradient-btn-start: #004ac6;
+  --gradient-btn-end: #2563eb;
+  --app-bg-glow-a: rgba(37, 99, 235, 0.14);
+  --app-bg-glow-b: rgba(0, 167, 183, 0.1);
 }
 
-/* Dark Mode Overrides */
 html.theme-dark {
-  --theme-bg-base: #0B1120;
-  --theme-surface: rgba(30, 41, 59, 0.7);
-  --theme-surface-hover: rgba(51, 65, 85, 0.7);
-  --theme-text-main: #F8FAFC;
-  --theme-text-muted: #94A3B8;
-  --theme-border: rgba(51, 65, 85, 0.6);
+  --color-primary: #8bacff;
+  --color-primary-container: #5f86ff;
+  --color-on-primary: #071225;
+  --color-surface: #0a101b;
+  --color-surface-container-lowest: #111a2a;
+  --color-surface-container-low: #162235;
+  --color-surface-container: #1b2940;
+  --color-surface-container-high: #22334f;
+  --color-surface-container-highest: #2a3e5f;
+  --color-on-surface: #e6edf7;
+  --color-on-surface-variant: #aebbd0;
+  --color-secondary-container: #2b3f6f;
+  --color-on-secondary-container: #d9e4ff;
+  --color-outline: #6e7f9d;
+  --color-outline-variant: #354969;
+  --color-secondary: #95acff;
+  --color-error: #ff7a7a;
 
-  --gradient-btn-start: #60A5FA;
-  --gradient-btn-end: #3B82F6;
-  --app-bg-glow-a: rgba(96, 165, 250, 0.15);
-  --app-bg-glow-b: rgba(139, 92, 246, 0.15);
+  --gradient-btn-start: #5f86ff;
+  --gradient-btn-end: #2bc2d5;
+  --app-bg-glow-a: rgba(83, 117, 255, 0.28);
+  --app-bg-glow-b: rgba(44, 194, 213, 0.18);
 }
 
 /* ─── Base Styles ─── */
 body {
   font-family: var(--font-sans);
-  background-color: var(--color-bg-base);
+  background-color: var(--color-surface);
   background-image:
-    radial-gradient(circle at 10% 0%, var(--app-bg-glow-a), transparent 40%),
-    radial-gradient(circle at 90% 2%, var(--app-bg-glow-b), transparent 40%);
+    radial-gradient(circle at 10% 0%, var(--app-bg-glow-a), transparent 32%),
+    radial-gradient(circle at 90% 2%, var(--app-bg-glow-b), transparent 34%);
   background-attachment: fixed;
-  color: var(--color-text-main);
+  color: var(--color-on-surface);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   margin: 0;
@@ -91,19 +93,9 @@ html,
 }
 
 /* ─── Utility Classes ─── */
-.glass-panel {
-  background-color: var(--color-surface);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid var(--color-border);
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
-}
-
 .glass-nav {
-  background-color: var(--color-surface);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border-bottom: 1px solid var(--color-border);
 }
 
 .transition-ui {
@@ -190,4 +182,3 @@ html.theme-dark .hover\:text-gray-700:hover {
 html.theme-dark .disabled\:bg-gray-100:disabled {
   background-color: #1f2a3f !important;
 }
-

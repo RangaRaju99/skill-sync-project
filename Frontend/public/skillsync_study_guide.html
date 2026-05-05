@@ -693,7 +693,7 @@
       <span class="subtopic-arrow">▶</span>
     </div>
     <div class="subtopic-body">
-      <p>When a user opens <code>skillsync.mraks.dev</code> in their browser, the app starts up like a car engine — things happen in a specific order. Let's walk through each step:</p>
+      <p>When a user opens <code>skillsync.rangaraju.dev</code> in their browser, the app starts up like a car engine — things happen in a specific order. Let's walk through each step:</p>
       <div class="callout info"><span class="callout-icon">🎁</span><div><strong>What are "Providers"?</strong> A Provider is like a gift wrapper. It wraps around the entire app and gives every page inside it access to something useful. For example, <code>ThemeProvider</code> gives every page access to the dark/light theme. Without the wrapper, pages wouldn't know which theme to use. Think of it like electricity in a house — the main power supply (Provider) wraps the whole house so every room can use electricity.</div></div>
       <div class="diagram-box">
         <div class="flow" style="flex-direction:column; gap:4px; align-items:flex-start">
@@ -1111,7 +1111,7 @@ mentorService.<span class="fn">getMentors</span>({ skill: <span class="str">'Rea
 }
 
 <span class="cmt">// Fix 2: Vercel env pointed to frontend domain → redirect to API</span>
-<span class="kw">if</span> (isProd && <span class="kw">new</span> <span class="fn">URL</span>(configuredUrl).<span class="op">hostname</span> === <span class="str">'skillsync.mraks.dev'</span>) {
+<span class="kw">if</span> (isProd && <span class="kw">new</span> <span class="fn">URL</span>(configuredUrl).<span class="op">hostname</span> === <span class="str">'skillsync.rangaraju.dev'</span>) {
   console.<span class="fn">warn</span>(<span class="str">'[CORS FIX] Misconfigured URL...'</span>);
   configuredUrl = <span class="str">'https://api.skillsync.mraks.dev'</span>;
 }
@@ -1785,7 +1785,7 @@ import.meta.env.DEV   <span class="cmt">// true in dev</span></pre>
       <div class="grid-2">
         <div class="card">
           <h4>▲ Vercel (Frontend)</h4>
-          <p>Auto-deploys on git push. CDN edge servers globally. Free SSL. Custom domain: skillsync.mraks.dev</p>
+          <p>Auto-deploys on git push. CDN edge servers globally. Free SSL. Custom domain: skillsync.rangaraju.dev</p>
         </div>
         <div class="card">
           <h4>☁️ AWS EC2 (Backend)</h4>
@@ -3048,7 +3048,7 @@ amount: amount * <span class="num">100</span>,  <span class="cmt">// ₹500 → 
 
           <rect x="306" y="321" width="168" height="60" rx="6" fill="#1e2e2e" stroke="#585b70" stroke-width="1"/>
           <text x="390" y="349" fill="#585b70" font-size="9" text-anchor="middle">CORS Config:</text>
-          <text x="390" y="364" fill="#585b70" font-size="9" text-anchor="middle">Allow skillsync.mraks.dev</text>
+          <text x="390" y="364" fill="#585b70" font-size="9" text-anchor="middle">Allow skillsync.rangaraju.dev</text>
 
           <!-- Arrow: API to DB -->
           <line x1="490" y1="191" x2="560" y2="191" stroke="#585b70" stroke-width="1.5" marker-end="url(#arrow)" stroke-dasharray="4,3"/>
@@ -3086,7 +3086,7 @@ amount: amount * <span class="num">100</span>,  <span class="cmt">// ₹500 → 
 <!-- ═══ FINAL FOOTER ═══ -->
 <div style="padding:40px; background:linear-gradient(135deg, #0d0d1a, #111118); border-top:1px solid var(--border); text-align:center">
   <p style="color:var(--text3); font-size:13px; margin-bottom:8px">SkillSync Frontend · Built with React 18 + TypeScript + Redux Toolkit + React Query + Tailwind CSS + Razorpay</p>
-  <p style="color:var(--text3); font-size:12px">skillsync.mraks.dev → api.skillsync.mraks.dev (EC2) → PostgreSQL</p>
+  <p style="color:var(--text3); font-size:12px">skillsync.rangaraju.dev → api.skillsync.mraks.dev (EC2) → PostgreSQL</p>
   <p style="color:var(--accent); font-size:14px; font-weight:700; margin-top:16px; font-family:'Syne', sans-serif">You built this. You know this. Go ace the viva. 🚀</p>
 </div>
 

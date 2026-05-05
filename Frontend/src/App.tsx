@@ -3,11 +3,8 @@ import { ToastProvider } from './components/ui/Toast';
 import { ActionConfirmProvider } from './components/ui/ActionConfirm';
 import AuthLoader from './components/layout/AuthLoader';
 import AppRoutes from './routes/AppRoutes';
-import { useThemeEngine } from './hooks/useThemeEngine';
 
 function App() {
-  useThemeEngine();
-
   return (
     <ToastProvider>
       <ActionConfirmProvider>

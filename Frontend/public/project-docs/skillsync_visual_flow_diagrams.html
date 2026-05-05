@@ -1,0 +1,1476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SkillSync — Complete Visual Flow Diagrams</title>
+<style>
+:root {
+  --bg: #080c10;
+  --bg2: #0e141c;
+  --bg3: #141d28;
+  --bg4: #1a2535;
+  --border: rgba(99,179,237,0.1);
+  --border2: rgba(99,179,237,0.2);
+  --text: #e2eaf4;
+  --text2: #8fa3bc;
+  --text3: #5a7494;
+  --accent: #63b3ed;
+  --accent2: #48bb78;
+  --accent3: #f6ad55;
+  --accent4: #fc8181;
+  --accent5: #b794f4;
+  --accent6: #76e4f7;
+  --teal: #4fd1c5;
+  --mono: 'Cascadia Code','Fira Code','Consolas',monospace;
+  --font: 'Segoe UI',system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14px;line-height:1.7}
+
+/* NAV */
+#nav{position:fixed;left:0;top:0;bottom:0;width:220px;background:var(--bg2);border-right:1px solid var(--border);overflow-y:auto;padding:16px 0 40px;z-index:50}
+#nav .logo{padding:0 16px 14px;border-bottom:1px solid var(--border);margin-bottom:10px}
+#nav .logo strong{font-size:13px;color:var(--accent);letter-spacing:.06em;text-transform:uppercase;display:block}
+#nav .logo span{font-size:10px;color:var(--text3)}
+#nav .section{padding:12px 16px 3px;font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--text3)}
+#nav a{display:block;padding:5px 16px;font-size:11.5px;color:var(--text2);text-decoration:none;border-left:2px solid transparent;transition:all .15s;line-height:1.4}
+#nav a:hover{color:var(--text);border-left-color:var(--accent);background:rgba(99,179,237,.06)}
+
+/* MAIN */
+#main{margin-left:220px;padding:36px 48px 80px;max-width:1100px}
+
+/* HERO */
+.hero{background:linear-gradient(135deg,rgba(99,179,237,.07),rgba(183,148,244,.05),rgba(72,187,120,.05));border:1px solid rgba(99,179,237,.18);border-radius:12px;padding:28px 32px;margin-bottom:36px}
+.hero h1{font-size:26px;font-weight:700;line-height:1.2;margin-bottom:6px}
+.hero p{color:var(--text2);font-size:13.5px;margin-bottom:16px}
+.badges{display:flex;flex-wrap:wrap;gap:7px}
+.badge{font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px;letter-spacing:.05em;text-transform:uppercase}
+.b-blue{background:rgba(99,179,237,.12);color:#90cdf4;border:1px solid rgba(99,179,237,.3)}
+.b-green{background:rgba(72,187,120,.1);color:#9ae6b4;border:1px solid rgba(72,187,120,.3)}
+.b-purple{background:rgba(183,148,244,.1);color:#d6bcfa;border:1px solid rgba(183,148,244,.3)}
+.b-orange{background:rgba(246,173,85,.1);color:#fbd38d;border:1px solid rgba(246,173,85,.3)}
+.b-teal{background:rgba(79,209,197,.1);color:#81e6d9;border:1px solid rgba(79,209,197,.3)}
+
+h2{font-size:18px;font-weight:600;margin:40px 0 14px;padding-top:40px;border-top:1px solid var(--border);color:var(--text);display:flex;align-items:center;gap:8px}
+h2:first-of-type{border-top:none;margin-top:24px;padding-top:0}
+h3{font-size:14px;font-weight:600;color:var(--accent6);margin:20px 0 8px}
+h4{font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--accent5);margin:16px 0 6px}
+p{color:var(--text);font-size:13.5px;margin-bottom:10px;line-height:1.75}
+
+/* FLOW DIAGRAMS */
+.flow{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:0;margin:14px 0;overflow:hidden}
+.flow-title{background:var(--bg4);padding:10px 16px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;border-bottom:1px solid var(--border);color:var(--accent)}
+.flow-body{padding:16px 20px;font-family:var(--mono);font-size:12px;line-height:1.8;color:var(--text2);overflow-x:auto;white-space:pre}
+
+/* STEP FLOWS */
+.steps{list-style:none;margin:10px 0}
+.step{display:flex;gap:12px;align-items:flex-start;padding:9px 0;border-bottom:1px solid rgba(99,179,237,.06)}
+.step:last-child{border-bottom:none}
+.snum{min-width:24px;height:24px;background:rgba(99,179,237,.12);color:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;margin-top:2px}
+.sbody strong{display:block;font-size:13px;color:var(--text)}
+.sbody .file{font-family:var(--mono);font-size:11px;color:var(--accent3);background:rgba(246,173,85,.08);padding:1px 6px;border-radius:4px;margin:2px 0;display:inline-block}
+.sbody p{font-size:12.5px;color:var(--text2);margin:3px 0 0}
+
+/* CARDS */
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:9px;padding:16px 20px;margin:12px 0}
+.card-blue{border-left:3px solid var(--accent)}
+.card-green{border-left:3px solid var(--accent2)}
+.card-orange{border-left:3px solid var(--accent3)}
+.card-red{border-left:3px solid var(--accent4)}
+.card-purple{border-left:3px solid var(--accent5)}
+.card-teal{border-left:3px solid var(--teal)}
+.card-cyan{border-left:3px solid var(--accent6)}
+
+/* TABLE */
+table{width:100%;border-collapse:collapse;margin:12px 0;font-size:12.5px}
+th{text-align:left;padding:8px 12px;background:var(--bg3);color:var(--text2);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;border-bottom:1px solid var(--border)}
+td{padding:8px 12px;border-bottom:1px solid rgba(255,255,255,0.03);vertical-align:top}
+tr:hover td{background:rgba(99,179,237,.02)}
+code{font-family:var(--mono);font-size:11.5px;background:rgba(99,179,237,.08);padding:1px 6px;border-radius:4px;color:var(--accent3)}
+.g{color:var(--accent2);font-weight:600}
+.r{color:var(--accent4);font-weight:600}
+
+/* CALLOUTS */
+.callout{padding:12px 16px;border-radius:8px;margin:12px 0;font-size:13px;display:flex;gap:10px;align-items:flex-start}
+.ci{font-size:16px;flex-shrink:0;margin-top:1px}
+.cb{flex:1}
+.cb strong{color:var(--text);display:block;margin-bottom:3px;font-size:13px}
+.cb p{font-size:12.5px;color:var(--text2);margin:0}
+.c-warn{background:rgba(246,173,85,.07);border:1px solid rgba(246,173,85,.22)}
+.c-info{background:rgba(99,179,237,.06);border:1px solid rgba(99,179,237,.22)}
+.c-danger{background:rgba(252,129,129,.06);border:1px solid rgba(252,129,129,.22)}
+.c-success{background:rgba(72,187,120,.06);border:1px solid rgba(72,187,120,.22)}
+
+/* GRID */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+@media(max-width:900px){.grid2{grid-template-columns:1fr}#nav{display:none}#main{margin-left:0;padding:20px 16px 60px}}
+
+/* LAYER BOXES */
+.layer-stack{display:flex;flex-direction:column;gap:3px;margin:14px 0}
+.layer{padding:10px 16px;border-radius:7px;display:flex;align-items:center;gap:12px;position:relative}
+.layer::before{content:'▼';position:absolute;bottom:-10px;left:50%;transform:translateX(-50%);font-size:11px;color:var(--text3);z-index:1}
+.layer:last-child::before{display:none}
+.layer-icon{font-size:18px;flex-shrink:0}
+.layer-content strong{font-size:12.5px;display:block;margin-bottom:1px}
+.layer-content span{font-size:11.5px;color:var(--text2)}
+.l-browser{background:rgba(99,179,237,.07);border:1px solid rgba(99,179,237,.2)}
+.l-axios{background:rgba(246,173,85,.07);border:1px solid rgba(246,173,85,.2)}
+.l-gateway{background:rgba(183,148,244,.07);border:1px solid rgba(183,148,244,.2)}
+.l-filter{background:rgba(252,129,129,.07);border:1px solid rgba(252,129,129,.2)}
+.l-ctrl{background:rgba(72,187,120,.07);border:1px solid rgba(72,187,120,.2)}
+.l-service{background:rgba(79,209,197,.07);border:1px solid rgba(79,209,197,.2)}
+.l-db{background:rgba(246,173,85,.05);border:1px solid rgba(246,173,85,.15)}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,.08);border-radius:3px}
+</style>
+</head>
+<body>
+
+<aside id="nav">
+  <div class="logo"><strong>SkillSync</strong><span>Visual Flow Diagrams</span></div>
+  <div class="section">Architecture</div>
+  <a href="#overview">High-Level Architecture</a>
+  <a href="#tech-stack">Technology Stack</a>
+  <div class="section">Flows</div>
+  <a href="#login-flow">Login Flow</a>
+  <a href="#oauth-flow">OAuth (Google) Flow</a>
+  <a href="#signup-flow">Signup / OTP Flow</a>
+  <a href="#protected-flow">Authenticated API Flow</a>
+  <a href="#refresh-flow">Token Refresh Flow</a>
+  <div class="section">Security</div>
+  <a href="#gateway-filters">Gateway Filter Chain</a>
+  <a href="#auth-service-chain">Auth-Service Filter Chain</a>
+  <a href="#jwt-internals">JWT Internals</a>
+  <a href="#threadlocal">ThreadLocal Flow</a>
+  <div class="section">Call Stacks</div>
+  <a href="#callstack-login">Login Call Stack</a>
+  <a href="#callstack-api">Protected API Call Stack</a>
+  <a href="#callstack-payment">Payment Call Stack</a>
+  <div class="section">Data Flows</div>
+  <a href="#data-login">Login Request/Response</a>
+  <a href="#data-jwt">JWT Data</a>
+  <div class="section">Reference</div>
+  <a href="#edge-cases">Edge Cases</a>
+  <a href="#interview">Interview Q&A</a>
+</aside>
+
+<main id="main">
+
+<!-- HERO -->
+<div class="hero">
+  <h1>SkillSync — Complete Visual Flow Diagrams</h1>
+  <p>Forensic execution trace from browser click → Gateway → Auth-Service → DB → Response. Every file, class, and method mapped.</p>
+  <div class="badges">
+    <span class="badge b-blue">Spring Cloud Gateway</span>
+    <span class="badge b-green">Auth-Service / JWT</span>
+    <span class="badge b-purple">React + Redux Toolkit</span>
+    <span class="badge b-orange">RabbitMQ + Saga</span>
+    <span class="badge b-teal">Redis Cache</span>
+    <span class="badge b-blue">Razorpay Payments</span>
+    <span class="badge b-purple">Google OAuth 2.0</span>
+    <span class="badge b-green">Eureka + Config Server</span>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- SECTION 1 – HIGH-LEVEL ARCHITECTURE                   -->
+<!-- ══════════════════════════════════════════════════════ -->
+<h2 id="overview">🏗️ High-Level Architecture Diagram</h2>
+
+<div class="flow">
+<div class="flow-title">End-to-End System Architecture</div>
+<div class="flow-body">
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                         BROWSER  (React + Vite)                             │
+│   src/services/axios.ts          ← Axios (withCredentials, interceptors)   │
+│   src/store/slices/authSlice.ts  ← Redux (accessToken, user, role)         │
+│   src/components/layout/         ← AuthLoader, ProtectedRoute, RoleGuard   │
+│   src/pages/auth/LoginPage.tsx   ← useMutation → api.post('/api/auth/login')│
+└──────────────────────────────┬──────────────────────────────────────────────┘
+                               │  HTTPS  (Authorization: Bearer <jwt>
+                               │          OR Cookie: accessToken=<jwt>)
+                               ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                    API GATEWAY  (Spring Cloud Gateway, Netty, port 8080)   │
+│                                                                             │
+│   GLOBAL FILTERS (run for ALL routes, in order):                          │
+│   1. CsrfOriginFilter          @Order(-3) — blocks cross-origin mutations  │
+│   2. RateLimitingFilter        @Order(-2) — 5/10/60/100 req/min limits     │
+│   3. SecurityHeadersFilter     @Order(-1) — adds security headers          │
+│                                                                             │
+│   PER-ROUTE FILTERS (only on protected routes):                            │
+│   4. JwtAuthenticationFilter   (AbstractGatewayFilterFactory)              │
+│      → Validates JWT, strips X-User-* headers, injects verified identity  │
+│                                                                             │
+│   ROUTING:  application.properties (routes[0]..routes[22])                 │
+│   ├── /api/auth/**        → lb://auth-service        (NO JwtFilter)       │
+│   ├── /api/users/**       → lb://user-service        + JwtFilter           │
+│   ├── /api/mentors/**     → lb://user-service        + JwtFilter           │
+│   ├── /api/sessions/**    → lb://session-service     + JwtFilter           │
+│   ├── /api/payments/**    → lb://payment-service     + JwtFilter           │
+│   ├── /api/admin/**       → lb://user-service        + JwtFilter           │
+│   ├── /api/notifications/**→ lb://notification-svc   + JwtFilter           │
+│   └── /api/skills/**      → lb://skill-service       (NO JwtFilter, public)│
+│                                                                             │
+│   DISCOVERY:  Eureka Server (lb:// prefix = Load Balanced via Eureka)     │
+└───────┬─────────────────────┬──────────────────────────────────────────────┘
+        │                     │
+        ▼                     ▼
+┌───────────────┐    ┌────────────────────────────────────────────────────────┐
+│ AUTH-SERVICE  │    │  OTHER MICROSERVICES (Tomcat, port varies)            │
+│ (Tomcat 8081) │    │  user-service / skill-service / session-service /     │
+│               │    │  payment-service / notification-service               │
+│ SecurityConfig│    │                                                        │
+│ FilterChain   │    │  ● NO Spring Security configured                      │
+│ JwtAuthFilter │    │  ● Trust X-User-Id header injected by Gateway         │
+│ AuthController│    │  ● @RequestHeader("X-User-Id") Long userId            │
+│ AuthService   │    │  ● Use Feign Client to call auth-service internally   │
+│ JwtTokenProv  │    │  ● Redis cache (skillsync-cache-common module)        │
+│ OtpService    │    │  ● RabbitMQ for async events (payment, sessions, etc) │
+│ EmailService  │    │                                                        │
+└───────┬───────┘    └──────────────────────┬─────────────────────────────────┘
+        │                                   │
+        ▼                                   ▼
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                           INFRASTRUCTURE                                    │
+│  PostgreSQL (separate schemas per service: auth, user, session, payment)   │
+│  Redis      (skillsync-cache-common: profile caching, stampede protection) │
+│  RabbitMQ   (PaymentCompletedEvent → session-service + notification-svc)  │
+│  Config Server (port 8888) — centralized application.properties            │
+│  Eureka Server (port 8761) — service registry + heartbeat                 │
+└──────────────────────────────────────────────────────────────────────────────┘
+</div></div>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- SECTION 2 – TECH STACK                                -->
+<!-- ══════════════════════════════════════════════════════ -->
+<h2 id="tech-stack">🧰 Technology Stack</h2>
+<table>
+<tr><th>Layer</th><th>Technology</th><th>File / Class</th><th>Why Used</th></tr>
+<tr><td>Frontend Framework</td><td>React 18 + Vite + TypeScript</td><td>src/App.tsx</td><td>Component-based SPA, fast HMR, type safety</td></tr>
+<tr><td>State Management</td><td>Redux Toolkit</td><td>authSlice.ts, store/index.ts</td><td>Global auth state, role, tokens persisted to localStorage</td></tr>
+<tr><td>HTTP Client</td><td>Axios + TanStack Query</td><td>services/axios.ts</td><td>Interceptors for auto-JWT attach + silent refresh; Query for caching</td></tr>
+<tr><td>OAuth Client</td><td>@react-oauth/google</td><td>LoginPage.tsx (useGoogleLogin)</td><td>Google Implicit Flow — gets access_token, calls userinfo endpoint</td></tr>
+<tr><td>API Gateway</td><td>Spring Cloud Gateway (Netty)</td><td>ApiGatewayApplication.java</td><td>Reactive edge proxy; JWT validation; rate limiting; routing</td></tr>
+<tr><td>Auth Service</td><td>Spring Boot + Spring Security</td><td>AuthServiceApplication.java</td><td>JWT issuance; BCrypt; OTP; OAuth linking; refresh tokens</td></tr>
+<tr><td>JWT Library</td><td>JJWT 0.12.x</td><td>JwtTokenProvider.java</td><td>HS256 signing using Base64-decoded secret; claims extraction</td></tr>
+<tr><td>Service Discovery</td><td>Netflix Eureka</td><td>EurekaServerApplication.java</td><td>lb:// routing — Gateway finds healthy instances dynamically</td></tr>
+<tr><td>Config Management</td><td>Spring Cloud Config Server</td><td>ConfigServerApplication.java</td><td>Centralised application.properties for all services</td></tr>
+<tr><td>Database</td><td>PostgreSQL</td><td>AuthUserRepository.java (JPA)</td><td>Relational data; JPA Auditing; separate schemas per service</td></tr>
+<tr><td>Cache</td><td>Redis + skillsync-cache-common</td><td>CacheService.java, RedisConfig.java</td><td>Profile caching; stampede protection; cache-aside pattern</td></tr>
+<tr><td>Messaging</td><td>RabbitMQ</td><td>RabbitMQConfig.java, consumers/</td><td>Async event-driven: payment → session creation → notifications</td></tr>
+<tr><td>Payment</td><td>Razorpay</td><td>PaymentService.java, RazorpayConfig.java</td><td>Order creation + HMAC signature verification</td></tr>
+<tr><td>Notifications</td><td>WebSocket (STOMP) + Email</td><td>WebSocketConfig.java, EmailService.java</td><td>Real-time notifications; transactional OTP emails</td></tr>
+<tr><td>Password Hashing</td><td>BCrypt (strength=12)</td><td>SecurityConfig.java (passwordEncoder Bean)</td><td>Slow by design; unique salt per password; brute-force resistant</td></tr>
+<tr><td>API Docs</td><td>SpringDoc OpenAPI 3</td><td>OpenApiConfig.java</td><td>Aggregated Swagger UI at Gateway level for all services</td></tr>
+</table>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- SECTION 3 – LOGIN FLOW                                -->
+<!-- ══════════════════════════════════════════════════════ -->
+<h2 id="login-flow">🔐 Login Flow — Complete Visual Trace</h2>
+
+<div class="flow">
+<div class="flow-title">Login Request: Browser → Gateway → Auth-Service → DB → Response</div>
+<div class="flow-body">
+┌──────────────────────────────────────────────────────────────────────┐
+│  STEP 1: USER ACTION (Browser)                                       │
+│  File: src/pages/auth/LoginPage.tsx                                  │
+│  User fills email + password, clicks "Login"                         │
+│  handleSubmit() → onSubmit(data) → loginMutation.mutate(data)        │
+└──────────────────┬───────────────────────────────────────────────────┘
+                   ▼
+┌──────────────────────────────────────────────────────────────────────┐
+│  STEP 2: AXIOS REQUEST (Frontend)                                    │
+│  File: src/services/axios.ts                                         │
+│  api.post('/api/auth/login', { email, password })                    │
+│  Request interceptor runs → NO token yet → Authorization NOT added  │
+│  withCredentials: true → cookies sent automatically                  │
+└──────────────────┬───────────────────────────────────────────────────┘
+                   ▼  POST https://api.skillsync.mraks.dev/api/auth/login
+                      Body: { "email": "user@test.com", "password": "..." }
+                      Headers: Content-Type: application/json
+┌──────────────────────────────────────────────────────────────────────┐
+│  STEP 3: API GATEWAY RECEIVES REQUEST (Netty Event Loop)             │
+│  File: api-gateway/src/main/java/com/skillsync/apigateway/           │
+│                                                                      │
+│  GLOBAL FILTERS run (in order):                                      │
+│  → CsrfOriginFilter.filter()       @Order(-3)                        │
+│    POST request → checks Origin header → skillsync.rangaraju.dev ✅     │
+│  → RateLimitingFilter.filter()     @Order(-2)                        │
+│    Path=/api/auth/login → LOGIN_LIMIT(10 req/min) → counter++       │
+│    Not exceeded → X-RateLimit-Remaining header added                │
+│  → SecurityHeadersFilter.filter()  @Order(-1)                        │
+│    Adds: X-Frame-Options, X-XSS-Protection, HSTS to response        │
+│                                                                      │
+│  ROUTE MATCH: routes[1] Path=/api/auth/**                            │
+│  Target: lb://auth-service  (NO JwtAuthenticationFilter!)            │
+│  Reason: Login is public — no JWT needed                             │
+│  Eureka lookup → finds auth-service instance → forwards request      │
+└──────────────────┬───────────────────────────────────────────────────┘
+                   ▼  Internal HTTP to auth-service:8081
+┌──────────────────────────────────────────────────────────────────────┐
+│  STEP 4: AUTH-SERVICE TOMCAT RECEIVES REQUEST                        │
+│                                                                      │
+│  NioEndpoint → worker thread "http-nio-8081-exec-3" picked from pool │
+│  Http11Processor reads HTTP bytes                                    │
+│  CoyoteAdapter.service() → creates HttpServletRequest/Response       │
+│                                                                      │
+│  SPRING SECURITY FILTER CHAIN RUNS (auth-service SecurityConfig):    │
+│  Class: com.skillsync.auth.config.SecurityConfig                     │
+│                                                                      │
+│  Filter 1: SecurityContextPersistenceFilter                          │
+│    → Loads SecurityContext (empty — stateless JWT app)               │
+│  Filter 2: HeaderWriterFilter                                        │
+│    → Adds security headers to response                               │
+│  Filter 3: CorsFilter                                                │
+│    → Checks CORS (handled by Gateway, but runs here too)             │
+│  Filter 4: LogoutFilter                                              │
+│    → Path != /logout → passes through                                │
+│  Filter 5: JwtAuthenticationFilter (CUSTOM — OncePerRequestFilter)   │
+│    Class: com.skillsync.auth.security.JwtAuthenticationFilter        │
+│    → extractTokenFromRequest(): checks Authorization header          │
+│       → No "Bearer " header → also checks cookie "accessToken"      │
+│       → No cookie either → token = null                              │
+│    → token is null → SKIP authentication population                 │
+│    → chain.doFilter() called → request continues                    │
+│  Filter 6: AnonymousAuthenticationFilter                             │
+│    → No authentication set → creates Anonymous token                │
+│  Filter 7: ExceptionTranslationFilter                                │
+│    → Wraps remaining chain in try-catch                              │
+│  Filter 8: FilterSecurityInterceptor (AuthorizationFilter)           │
+│    → Checks requestMatchers: /api/auth/login → permitAll() ✅       │
+│    → No role check needed → passes through                           │
+│                                                                      │
+│  DispatcherServlet.service()                                         │
+│    → HandlerMapping finds: AuthController.login()                   │
+│    → HandlerAdapter.handle() → calls the method via reflection       │
+└──────────────────┬───────────────────────────────────────────────────┘
+                   ▼
+┌──────────────────────────────────────────────────────────────────────┐
+│  STEP 5: AuthController.login()                                      │
+│  File: com.skillsync.auth.controller.AuthController                  │
+│  Method: login(@Valid @RequestBody LoginRequest, response, request)  │
+│                                                                      │
+│  → @Valid triggers bean validation on LoginRequest DTO               │
+│    (email @NotBlank, @Email; password @NotBlank)                     │
+│  → Calls authService.login(request)                                  │
+└──────────────────┬───────────────────────────────────────────────────┘
+                   ▼
+┌──────────────────────────────────────────────────────────────────────┐
+│  STEP 6: AuthService.login(LoginRequest)                             │
+│  File: com.skillsync.auth.service.AuthService                        │
+│                                                                      │
+│  6a. authenticationManager.authenticate(                             │
+│          new UsernamePasswordAuthenticationToken(email, password))   │
+│      → ProviderManager iterates providers                            │
+│      → DaoAuthenticationProvider selected                            │
+│      → Calls UserDetailsServiceImpl.loadUserByUsername(email)        │
+│         → AuthUserRepository.findByEmail(email) [PostgreSQL SELECT]  │
+│         → Returns UserDetails (email, passwordHash, roles, isActive) │
+│      → BCryptPasswordEncoder.matches(rawPwd, hashedPwd)              │
+│         → BCrypt re-computes hash, compares — 12 rounds              │
+│         → MATCH ✅ → Authentication object created                   │
+│         → Spring auto-nulls password from Authentication             │
+│                                                                      │
+│  6b. authUserRepository.findByEmail(email) [2nd DB query]            │
+│      → Gets the AuthUser entity                                      │
+│                                                                      │
+│  6c. if (!user.isVerified()) → throw RuntimeException                │
+│      "Email not verified. OTP sent." + resends OTP                   │
+│                                                                      │
+│  6d. generateAuthResponse(user) called:                              │
+│      → jwtTokenProvider.generateAccessToken(userId,email,role)       │
+│         → Jwts.builder().subject(userId).claims({email,role})        │
+│            .expiration(now + 24h).signWith(HS256 key).compact()      │
+│         → Returns signed JWT string                                  │
+│      → jwtTokenProvider.generateRefreshToken(userId)                 │
+│         → Jwts.builder().subject(userId).expiration(now+7d).compact()│
+│                                                                      │
+│  6e. Refresh token management:                                        │
+│      → refreshTokenRepository.findByUserOrderByCreatedAtAsc(user)    │
+│      → If >= 5 tokens: delete oldest (FIFO eviction)                 │
+│      → Save new RefreshToken entity to PostgreSQL                    │
+│                                                                      │
+│  6f. Returns AuthResponse(accessToken, refreshToken, expiresIn,      │
+│                           tokenType="Bearer", userSummary)           │
+└──────────────────┬───────────────────────────────────────────────────┘
+                   ▼
+┌──────────────────────────────────────────────────────────────────────┐
+│  STEP 7: AuthController — Cookie Creation                            │
+│  → addAuthCookies(response, authResponse, httpRequest)               │
+│  → resolveCookieOptions() detects localhost vs production            │
+│  → buildCookie("accessToken", jwt, 86400s, {httpOnly,secure,sameSite})│
+│  → buildCookie("refreshToken", rt, 604800s, {httpOnly,secure})       │
+│  → response.addHeader("Set-Cookie", ...) × 2                         │
+│  → ResponseEntity.ok(authResponse) returned                          │
+└──────────────────┬───────────────────────────────────────────────────┘
+                   ▼  HTTP 200 Response
+                      Body: { accessToken, refreshToken, expiresIn, user }
+                      Set-Cookie: accessToken=<jwt>; HttpOnly; Secure; SameSite=None
+                      Set-Cookie: refreshToken=<rt>; HttpOnly; Secure; SameSite=None
+┌──────────────────────────────────────────────────────────────────────┐
+│  STEP 8: THREAD CLEANUP (Auth-Service Tomcat)                        │
+│  SecurityContextPersistenceFilter (end of request):                  │
+│  → SecurityContextHolder.clearContext()                              │
+│  → ThreadLocal wiped → Thread 3 returns to pool — CLEAN             │
+└──────────────────┬───────────────────────────────────────────────────┘
+                   ▼
+┌──────────────────────────────────────────────────────────────────────┐
+│  STEP 9: FRONTEND HANDLES RESPONSE                                   │
+│  File: src/pages/auth/LoginPage.tsx (loginMutation.onSuccess)        │
+│                                                                      │
+│  → dispatch(setCredentials({ user, accessToken, refreshToken }))     │
+│     File: src/store/slices/authSlice.ts — setCredentials reducer     │
+│     → state.user = user                                              │
+│     → state.accessToken = accessToken                                │
+│     → state.isAuthenticated = true                                   │
+│     → localStorage.setItem('ss_user', JSON.stringify(user))         │
+│     → localStorage.setItem('ss_access_token', accessToken)           │
+│     → localStorage.setItem('ss_refresh_token', refreshToken)         │
+│                                                                      │
+│  → Role-based navigation:                                            │
+│     ROLE_ADMIN  → navigate('/admin')                                 │
+│     ROLE_MENTOR → navigate('/mentor')                                │
+│     ROLE_LEARNER→ navigate('/learner')                               │
+└──────────────────────────────────────────────────────────────────────┘
+</div></div>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- SECTION 4 – OAUTH FLOW                                -->
+<!-- ══════════════════════════════════════════════════════ -->
+<h2 id="oauth-flow">🔑 Google OAuth Flow</h2>
+
+<div class="flow">
+<div class="flow-title">OAuth 2.0 Implicit Flow — Google Login</div>
+<div class="flow-body">
+STEP 1: User clicks "Login with Google" button
+  File: src/pages/auth/LoginPage.tsx
+  → useGoogleLogin({ onSuccess }) hook from @react-oauth/google
+  → Opens Google OAuth consent popup
+  → User grants permission
+  → Google returns: { access_token: "ya29.xxx...", scope, token_type }
+
+STEP 2: Frontend fetches user info from Google
+  File: src/pages/auth/LoginPage.tsx — handleGoogleLogin.onSuccess()
+  → fetch("https://www.googleapis.com/oauth2/v3/userinfo",
+           { headers: { Authorization: "Bearer ya29.xxx..." } })
+  → Returns: { sub, email, given_name, family_name, picture }
+  → Builds profile: { provider: "google", providerId: "google-{sub}",
+                       email, firstName, lastName }
+  → oauthMutation.mutate(profile)
+
+STEP 3: POST /api/auth/oauth-login
+  File: src/services/axios.ts
+  → api.post('/api/auth/oauth-login', profile)
+
+STEP 4: Gateway Routes (no JWT filter on /api/auth/**)
+  → lb://auth-service → AuthController.oauthLogin()
+
+STEP 5: AuthController.oauthLogin()
+  File: com.skillsync.auth.controller.AuthController
+  → authService.loginWithOAuth(OAuthRequest)
+
+STEP 6: AuthService.loginWithOAuth()
+  File: com.skillsync.auth.service.AuthService
+  → Try: authUserRepository.findByProviderAndProviderId("google", "google-{sub}")
+  → If not found: try authUserRepository.findByEmail(email)
+  → If still null → NEW USER:
+      Create AuthUser { email, firstName, lastName,
+                        passwordHash=encode(random UUID),  ← placeholder
+                        role=ROLE_LEARNER, isVerified=true,
+                        provider="google", providerId="google-{sub}",
+                        passwordSet=false }
+      authUserRepository.save(newUser)
+      isNewUser = true
+  → If EXISTING user:
+      If !user.isVerified() → set isVerified=true
+      If user.provider == null → link provider + save + evict Redis cache
+
+STEP 7: Token Generation (same as login)
+  → jwtTokenProvider.generateAccessToken(userId, email, role)
+  → jwtTokenProvider.generateRefreshToken(userId)
+  → FIFO eviction of old refresh tokens (max 5)
+  → refreshTokenRepository.save(new RefreshToken)
+  → Returns OAuthResponse { accessToken, refreshToken, user,
+                             passwordSetupRequired=isNewUser }
+
+STEP 8: AuthController — Cookies + Response
+  → addAuthCookies(response, accessToken, refreshToken, ...)
+  → ResponseEntity.ok(oauthResponse)
+
+STEP 9: Frontend Handles Response
+  File: src/pages/auth/LoginPage.tsx — oauthMutation.onSuccess()
+  → if (data.passwordSetupRequired):
+       navigate('/setup-password', { state: { email } })  ← NEW USERS
+  → else:
+       dispatch(setCredentials({ user, accessToken, refreshToken }))
+       navigate by role
+</div></div>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- SECTION 5 – SIGNUP FLOW                               -->
+<!-- ══════════════════════════════════════════════════════ -->
+<h2 id="signup-flow">📝 Signup / OTP Verification Flow</h2>
+
+<div class="flow">
+<div class="flow-title">Two-Step Registration: Initiate → OTP Verify → Complete</div>
+<div class="flow-body">
+PHASE 1: EMAIL SUBMISSION
+══════════════════════════
+User enters email → RegisterPage.tsx
+→ api.post('/api/auth/initiate-registration', { email })
+→ Gateway → auth-service → AuthController.initiateRegistration()
+→ AuthService.initiateRegistration():
+   → normalizeEmail (trim + lowercase)
+   → authUserRepository.findByEmail(email):
+      → EXISTS + isVerified=true → return { exists: true }   (already registered)
+      → EXISTS + isVerified=false → resendOtp() → return { exists:false, otpSent:true }
+      → NOT EXISTS →
+           Create AuthUser { email, passwordHash="PENDING", firstName="PENDING",
+                              role=ROLE_LEARNER, isVerified=false, passwordSet=false }
+           authUserRepository.save(user)
+           otpService.generateAndSendOtp(user, OtpType.REGISTRATION)
+           → OtpService: generate 6-digit OTP (SecureRandom)
+           → OtpToken { userId, email, otp, expiresAt=now+5min, used=false, attempts=0 }
+           → otpTokenRepository.save(otpToken)
+           → emailService.sendOtpEmail(email, otp, firstName, REGISTRATION)
+           return { exists: false, otpSent: true }
+→ Frontend: navigate('/verify-otp')
+
+PHASE 2: OTP VERIFICATION
+══════════════════════════
+User enters 6-digit OTP → VerifyOtpPage.tsx
+→ api.post('/api/auth/verify-otp', { email, otp })
+→ otpService.verifyOtp(email, otp, OtpType.REGISTRATION)
+   → otpTokenRepository.findByEmailAndType(email, REGISTRATION)
+   → if attempts >= MAX_ATTEMPTS(5) → throw "Too many attempts"
+   → if expiresAt < now → throw "OTP expired"
+   → if otp != storedOtp → increment attempts → throw "Invalid OTP"
+   → if valid:
+       authUser.isVerified = true → authUserRepository.save(user)
+       otpToken.used = true → otpTokenRepository.save(token)
+→ Response: { message: "Email verified successfully" }
+→ Frontend: navigate('/complete-registration')
+
+PHASE 3: REGISTRATION COMPLETION
+══════════════════════════════════
+User enters firstName, lastName, password → RegisterPage.tsx
+→ api.post('/api/auth/complete-registration', { email, firstName, lastName, password })
+→ AuthService.completeRegistration():
+   → findByEmail(email) → user must exist
+   → if !user.isVerified() → throw "Verify email first"
+   → if user.passwordSet && hash != "PENDING" → throw "Already completed"
+   → validateStrongPassword(password):
+       Regex: ^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,100}$
+   → user.setFirstName(), setLastName()
+   → user.setPasswordHash(passwordEncoder.encode(password))  ← BCrypt 12 rounds
+   → user.setPasswordSet(true)
+   → authUserRepository.save(user)
+   → emailService.sendWelcomeEmail(email, firstName)
+   → generateAuthResponse(user)  ← same as login: JWT + refresh token
+→ AuthController: addAuthCookies() → ResponseEntity.ok(authResponse)
+→ Frontend: dispatch(setCredentials) → navigate by role
+</div></div>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- SECTION 6 – AUTHENTICATED API FLOW                    -->
+<!-- ══════════════════════════════════════════════════════ -->
+<h2 id="protected-flow">🔒 Authenticated API Request Flow</h2>
+
+<p>Example: User visits <strong>/learner/profile</strong> → fetches <code>GET /api/users/me</code>.</p>
+
+<div class="flow">
+<div class="flow-title">Protected Route: Browser → Gateway (JWT Validate) → user-service → Redis → DB</div>
+<div class="flow-body">
+STEP 1: ROUTE GUARD CHECK (Browser)
+  File: src/components/layout/ProtectedRoute.tsx
+  → useSelector(state => state.auth.isAuthenticated)
+  → true → renders <Outlet /> (the actual page)
+  → false → <Navigate to="/login" replace />
+
+STEP 2: PAGE LOAD — AuthLoader
+  File: src/components/layout/AuthLoader.tsx
+  → Page refresh scenario: Redux lost state (memory cleared)
+  → user == null → attempts GET /api/auth/me with cookie
+  → If 401 → tries POST /api/auth/refresh → then retries /me
+  → Dispatches setCredentials to restore Redux state
+
+STEP 3: COMPONENT CALLS API
+  File: src/services/userService.ts (or direct api call)
+  → api.get('/api/users/me')
+  → Request Interceptor in src/services/axios.ts:
+     const token = store.getState().auth.accessToken;
+     config.headers.Authorization = `Bearer ${token}`;
+  → Request: GET /api/users/me
+             Authorization: Bearer eyJhbGc...
+
+STEP 4: GATEWAY — GLOBAL FILTERS
+  CsrfOriginFilter → GET request → skip (only POST/PUT/DELETE/PATCH)
+  RateLimitingFilter → path /api/users/me → AUTHENTICATED_LIMIT(100/min)
+    → userId extracted from Header? Not yet (JWT not processed yet)
+    → Falls back to IP-based key: "ip:1.2.3.4:general"
+  SecurityHeadersFilter → adds security headers to response
+
+STEP 5: GATEWAY — JwtAuthenticationFilter (Route-level filter)
+  Class: com.skillsync.apigateway.filter.JwtAuthenticationFilter
+  File: api-gateway/.../filter/JwtAuthenticationFilter.java
+  → Checks Authorization header → "Bearer eyJhbGc..." → token extracted
+  → Falls back to Cookie "accessToken" if header missing
+  → extractClaims(token):
+       SecretKey key = Keys.hmacShaKeyFor(BASE64.decode(JWT_SECRET))
+       Jwts.parser().verifyWith(key).build()
+            .parseSignedClaims(token).getPayload()
+  → Claims extracted: { sub="101", email="user@test.com", role="ROLE_LEARNER" }
+  → REQUEST MUTATION (critical security step):
+       request.mutate()
+         .headers(h -> {
+             h.remove("X-User-Id");    ← STRIP any spoofed headers
+             h.remove("X-User-Email");
+             h.remove("X-User-Role");
+         })
+         .header("X-User-Id", "101")               ← INJECT verified
+         .header("X-User-Email", "user@test.com")
+         .header("X-User-Role", "ROLE_LEARNER")
+         .build()
+  → chain.filter(exchange) → forwards mutated request to user-service
+
+STEP 6: USER-SERVICE — TOMCAT RECEIVES
+  No Spring Security configured in user-service!
+  → DispatcherServlet → UserController.getMyProfile()
+
+STEP 7: UserController.getMyProfile()
+  File: com.skillsync.user.controller.UserController
+  @GetMapping("/me")
+  public ResponseEntity<ProfileResponse> getMyProfile(
+      @RequestHeader("X-User-Id") Long userId) {
+    → userId = 101L (injected by Gateway — verified)
+    → return userQueryService.getProfile(userId)
+
+STEP 8: UserQueryService.getProfile(userId)
+  File: com.skillsync.user.service.query.UserQueryService
+  → CacheService.getOrLoad("v1:user:profile:101", ProfileResponse.class, TTL, () → DB)
+  → CACHE HIT → return cached ProfileResponse immediately
+  → CACHE MISS → profileRepository.findByUserId(101) [PostgreSQL]
+                 → map to ProfileResponse
+                 → cacheService.put(key, value, TTL)
+                 → return
+
+STEP 9: RESPONSE RETURNED
+  → ResponseEntity.ok(profileResponse)
+  → Gateway passes response back to browser
+  → Browser renders profile page
+</div></div>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- SECTION 7 – TOKEN REFRESH FLOW                        -->
+<!-- ══════════════════════════════════════════════════════ -->
+<h2 id="refresh-flow">🔄 Token Refresh Flow (Silent)</h2>
+
+<div class="flow">
+<div class="flow-title">401 Intercepted → Auto-Refresh → Retry Original Request</div>
+<div class="flow-body">
+SCENARIO: Access token expired (24h window passed)
+
+STEP 1: Any API call returns 401 Unauthorized
+  File: src/services/axios.ts — response interceptor
+  → error.response.status === 401
+  → originalRequest._retry not set
+  → url !== '/api/auth/refresh'
+  → isRefreshing = false (no concurrent refresh happening)
+
+STEP 2: Interceptor sets isRefreshing = true
+  → Reads currentRefreshToken from Redux:
+     store.getState().auth.refreshToken
+  → POST /api/auth/refresh
+     Body: { refreshToken: "eyJ..." }  (also sent via HttpOnly cookie)
+  
+  NOTE: If ANOTHER request gets 401 while refreshing:
+  → isRefreshing = true → pushed to failedQueue array
+  → Will be retried automatically after refresh completes
+
+STEP 3: Gateway receives POST /api/auth/refresh
+  → No JwtFilter on /api/auth/** → forwards to auth-service
+
+STEP 4: AuthController.refreshToken()
+  File: com.skillsync.auth.controller.AuthController
+  → @CookieValue(value="refreshToken") String refreshTokenCookie
+  → @RequestBody RefreshTokenRequest refreshTokenBody
+  → Prefers cookie, falls back to body
+  → authService.refreshToken(new RefreshTokenRequest(token))
+
+STEP 5: AuthService.refreshToken()
+  File: com.skillsync.auth.service.AuthService
+  → refreshTokenRepository.findByToken(token) [DB lookup]
+  → if not found → throw "Invalid refresh token"
+  → if refreshToken.expiresAt < now → delete + throw "Expired"
+  → user = refreshToken.getUser()
+  → refreshTokenRepository.delete(refreshToken)  ← ROTATION: delete old
+  → generateAuthResponse(user) →
+       new JWT (24h) + new refresh token (7d) + save to DB
+  → Returns new AuthResponse
+
+STEP 6: AuthController — updates cookies
+  → addAuthCookies() → new Set-Cookie headers
+
+STEP 7: Interceptor handles refresh success
+  File: src/services/axios.ts
+  → refreshed.accessToken extracted
+  → store.dispatch(setCredentials({ accessToken: newToken, ... }))
+  → processQueue(null, newToken) → retry all queued requests
+  → originalRequest.headers.Authorization = "Bearer " + newToken
+  → api(originalRequest) → RETRIES ORIGINAL FAILED REQUEST
+
+STEP 8: If refresh fails (refresh token also expired)
+  → store.dispatch(logout()) → clears Redux + localStorage
+  → window.location.href = '/login?reason=session_expired'
+  → LoginPage shows: "Your session expired. Please sign in again."
+</div></div>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- SECTION 8 – GATEWAY FILTER CHAIN                      -->
+<!-- ══════════════════════════════════════════════════════ -->
+<h2 id="gateway-filters">🛡️ Gateway Filter Chain — Detailed Breakdown</h2>
+
+<table>
+<tr><th>Order</th><th>Filter Class</th><th>Type</th><th>Logic</th><th>Fail → Result</th></tr>
+<tr>
+  <td><strong>-3</strong></td>
+  <td><code>CsrfOriginFilter</code></td>
+  <td>GlobalFilter</td>
+  <td>POST/PUT/DELETE/PATCH: checks Origin header against allowedOrigins (skillsync.rangaraju.dev, localhost). OPTIONS skipped.</td>
+  <td class="r">403 Forbidden immediately</td>
+</tr>
+<tr>
+  <td><strong>-2</strong></td>
+  <td><code>RateLimitingFilter</code></td>
+  <td>GlobalFilter</td>
+  <td>Sliding window counters. OTP=5/min, Login=10/min, Payment=10/min, Public=60/min, Authenticated=100/min. Key = user_id or IP. ConcurrentHashMap buckets.</td>
+  <td class="r">429 Too Many Requests + headers</td>
+</tr>
+<tr>
+  <td><strong>-1</strong></td>
+  <td><code>SecurityHeadersFilter</code></td>
+  <td>GlobalFilter</td>
+  <td>Adds to RESPONSE: X-Frame-Options: DENY, X-Content-Type-Options: nosniff, X-XSS-Protection: 1; mode=block, HSTS, Referrer-Policy.</td>
+  <td>No failure case — always adds headers</td>
+</tr>
+<tr>
+  <td><strong>route</strong></td>
+  <td><code>JwtAuthenticationFilter</code></td>
+  <td>GatewayFilter (per route)</td>
+  <td>Checks Authorization header then accessToken cookie. Validates HMAC-SHA256 signature. Strips spoofed X-User-* headers. Injects: X-User-Id, X-User-Email, X-User-Role.</td>
+  <td class="r">401 Unauthorized</td>
+</tr>
+</table>
+
+<div class="flow">
+<div class="flow-title">Gateway Filter Execution Order — Visual</div>
+<div class="flow-body">
+REQUEST ARRIVES
+    │
+    ▼
+CsrfOriginFilter (-3) ─────────────── [POST/PUT/DELETE/PATCH only]
+    │ Origin check passes ✅           [OPTIONS → skip]
+    ▼
+RateLimitingFilter (-2) ───────────── [ALL methods]
+    │ Under limit ✅                   Path: /api/auth/login → LOGIN_LIMIT(10)
+    ▼                                  Key: "ip:192.168.1.1:auth"
+SecurityHeadersFilter (-1) ─────────  Adds response headers (HSTS, X-Frame, etc.)
+    │ (always passes)
+    ▼
+ROUTE MATCHING (application.properties)
+    │
+    ├── /api/auth/** → NO JwtFilter → direct to auth-service
+    ├── /api/users/** → JwtAuthenticationFilter → user-service
+    ├── /api/payments/** → JwtAuthenticationFilter → payment-service
+    └── /api/skills/** → NO JwtFilter → skill-service (public)
+
+[IF JwtFilter applies:]
+JwtAuthenticationFilter
+    │
+    ├── Extract token from Authorization header (Bearer xxx)
+    │   └── Fallback: Cookie "accessToken"
+    │
+    ├── No token → onError(exchange, "Missing token", 401)
+    │
+    ├── extractClaims(token)
+    │   → Keys.hmacShaKeyFor(BASE64.decode(JWT_SECRET))
+    │   → Jwts.parser().verifyWith(key).build()
+    │       .parseSignedClaims(token)  ← validates signature + expiry
+    │
+    ├── Invalid/Expired → onError(exchange, "Invalid token", 401)
+    │
+    └── Valid ✅ → request.mutate()
+                   .headers(h → h.remove("X-User-Id") + add verified)
+                   → chain.filter(mutatedExchange)
+                   → FORWARDS TO MICROSERVICE
+</div></div>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- SECTION 9 – AUTH-SERVICE FILTER CHAIN                 -->
+<!-- ══════════════════════════════════════════════════════ -->
+<h2 id="auth-service-chain">🔐 Auth-Service Spring Security Filter Chain</h2>
+
+<div class="flow">
+<div class="flow-title">Auth-Service Internal Filter Chain (SecurityConfig.java)</div>
+<div class="flow-body">
+REQUEST ENTERS TOMCAT (auth-service)
+    │
+    ▼
+DelegatingFilterProxy
+    │ ← Tomcat can't access Spring Beans directly
+    │   This is a standard Servlet Filter registered by Spring Boot
+    ▼
+FilterChainProxy (springSecurityFilterChain bean)
+    │ Finds matching SecurityFilterChain via requestMatcher
+    ▼
+SECURITY FILTER CHAIN (defined in SecurityConfig.java):
+    │
+    ├─ 1. WebAsyncManagerIntegrationFilter
+    │      → Ensures SecurityContext available in async requests
+    │
+    ├─ 2. SecurityContextPersistenceFilter
+    │      START: loads SecurityContext from HttpSession (empty — STATELESS)
+    │      END:   clears ThreadLocal to prevent thread poisoning
+    │
+    ├─ 3. HeaderWriterFilter
+    │      → Adds X-Frame-Options, X-Content-Type-Options, Cache-Control
+    │
+    ├─ 4. CorsFilter
+    │      → Handles browser preflight OPTIONS requests
+    │
+    ├─ 5. LogoutFilter
+    │      → Path == /logout? No → passes through
+    │
+    ├─ 6. ★ JwtAuthenticationFilter (YOUR CUSTOM FILTER)
+    │      Class: com.skillsync.auth.security.JwtAuthenticationFilter
+    │      Extends: OncePerRequestFilter (runs ONCE per request, no duplicate)
+    │      Position: BEFORE UsernamePasswordAuthenticationFilter
+    │
+    │      doFilterInternal():
+    │       → extractTokenFromRequest(request):
+    │           Check "Authorization" header → starts with "Bearer "?
+    │             → bearerToken.substring(7) → token
+    │           Check cookies → loop → "accessToken" cookie?
+    │             → cookie.getValue() → token
+    │           → token = null (if neither found)
+    │
+    │       → if (hasText(token) && jwtTokenProvider.isTokenValid(token)):
+    │           String email = jwtTokenProvider.extractEmail(token)
+    │           UserDetails userDetails = userDetailsService.loadUserByUsername(email)
+    │               → AuthUserRepository.findByEmail(email) [DB]
+    │           UsernamePasswordAuthenticationToken auth =
+    │               new UsernamePasswordAuthenticationToken(
+    │                   userDetails, null, userDetails.getAuthorities())
+    │           auth.setDetails(new WebAuthenticationDetailsSource()
+    │                              .buildDetails(request))
+    │           SecurityContextHolder.getContext().setAuthentication(auth)
+    │           ← THREAD'S BACKPACK NOW HAS USER IDENTITY
+    │
+    │       → filterChain.doFilter(request, response)  ← ALWAYS called
+    │
+    ├─ 7. AnonymousAuthenticationFilter
+    │      → SecurityContext has no auth? → injects "Anonymous" token
+    │        (prevents NullPointerException in downstream code)
+    │
+    ├─ 8. ExceptionTranslationFilter ("Try-Catch" of filter chain)
+    │      → Wraps remaining chain execution in try-catch
+    │      → AuthenticationException → AuthenticationEntryPoint → 401
+    │      → AccessDeniedException → AccessDeniedHandler → 403
+    │
+    └─ 9. FilterSecurityInterceptor / AuthorizationFilter ("Final Gate")
+           → Checks requestMatchers defined in SecurityConfig:
+               /api/auth/login → permitAll() → ✅ PASS
+               /api/auth/refresh → permitAll() → ✅ PASS
+               /api/auth/internal/** → permitAll() → ✅ PASS (but Gateway blocks external)
+               ANY_OTHER → authenticated() → checks SecurityContext
+                  → has Authentication? ✅ PASS
+                  → Anonymous or no auth? → throw AccessDeniedException → 403
+
+DISPATCHERSERVLET
+    → HandlerMapping.getHandler() → finds @RequestMapping
+    → HandlerAdapter.handle() → calls Controller method via reflection
+    → ReflectiveMethodInvocation.proceed()
+
+CONTROLLER EXECUTES
+    → Thread's SecurityContext is available anywhere:
+       SecurityContextHolder.getContext().getAuthentication()
+    → @AuthenticationPrincipal resolves automatically
+
+RESPONSE SENT
+    → SecurityContextPersistenceFilter clears ThreadLocal
+    → Thread returns to pool — CLEAN
+</div></div>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- SECTION 10 – JWT INTERNALS                            -->
+<!-- ══════════════════════════════════════════════════════ -->
+<h2 id="jwt-internals">🎫 JWT Internals — Structure & Lifecycle</h2>
+
+<div class="flow">
+<div class="flow-title">JWT Token Structure (actual from JwtTokenProvider.java)</div>
+<div class="flow-body">
+TOKEN = base64(HEADER) . base64(PAYLOAD) . SIGNATURE
+
+HEADER (decoded):
+{
+  "alg": "HS256",      ← HMAC-SHA256 symmetric algorithm
+  "typ": "JWT"
+}
+
+PAYLOAD / CLAIMS (decoded, from generateAccessToken()):
+{
+  "sub": "101",                    ← userId (String.valueOf(userId))
+  "email": "user@skillsync.com",  ← claims Map.of("email", email, "role", role)
+  "role": "ROLE_LEARNER",
+  "iat": 1700000000,               ← issuedAt (new Date())
+  "exp": 1700086400                ← expiration (now + 24h)
+}
+
+SIGNATURE:
+  HMACSHA256(
+    base64UrlEncode(header) + "." + base64UrlEncode(payload),
+    BASE64.decode(JWT_SECRET)   ← From application.properties: jwt.secret
+  )
+
+ACCESS TOKEN:  exp = now + max(accessExpiration, 24h)
+REFRESH TOKEN: exp = now + max(refreshExpiration, 7 days)
+               (only has sub + iat + exp — no email/role claims)
+
+SIGNING KEY (JwtTokenProvider.getSigningKey()):
+  byte[] keyBytes = Decoders.BASE64.decode(jwtSecret);
+  return Keys.hmacShaKeyFor(keyBytes);   ← javax.crypto.SecretKey
+
+VALIDATION (JwtTokenProvider.isTokenValid()):
+  try {
+    Claims claims = Jwts.parser()
+        .verifyWith(getSigningKey())
+        .build()
+        .parseSignedClaims(token)   ← validates signature integrity
+        .getPayload();
+    return claims.getExpiration().after(new Date());  ← checks expiry
+  } catch (Exception e) {
+    return false;   ← invalid signature, expired, malformed → false
+  }
+
+KEY EXTRACTION METHODS:
+  extractUserId()  → Long.parseLong(claims.getSubject())
+  extractEmail()   → claims.get("email", String.class)
+  (role is not extracted from JWT — loaded fresh from DB via UserDetails)
+</div></div>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- SECTION 11 – THREADLOCAL                              -->
+<!-- ══════════════════════════════════════════════════════ -->
+<h2 id="threadlocal">🧵 ThreadLocal & SecurityContext Flow</h2>
+
+<div class="flow">
+<div class="flow-title">ThreadLocal Lifecycle — Per Request</div>
+<div class="flow-body">
+TOMCAT THREAD POOL (e.g., 200 threads)
+  ┌─────────────────────────────────────────────────┐
+  │ Thread-101 | Thread-102 | Thread-103 | ...      │
+  │ (idle pool)                                     │
+  └─────────────────────────────────────────────────┘
+
+REQUEST ARRIVES → Thread-101 assigned:
+
+  [Thread-101 THREADLOCAL memory]
+  Before filter: { SecurityContext: empty }
+
+  JwtAuthenticationFilter runs:
+  → SecurityContextHolder.getContext().setAuthentication(authentication)
+  → Thread-101's ThreadLocal slot now contains:
+     SecurityContext → Authentication {
+       principal: UserDetails { username="user@test.com", role="ROLE_LEARNER" }
+       credentials: null  (cleared automatically by Spring)
+       authorities: [SimpleGrantedAuthority("ROLE_LEARNER")]
+       details: WebAuthenticationDetails { remoteAddress, sessionId }
+     }
+
+  CONTROLLER can now call:
+  → SecurityContextHolder.getContext().getAuthentication()
+     → returns the Authentication object for user@test.com
+  → @AuthenticationPrincipal UserDetails user
+     → Spring injects it automatically via argument resolver
+
+  SERVICE can also call:
+  → SecurityContextHolder.getContext().getAuthentication()
+     → same object — no need to pass user as parameter to every method
+
+RESPONSE SENT:
+  SecurityContextPersistenceFilter (end of request):
+  → SecurityContextHolder.clearContext()
+  → Thread-101's ThreadLocal slot: { SecurityContext: null }
+  → Thread-101 returns to pool — CLEAN
+
+  WHY THIS MATTERS:
+  → Thread-101 next serves User B's request
+  → Without cleanup: Thread-101 would still have User A's authentication
+  → User B would appear to be logged in as User A → CATASTROPHIC BUG
+
+MANUAL THREAD WARNING:
+  new Thread(() -> {
+    SecurityContextHolder.getContext().getAuthentication()
+    → NULL — new thread doesn't inherit ThreadLocal!
+  }).start();
+  FIX: Use SecurityContextHolder.MODE_INHERITABLETHREADLOCAL
+       or explicitly pass Authentication
+</div></div>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- SECTION 12 – LOGIN CALL STACK                         -->
+<!-- ══════════════════════════════════════════════════════ -->
+<h2 id="callstack-login">📊 Login — Internal Call Stack</h2>
+
+<div class="flow">
+<div class="flow-title">Full Call Stack: AuthController.login() → DB → Response</div>
+<div class="flow-body">
+AuthController.login(LoginRequest, HttpServletResponse, HttpServletRequest)
+│ File: com.skillsync.auth.controller.AuthController
+│
+├── @Valid validation (Jakarta Bean Validation)
+│   └── LoginRequest { @NotBlank email, @NotBlank password }
+│
+└── authService.login(request)
+    │ File: com.skillsync.auth.service.AuthService
+    │
+    ├── authenticationManager.authenticate(
+    │       UsernamePasswordAuthenticationToken(email, password))
+    │   │ Bean: ProviderManager (auto-configured by Spring Boot)
+    │   │
+    │   └── DaoAuthenticationProvider.authenticate(token)
+    │       │ Auto-configured because Spring finds UserDetailsService + PasswordEncoder beans
+    │       │
+    │       ├── UserDetailsServiceImpl.loadUserByUsername(email)
+    │       │   │ File: com.skillsync.auth.security.UserDetailsServiceImpl
+    │       │   │
+    │       │   └── AuthUserRepository.findByEmail(email)
+    │       │       │ File: com.skillsync.auth.repository.AuthUserRepository
+    │       │       │ JPA → SELECT * FROM auth.users WHERE email=?
+    │       │       └── Returns: Optional<AuthUser>
+    │       │           → Throw UsernameNotFoundException if empty
+    │       │           → Returns User(email, passwordHash, isActive, [ROLE_LEARNER])
+    │       │
+    │       └── BCryptPasswordEncoder.matches(rawPwd, hashedPwd)
+    │           │ Bean defined in SecurityConfig.passwordEncoder()
+    │           │ BCryptPasswordEncoder(12)
+    │           └── Compares hash — SUCCESS → returns Authentication object
+    │               Spring auto-sets credentials=null on success
+    │
+    ├── authUserRepository.findByEmail(email)  [2nd DB call — gets full entity]
+    │   └── AuthUser { id, email, role, isVerified, isActive, ... }
+    │
+    ├── if (!user.isVerified()) → otpService.generateAndSendOtp() + throw
+    │
+    └── generateAuthResponse(user)
+        │ File: AuthService.generateAuthResponse()
+        │
+        ├── jwtTokenProvider.generateAccessToken(userId, email, role)
+        │   │ File: com.skillsync.auth.security.JwtTokenProvider
+        │   └── Jwts.builder()...signWith(getSigningKey()).compact()
+        │       → "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIi..."
+        │
+        ├── jwtTokenProvider.generateRefreshToken(userId)
+        │   └── Jwts.builder()...expiration(now+7d).compact()
+        │
+        ├── refreshTokenRepository.findByUserOrderByCreatedAtAsc(user)
+        │   └── SELECT * FROM auth.refresh_tokens WHERE user_id=? ORDER BY created_at ASC
+        │   → if count >= 5 → refreshTokenRepository.delete(existingTokens.get(0))
+        │
+        ├── RefreshToken.builder().user(user).token(rt).expiresAt(now+7d).build()
+        │   └── refreshTokenRepository.save(refreshToken)
+        │       → INSERT INTO auth.refresh_tokens VALUES(...)
+        │
+        └── new AuthResponse(accessToken, refreshToken, expiresIn, "Bearer", userSummary)
+
+Back in AuthController.login():
+└── addAuthCookies(response, authResponse, httpRequest)
+    ├── resolveCookieOptions(request)
+    │   → isLocalHost? → secure=false, sameSite=Lax
+    │   → Production? → secure=true, sameSite=None, domain=.skillsync.rangaraju.dev
+    ├── buildCookie("accessToken", jwt, 86400s, options)
+    │   └── ResponseCookie.from("accessToken", jwt)
+    │           .httpOnly(true).secure(true).sameSite("None").path("/").maxAge(86400)
+    ├── buildCookie("refreshToken", rt, 604800s, options)
+    └── response.addHeader("Set-Cookie", ...) × 2
+
+ResponseEntity.ok(authResponse) → HTTP 200
+</div></div>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- SECTION 13 – PROTECTED API CALL STACK                 -->
+<!-- ══════════════════════════════════════════════════════ -->
+<h2 id="callstack-api">📊 Protected API — Call Stack (user-service)</h2>
+
+<div class="flow">
+<div class="flow-title">GET /api/users/me — Full Internal Call Stack</div>
+<div class="flow-body">
+[GATEWAY SIDE]
+JwtAuthenticationFilter.apply(Config).filter(exchange, chain)
+│
+├── token = extractFromHeader("Authorization") OR cookie("accessToken")
+├── extractClaims(token) → validates HMAC-SHA256 signature
+├── request.mutate().headers(strip+inject X-User-Id/Email/Role)
+└── chain.filter(mutatedExchange) → forwards to user-service
+
+[USER-SERVICE SIDE — No Spring Security]
+Tomcat NioEndpoint → Http11Processor → CoyoteAdapter
+→ DispatcherServlet
+→ HandlerMapping → UserController.getMyProfile()
+
+UserController.getMyProfile(@RequestHeader("X-User-Id") Long userId)
+│ File: com.skillsync.user.controller.UserController
+│ userId = 101L (from Gateway-injected header)
+│
+└── userQueryService.getProfile(userId)
+    │ File: com.skillsync.user.service.query.UserQueryService
+    │
+    └── CacheService.getOrLoad(
+            "v1:user:profile:101",
+            ProfileResponse.class,
+            Duration.ofMinutes(10),
+            () → profileRepository.findByUserId(101))
+        │ File: com.skillsync.cache.CacheService
+        │
+        ├── cacheService.get("v1:user:profile:101", ProfileResponse.class)
+        │   └── redisTemplate.opsForValue().get("v1:user:profile:101")
+        │
+        ├── CACHE HIT → return cached ProfileResponse
+        │
+        └── CACHE MISS:
+            → ReentrantLock.lock() (stampede protection)
+            → double-check cache
+            → profileRepository.findByUserId(101)
+               │ JPA → SELECT * FROM user.profiles WHERE user_id=101
+               └── Returns: Optional<Profile>
+            → mapToProfileResponse(profile, skills)
+            → cacheService.put("v1:user:profile:101", response, 10min)
+            → return ProfileResponse
+</div></div>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- SECTION 14 – PAYMENT CALL STACK                       -->
+<!-- ══════════════════════════════════════════════════════ -->
+<h2 id="callstack-payment">📊 Payment Flow — Call Stack (Saga Pattern)</h2>
+
+<div class="flow">
+<div class="flow-title">POST /api/payments/create-order → Razorpay → Outbox → RabbitMQ → Sessions</div>
+<div class="flow-body">
+Browser: api.post('/api/payments/create-order', { mentorId, sessionId, amount })
+  Authorization: Bearer <jwt>
+
+Gateway:
+  JwtAuthenticationFilter → valid → X-User-Id: 101 injected
+  lb://payment-service
+
+PaymentController.createOrder(@RequestHeader("X-User-Id") Long userId,
+                              @RequestBody CreateOrderRequest request)
+│
+└── paymentService.createOrder(userId, request)
+    │ File: com.skillsync.payment.service.PaymentService
+    │ userId = 101 (from JWT header — NEVER from request body)
+    │
+    ├── Check idempotency — duplicate order for same reference?
+    ├── RazorpayClient.orders().create(JSONObject { amount, currency, receipt })
+    │   → External API call to Razorpay
+    │   → Returns: Order { id: "order_xxx", amount, currency, status: "created" }
+    │
+    ├── Payment entity: { userId=101, razorpayOrderId="order_xxx",
+    │                     amount, status=PENDING, ... }
+    ├── paymentRepository.save(payment)
+    │   → INSERT INTO payment.payments VALUES(...)
+    │
+    └── Returns: CreateOrderResponse { orderId, amount, currency, keyId }
+
+[USER PAYS via Razorpay Widget in browser]
+[Razorpay calls backend webhook OR user submits verify]
+
+POST /api/payments/verify
+PaymentController.verifyPayment(@RequestHeader("X-User-Id") Long userId,
+                                 @RequestBody VerifyPaymentRequest request)
+│ { razorpayOrderId, razorpayPaymentId, razorpaySignature }
+│
+└── paymentService.verifyPayment(userId, request)
+    │
+    ├── HMAC Verification:
+    │   Utils.verifyPaymentSignature({ order_id, payment_id }, signature, razorpaySecret)
+    │   → Razorpay computes HMAC-SHA256(orderId + "|" + paymentId, secret)
+    │   → Must match provided signature
+    │   → Mismatch → throw PaymentException(400)
+    │
+    ├── payment.setStatus(COMPLETED)
+    ├── paymentRepository.save(payment)
+    │
+    └── PaymentSagaOrchestrator.onPaymentCompleted(payment)
+        │ File: com.skillsync.payment.service.PaymentSagaOrchestrator
+        │
+        ├── SagaState { paymentId, state=PAYMENT_VERIFIED, retries=0 }
+        │   sagaStateRepository.save(sagaState)
+        │
+        └── OutboxEventService.publishPaymentCompleted(payment)
+            │ File: com.skillsync.payment.service.OutboxEventService
+            │ OUTBOX PATTERN: Write event in SAME transaction as payment save
+            │
+            ├── OutboxEvent { eventType="PAYMENT_COMPLETED",
+            │                 payload=JSON(PaymentCompletedEvent),
+            │                 published=false }
+            ├── outboxEventRepository.save(event)
+            │
+            └── OutboxPublisher (scheduled) polls outbox → publishes to RabbitMQ
+                → PaymentCompletedEvent → session-service (creates session)
+                                        → notification-service (sends notification)
+</div></div>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- SECTION 15 – DATA FLOWS                               -->
+<!-- ══════════════════════════════════════════════════════ -->
+<h2 id="data-login">📦 Login — Request & Response Data</h2>
+
+<div class="grid2">
+<div class="flow">
+<div class="flow-title">Login Request</div>
+<div class="flow-body">
+POST /api/auth/login
+
+Headers:
+  Content-Type: application/json
+  Origin: https://skillsync.rangaraju.dev
+
+Cookies:
+  (none — user not yet authenticated)
+
+Body:
+{
+  "email": "user@skillsync.com",
+  "password": "SecurePass@123"
+}
+
+DTO: LoginRequest.java
+  @NotBlank @Email String email
+  @NotBlank String password
+</div></div>
+
+<div class="flow">
+<div class="flow-title">Login Response</div>
+<div class="flow-body">
+HTTP 200 OK
+
+Headers:
+  Content-Type: application/json
+  Set-Cookie: accessToken=eyJ...;
+    HttpOnly; Secure; SameSite=None;
+    Path=/; Max-Age=86400
+  Set-Cookie: refreshToken=eyJ...;
+    HttpOnly; Secure; SameSite=None;
+    Path=/; Max-Age=604800
+
+Body (AuthResponse.java):
+{
+  "accessToken": "eyJhbGciOiJIUzI1NiJ9...",
+  "refreshToken": "eyJhbGciOiJIUzI1NiJ9...",
+  "expiresIn": 86400,
+  "tokenType": "Bearer",
+  "user": {
+    "id": 101,
+    "email": "user@skillsync.com",
+    "role": "ROLE_LEARNER",
+    "firstName": "John",
+    "lastName": "Doe"
+  }
+}
+</div></div></div>
+
+<h2 id="data-jwt">📦 JWT Token Data Flow</h2>
+
+<div class="grid2">
+<div class="flow">
+<div class="flow-title">Access Token — Stored Here</div>
+<div class="flow-body">
+DUAL DELIVERY STRATEGY:
+1. JSON Response Body
+   → Redux: state.auth.accessToken
+   → localStorage: "ss_access_token"
+
+2. HttpOnly Cookie: accessToken
+   → Browser sends automatically
+   → JavaScript CANNOT read it
+   → Protection: XSS-safe
+
+HOW IT'S SENT ON SUBSEQUENT CALLS:
+Axios Request Interceptor (axios.ts):
+  const token = store.getState().auth.accessToken;
+  config.headers.Authorization = `Bearer ${token}`;
+
+Gateway also checks:
+  Authorization header → PREFERRED
+  Fallback: Cookie "accessToken"
+</div></div>
+
+<div class="flow">
+<div class="flow-title">Refresh Token — Stored Here</div>
+<div class="flow-body">
+DUAL DELIVERY:
+1. JSON Response Body
+   → localStorage: "ss_refresh_token"
+
+2. HttpOnly Cookie: refreshToken
+   → JavaScript CANNOT read
+   → Browser sends automatically to /api/auth/refresh
+
+BACKEND STORAGE:
+  Table: auth.refresh_tokens
+  Columns: id, user_id, token, expires_at, created_at
+  Max: 5 refresh tokens per user (FIFO eviction)
+  Rotation: delete on use (single-use)
+
+EXPIRY:
+  Access Token:  24 hours
+  Refresh Token:  7 days
+</div></div></div>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- SECTION 16 – EDGE CASES                               -->
+<!-- ══════════════════════════════════════════════════════ -->
+<h2 id="edge-cases">⚠️ Edge Cases & Failure Handling</h2>
+
+<table>
+<tr><th>Scenario</th><th>Where Detected</th><th>What Happens</th><th>User Experience</th></tr>
+<tr>
+  <td>JWT expired (24h elapsed)</td>
+  <td>Gateway JwtAuthenticationFilter OR auth-service JwtTokenProvider.isTokenValid()</td>
+  <td>Returns false → 401 → Axios interceptor catches → silent refresh → retry</td>
+  <td>Transparent — no interruption</td>
+</tr>
+<tr>
+  <td>JWT signature invalid (tampered)</td>
+  <td>Gateway extractClaims() throws JwtException</td>
+  <td>onError(exchange, "Invalid token", 401) → Axios interceptor → refresh fails → logout</td>
+  <td>Redirected to /login?reason=session_expired</td>
+</tr>
+<tr>
+  <td>Refresh token expired (7 days)</td>
+  <td>AuthService.refreshToken() → expiresAt &lt; now</td>
+  <td>delete token → throw RuntimeException → 401 → Axios → dispatch(logout)</td>
+  <td>Force login page</td>
+</tr>
+<tr>
+  <td>Email not verified (login attempt)</td>
+  <td>AuthService.login() → !user.isVerified()</td>
+  <td>Auto-resend OTP → throw "Email not verified. OTP sent."</td>
+  <td>Error toast: "Email not verified..."</td>
+</tr>
+<tr>
+  <td>Wrong password</td>
+  <td>DaoAuthenticationProvider → BCrypt mismatch → BadCredentialsException</td>
+  <td>GlobalExceptionHandler catches → { "message": "Bad credentials", "status": 401 }</td>
+  <td>Error toast: "Invalid credentials"</td>
+</tr>
+<tr>
+  <td>User tries admin route as LEARNER</td>
+  <td>UserController (via RoleGuard) OR @PreAuthorize("hasRole('ADMIN')")</td>
+  <td>AccessDeniedException → 403 → Axios → window.location.href = '/unauthorized'</td>
+  <td>UnauthorizedPage.tsx shown</td>
+</tr>
+<tr>
+  <td>Rate limit exceeded</td>
+  <td>Gateway RateLimitingFilter</td>
+  <td>429 Too Many Requests + Retry-After: 60 header → Axios exponential backoff (max 3)</td>
+  <td>Delayed retry, then error if still failing</td>
+</tr>
+<tr>
+  <td>PostgreSQL down</td>
+  <td>UserDetailsServiceImpl / any Repository</td>
+  <td>DataAccessException → GlobalExceptionHandler → { "status": 500 }</td>
+  <td>Redirected to /500 (ServerErrorPage)</td>
+</tr>
+<tr>
+  <td>Redis down</td>
+  <td>CacheService.get() / put()</td>
+  <td>try-catch catches → logs warning → falls back to DB query (graceful degradation)</td>
+  <td>Slightly slower, no user impact</td>
+</tr>
+<tr>
+  <td>Cross-origin POST from unknown domain</td>
+  <td>Gateway CsrfOriginFilter</td>
+  <td>403 Forbidden immediately — request never reaches auth-service</td>
+  <td>Request blocked at gateway</td>
+</tr>
+<tr>
+  <td>OTP expired (5 min window)</td>
+  <td>OtpService.verifyOtp() → expiresAt &lt; now</td>
+  <td>throw "OTP expired" → user can resend</td>
+  <td>Error message + resend option</td>
+</tr>
+<tr>
+  <td>Too many OTP attempts (5 max)</td>
+  <td>OtpService → attempts >= MAX_ATTEMPTS</td>
+  <td>throw "Too many attempts" → user must request new OTP</td>
+  <td>Error message: "Too many attempts"</td>
+</tr>
+<tr>
+  <td>Header spoofing (X-User-Id injection)</td>
+  <td>Gateway JwtAuthenticationFilter request mutation</td>
+  <td>h.remove("X-User-Id") before injecting from JWT — spoof stripped</td>
+  <td>Attack neutralized</td>
+</tr>
+<tr>
+  <td>Concurrent 401s during refresh</td>
+  <td>axios.ts — failedQueue mechanism</td>
+  <td>isRefreshing=true → subsequent 401s queued → processQueue() retries all after refresh</td>
+  <td>All requests succeed transparently</td>
+</tr>
+</table>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- SECTION 17 – INTERVIEW Q&A                            -->
+<!-- ══════════════════════════════════════════════════════ -->
+<h2 id="interview">❓ Interview Q&A — From the Actual Code</h2>
+
+<h3>Gateway Questions</h3>
+<table>
+<tr><th>Question</th><th>Answer (from actual code)</th></tr>
+<tr><td>Why does the Gateway strip X-User-Id before injecting it?</td><td>To prevent header spoofing. A malicious client could set X-User-Id: 999 to access another user's data. JwtAuthenticationFilter.java: <code>h.remove("X-User-Id")</code> then <code>.header("X-User-Id", claims.getSubject())</code>. Only the verified JWT claim is trusted.</td></tr>
+<tr><td>Why use RateLimitingFilter with ConcurrentHashMap instead of Redis?</td><td>Comment in RateLimitingFilter.java: "in-memory sliding window counters (production: swap for Redis-based)". Current approach works for single-instance but won't work across multiple Gateway instances. Redis would be needed for horizontal scaling.</td></tr>
+<tr><td>What happens to /api/auth/internal/** from the public internet?</td><td>routes[0] in application.properties: <code>Path=/api/auth/internal/**</code> → <code>uri=no://op</code> → <code>SetStatus=403</code>. Gateway returns 403 before any service is reached. Internal services call each other directly bypassing the Gateway.</td></tr>
+</table>
+
+<h3>Auth-Service Questions</h3>
+<table>
+<tr><th>Question</th><th>Answer (from actual code)</th></tr>
+<tr><td>Why are there TWO DB calls in AuthService.login()?</td><td>First call: <code>authenticationManager.authenticate()</code> → internally calls <code>UserDetailsServiceImpl.loadUserByUsername()</code> → DB query for password hash validation. Second call: <code>authUserRepository.findByEmail()</code> to get the full AuthUser entity to check isVerified and generate tokens. This is a known pattern — UserDetails doesn't include all fields.</td></tr>
+<tr><td>Why max 5 refresh tokens per user?</td><td>AuthService.java: <code>MAX_REFRESH_TOKENS = 5</code>. FIFO eviction: <code>findByUserOrderByCreatedAtAsc(user)</code> → delete oldest if count >= 5. Supports multiple devices (phone + laptop + tablet) without unbounded token accumulation.</td></tr>
+<tr><td>Why does the JWT filter call loadUserByUsername() on every request?</td><td>JwtAuthenticationFilter.java line: <code>UserDetails userDetails = userDetailsService.loadUserByUsername(email)</code>. This ensures the account is still active and not disabled. The isActive field is checked here. Cost: one DB query per protected request. Could be optimized with Redis UserDetails caching.</td></tr>
+<tr><td>How does the SecurityConfig know not to apply auth to /api/auth/login?</td><td>SecurityConfig.java: <code>.requestMatchers("/api/auth/login", ...).permitAll()</code>. FilterSecurityInterceptor sees this URL matches a permitted pattern and allows without authentication check.</td></tr>
+</table>
+
+<h3>Frontend Questions</h3>
+<table>
+<tr><th>Question</th><th>Answer (from actual code)</th></tr>
+<tr><td>Why is the access token stored in BOTH Redux AND localStorage?</td><td>authSlice.ts: Redux for fast in-memory access by Axios interceptor. localStorage for persistence across page refreshes (Redux resets on refresh). localStorage is read back via <code>getStoredAuth()</code> in initialState.</td></tr>
+<tr><td>What is AuthLoader and why is it needed?</td><td>AuthLoader.tsx: On page refresh, Redux is empty (memory cleared) but HttpOnly cookies still exist. AuthLoader calls GET /api/auth/me (which extracts user from JWT cookie), then dispatches setCredentials to restore Redux state. Without it, every page refresh would force logout.</td></tr>
+<tr><td>How does ProtectedRoute work?</td><td>ProtectedRoute.tsx: <code>useSelector(state => state.auth.isAuthenticated)</code>. If false → <code>&lt;Navigate to="/login" replace /&gt;</code>. If true → <code>&lt;Outlet /&gt;</code> (renders the protected child route). Works with React Router's nested routing.</td></tr>
+<tr><td>Why does Google OAuth flow call Google's userinfo endpoint instead of using ID token?</td><td>LoginPage.tsx comment: "Since we're using the Implicit Flow with useGoogleLogin, we can either get user info from an ID token (if available) or by calling Google's userInfo endpoint using the access_token." They use the userinfo endpoint approach for simplicity.</td></tr>
+</table>
+
+<h3>Hidden / Implicit Behaviors</h3>
+<table>
+<tr><th>Behavior</th><th>Where It Comes From</th><th>What It Does</th></tr>
+<tr><td>DaoAuthenticationProvider auto-wiring</td><td>Spring Boot auto-configuration</td><td>Spring detects UserDetailsService + PasswordEncoder beans → automatically creates DaoAuthenticationProvider → registers it with ProviderManager. Zero explicit config needed.</td></tr>
+<tr><td>Password auto-clearing</td><td>Spring Security DaoAuthenticationProvider</td><td>After successful authentication, Spring sets credentials=null on the Authentication object. Prevents password from being serialized or logged accidentally.</td></tr>
+<tr><td>@Transactional on AuthService methods</td><td>@Transactional annotation</td><td>login(), register(), refreshToken(), logout() are all @Transactional. If refreshTokenRepository.save() fails after token generation, the whole transaction rolls back — no orphaned access tokens.</td></tr>
+<tr><td>FIFO refresh token eviction</td><td>AuthService.generateAuthResponse()</td><td><code>findByUserOrderByCreatedAtAsc(user)</code> — oldest token first. If count >= 5, delete oldest. Ensures oldest sessions are invalidated when device limit reached.</td></tr>
+<tr><td>JPA Auditing</td><td>@EnableJpaAuditing + JpaAuditingConfig</td><td>@CreatedDate and @LastModifiedDate fields are automatically populated. AuthUser.createdAt is set on save without any manual code.</td></tr>
+<tr><td>Cache stampede protection</td><td>CacheService.getOrLoad()</td><td>ReentrantLock per cache key. If 100 requests miss the same cache key simultaneously, only one hits the DB. Others wait for the lock-holder to populate the cache.</td></tr>
+<tr><td>OncePerRequestFilter</td><td>JwtAuthenticationFilter extends OncePerRequestFilter</td><td>Guarantees doFilterInternal() is called exactly once per request, even in forward/include scenarios (Servlet dispatching can call filters multiple times without this).</td></tr>
+</table>
+
+</main>
+</body>
+</html>
