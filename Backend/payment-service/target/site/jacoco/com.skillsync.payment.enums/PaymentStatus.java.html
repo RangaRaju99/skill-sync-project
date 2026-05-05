@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PaymentStatus.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">payment-service</a> &gt; <a href="index.source.html" class="el_package">com.skillsync.payment.enums</a> &gt; <span class="el_source">PaymentStatus.java</span></div><h1>PaymentStatus.java</h1><pre class="source lang-java linenums">package com.skillsync.payment.enums;
+
+/**
+ * Payment lifecycle states supporting Saga orchestration.
+ *
+ * State machine:
+ *   CREATED → VERIFIED → SUCCESS_PENDING → SUCCESS
+ *                                        → COMPENSATED
+ *            → FAILED
+ */
+<span class="fc" id="L11">public enum PaymentStatus {</span>
+
+    /** Razorpay order created, awaiting frontend checkout */
+<span class="fc" id="L14">    CREATED,</span>
+
+    /** Razorpay signature verified successfully */
+<span class="fc" id="L17">    VERIFIED,</span>
+
+    /** Business action (saga step) is in progress */
+<span class="fc" id="L20">    SUCCESS_PENDING,</span>
+
+    /** Payment fully completed — business action succeeded */
+<span class="fc" id="L23">    SUCCESS,</span>
+
+    /** Payment verification failed (signature, amount, etc.) */
+<span class="fc" id="L26">    FAILED,</span>
+
+    /** Payment was verified but business action failed — compensation applied */
+<span class="fc" id="L29">    COMPENSATED</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

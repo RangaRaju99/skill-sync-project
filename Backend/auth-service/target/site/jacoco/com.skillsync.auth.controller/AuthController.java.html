@@ -1,0 +1,362 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AuthController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">auth-service</a> &gt; <a href="index.source.html" class="el_package">com.skillsync.auth.controller</a> &gt; <span class="el_source">AuthController.java</span></div><h1>AuthController.java</h1><pre class="source lang-java linenums">package com.skillsync.auth.controller;
+
+import com.skillsync.auth.dto.*;
+import com.skillsync.auth.enums.OtpType;
+import com.skillsync.auth.service.AuthService;
+import com.skillsync.auth.security.JwtTokenProvider;
+import com.skillsync.auth.service.OtpService;
+import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.access.prepost.PreAuthorize;
+import lombok.RequiredArgsConstructor;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.ResponseCookie;
+import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.*;
+
+import java.net.URI;
+import java.util.Map;
+
+@RestController
+@RequestMapping(&quot;/api/auth&quot;)
+@RequiredArgsConstructor
+public class AuthController {
+
+    private final AuthService authService;
+    private final OtpService otpService;
+    private final JwtTokenProvider jwtTokenProvider;
+
+    @Value(&quot;${auth.cookie.domain:}&quot;)
+    private String configuredCookieDomain;
+
+    @Value(&quot;${auth.cookie.same-site:}&quot;)
+    private String configuredCookieSameSite;
+
+    @PostMapping(&quot;/register&quot;)
+    public ResponseEntity&lt;AuthResponse&gt; register(@Valid @RequestBody RegisterRequest request,
+                                                 HttpServletResponse response,
+                                                 HttpServletRequest httpRequest) {
+<span class="fc" id="L42">        AuthResponse authResponse = authService.register(request);</span>
+<span class="fc" id="L43">        addAuthCookies(response, authResponse, httpRequest);</span>
+<span class="fc" id="L44">        return ResponseEntity.status(HttpStatus.CREATED).body(authResponse);</span>
+    }
+
+    @PostMapping(&quot;/initiate-registration&quot;)
+    public ResponseEntity&lt;?&gt; initiateRegistration(@Valid @RequestBody InitiateRegistrationRequest request) {
+<span class="nc" id="L49">        return ResponseEntity.ok(authService.initiateRegistration(request));</span>
+    }
+
+    @PostMapping(&quot;/complete-registration&quot;)
+    public ResponseEntity&lt;AuthResponse&gt; completeRegistration(@Valid @RequestBody CompleteRegistrationRequest request,
+                                                             HttpServletResponse response,
+                                                             HttpServletRequest httpRequest) {
+<span class="nc" id="L56">        AuthResponse authResponse = authService.completeRegistration(request);</span>
+<span class="nc" id="L57">        addAuthCookies(response, authResponse, httpRequest);</span>
+<span class="nc" id="L58">        return ResponseEntity.ok(authResponse);</span>
+    }
+
+    @PostMapping(&quot;/verify-otp&quot;)
+    public ResponseEntity&lt;Map&lt;String, String&gt;&gt; verifyOtp(@Valid @RequestBody VerifyOtpRequest request) {
+<span class="fc" id="L63">        otpService.verifyOtp(request.email(), request.otp(), OtpType.REGISTRATION);</span>
+<span class="fc" id="L64">        return ResponseEntity.ok(Map.of(&quot;message&quot;, &quot;Email verified successfully&quot;));</span>
+    }
+
+    @PostMapping(&quot;/resend-otp&quot;)
+    public ResponseEntity&lt;Map&lt;String, String&gt;&gt; resendOtp(@Valid @RequestBody ResendOtpRequest request) {
+<span class="nc" id="L69">        otpService.resendOtp(request.email());</span>
+<span class="nc" id="L70">        return ResponseEntity.ok(Map.of(&quot;message&quot;, &quot;OTP sent successfully&quot;));</span>
+    }
+
+    @PostMapping(&quot;/login&quot;)
+    public ResponseEntity&lt;AuthResponse&gt; login(@Valid @RequestBody LoginRequest request,
+                                              HttpServletResponse response,
+                                              HttpServletRequest httpRequest) {
+<span class="fc" id="L77">        AuthResponse authResponse = authService.login(request);</span>
+<span class="fc" id="L78">        addAuthCookies(response, authResponse, httpRequest);</span>
+<span class="fc" id="L79">        return ResponseEntity.ok(authResponse);</span>
+    }
+
+    @PostMapping(&quot;/refresh&quot;)
+    public ResponseEntity&lt;AuthResponse&gt; refreshToken(@CookieValue(value = &quot;refreshToken&quot;, required = false) String refreshTokenCookie,
+                                                     @RequestBody(required = false) RefreshTokenRequest refreshTokenBody,
+                                                     HttpServletResponse response,
+                                                     HttpServletRequest httpRequest) {
+<span class="nc bnc" id="L87" title="All 2 branches missed.">        String refreshToken = StringUtils.hasText(refreshTokenCookie)</span>
+<span class="nc" id="L88">                ? refreshTokenCookie</span>
+<span class="nc bnc" id="L89" title="All 2 branches missed.">                : (refreshTokenBody != null ? refreshTokenBody.refreshToken() : null);</span>
+
+<span class="nc bnc" id="L91" title="All 2 branches missed.">        if (!StringUtils.hasText(refreshToken)) {</span>
+<span class="nc" id="L92">            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();</span>
+        }
+
+<span class="nc" id="L95">        AuthResponse authResponse = authService.refreshToken(new RefreshTokenRequest(refreshToken));</span>
+<span class="nc" id="L96">        addAuthCookies(response, authResponse, httpRequest);</span>
+<span class="nc" id="L97">        return ResponseEntity.ok(authResponse);</span>
+    }
+
+    @PostMapping(&quot;/logout&quot;)
+    public ResponseEntity&lt;Void&gt; logout(@CookieValue(value = &quot;refreshToken&quot;, required = false) String refreshTokenCookie,
+                                       HttpServletResponse response,
+                                       HttpServletRequest httpRequest) {
+<span class="nc bnc" id="L104" title="All 2 branches missed.">        if (refreshTokenCookie != null) {</span>
+<span class="nc" id="L105">            authService.logout(refreshTokenCookie);</span>
+        }
+<span class="nc" id="L107">        clearAuthCookies(response, httpRequest);</span>
+<span class="nc" id="L108">        return ResponseEntity.ok().build();</span>
+    }
+
+    @GetMapping(&quot;/validate&quot;)
+    public ResponseEntity&lt;String&gt; validateToken(@RequestHeader(&quot;Authorization&quot;) String authHeader) {
+<span class="nc" id="L113">        return ResponseEntity.ok(&quot;Token is valid&quot;);</span>
+    }
+
+    /**
+     * Returns the authenticated user's identity from the JWT cookie.
+     * Used by the frontend AuthLoader on page refresh to restore role state.
+     */
+    @GetMapping(&quot;/me&quot;)
+    public ResponseEntity&lt;UserSummary&gt; getCurrentUser(
+            @CookieValue(value = &quot;accessToken&quot;, required = false) String accessToken,
+            @RequestHeader(value = &quot;Authorization&quot;, required = false) String authHeader) {
+<span class="nc" id="L124">        String token = null;</span>
+<span class="nc bnc" id="L125" title="All 4 branches missed.">        if (authHeader != null &amp;&amp; authHeader.startsWith(&quot;Bearer &quot;)) {</span>
+<span class="nc" id="L126">            token = authHeader.substring(7);</span>
+<span class="nc bnc" id="L127" title="All 2 branches missed.">        } else if (accessToken != null) {</span>
+<span class="nc" id="L128">            token = accessToken;</span>
+        }
+<span class="nc bnc" id="L130" title="All 4 branches missed.">        if (token == null || !jwtTokenProvider.isTokenValid(token)) {</span>
+<span class="nc" id="L131">            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();</span>
+        }
+<span class="nc" id="L133">        Long userId = jwtTokenProvider.extractUserId(token);</span>
+<span class="nc" id="L134">        UserSummary user = authService.getUserById(userId);</span>
+<span class="nc" id="L135">        return ResponseEntity.ok(user);</span>
+    }
+
+    @GetMapping(&quot;/internal/users/{id}&quot;)
+    public ResponseEntity&lt;UserSummary&gt; getUserById(@PathVariable Long id) {
+<span class="nc" id="L140">        return ResponseEntity.ok(authService.getUserById(id));</span>
+    }
+
+    @GetMapping(&quot;/internal/users&quot;)
+    public ResponseEntity&lt;?&gt; getAllUsers(
+            @RequestParam(defaultValue = &quot;0&quot;) int page,
+            @RequestParam(defaultValue = &quot;100&quot;) int size,
+            @RequestParam(required = false) String role,
+            @RequestParam(required = false) String search) {
+<span class="nc" id="L149">        return ResponseEntity.ok(authService.getAllUsersFiltered(page, size, role, search));</span>
+    }
+
+    @GetMapping(&quot;/internal/users/count&quot;)
+    public ResponseEntity&lt;Long&gt; getUserCount(@RequestParam(required = false) String role) {
+<span class="nc" id="L154">        return ResponseEntity.ok(authService.getUserCount(role));</span>
+    }
+
+    @DeleteMapping(&quot;/internal/users/{id}&quot;)
+    public ResponseEntity&lt;Void&gt; deleteUser(@PathVariable Long id) {
+<span class="nc" id="L159">        authService.deleteUser(id);</span>
+<span class="nc" id="L160">        return ResponseEntity.ok().build();</span>
+    }
+
+    @PostMapping(&quot;/forgot-password&quot;)
+    public ResponseEntity&lt;Map&lt;String, String&gt;&gt; forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
+<span class="nc" id="L165">        authService.forgotPassword(request);</span>
+<span class="nc" id="L166">        return ResponseEntity.ok(Map.of(&quot;message&quot;, &quot;Password reset OTP sent to email&quot;));</span>
+    }
+
+    @PostMapping(&quot;/verify-password-reset-otp&quot;)
+    public ResponseEntity&lt;Map&lt;String, String&gt;&gt; verifyPasswordResetOtp(
+            @Valid @RequestBody VerifyPasswordResetOtpRequest request) {
+<span class="nc" id="L172">        authService.verifyPasswordResetOtp(request.email(), request.otp());</span>
+<span class="nc" id="L173">        return ResponseEntity.ok(Map.of(&quot;message&quot;, &quot;OTP verified successfully&quot;));</span>
+    }
+
+    @PostMapping(&quot;/reset-password&quot;)
+    public ResponseEntity&lt;Map&lt;String, String&gt;&gt; resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+<span class="nc" id="L178">        authService.resetPassword(request);</span>
+<span class="nc" id="L179">        return ResponseEntity.ok(Map.of(&quot;message&quot;, &quot;Password reset successfully&quot;));</span>
+    }
+
+    @PostMapping(&quot;/oauth-login&quot;)
+        public ResponseEntity&lt;OAuthResponse&gt; oauthLogin(@Valid @RequestBody OAuthRequest request,
+                                HttpServletResponse response,
+                                HttpServletRequest httpRequest) {
+<span class="nc" id="L186">        OAuthResponse oauthResponse = authService.loginWithOAuth(request);</span>
+
+<span class="nc" id="L188">        addAuthCookies(</span>
+            response,
+<span class="nc" id="L190">            oauthResponse.accessToken(),</span>
+<span class="nc" id="L191">            oauthResponse.refreshToken(),</span>
+<span class="nc" id="L192">            oauthResponse.expiresIn(),</span>
+            httpRequest
+        );
+        
+<span class="nc" id="L196">        return ResponseEntity.ok(oauthResponse);</span>
+    }
+
+    @PostMapping(&quot;/setup-password&quot;)
+    public ResponseEntity&lt;Map&lt;String, String&gt;&gt; setupPassword(@RequestHeader(value = &quot;Authorization&quot;, required = false) String authHeader,
+                                                             @CookieValue(value = &quot;accessToken&quot;, required = false) String accessToken,
+                                                             @Valid @RequestBody SetupPasswordRequest request) {
+<span class="nc bnc" id="L203" title="All 4 branches missed.">        String token = (authHeader != null &amp;&amp; authHeader.startsWith(&quot;Bearer &quot;)) ? authHeader.substring(7) : accessToken;</span>
+<span class="nc bnc" id="L204" title="All 2 branches missed.">        if (token == null) {</span>
+<span class="nc" id="L205">            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();</span>
+        }
+<span class="nc" id="L207">        String email = jwtTokenProvider.extractEmail(token);</span>
+<span class="nc" id="L208">        authService.setupPassword(new SetupPasswordRequest(email, request.password()));</span>
+<span class="nc" id="L209">        return ResponseEntity</span>
+<span class="nc" id="L210">                .ok(Map.of(&quot;message&quot;, &quot;Password set successfully. You can now login with email and password.&quot;));</span>
+    }
+
+    @PutMapping(&quot;/users/{id}/role&quot;)
+    @PreAuthorize(&quot;hasRole('ADMIN')&quot;)
+    public ResponseEntity&lt;Void&gt; updateUserRole(@PathVariable Long id, @RequestParam String role) {
+<span class="nc" id="L216">        authService.updateUserRole(id, role);</span>
+<span class="nc" id="L217">        return ResponseEntity.ok().build();</span>
+    }
+
+    @PutMapping(&quot;/internal/users/{id}/role&quot;)
+    public ResponseEntity&lt;Void&gt; updateUserRoleInternal(@PathVariable Long id, @RequestParam String role) {
+<span class="nc" id="L222">        authService.updateUserRole(id, role);</span>
+<span class="nc" id="L223">        return ResponseEntity.ok().build();</span>
+    }
+
+    @PutMapping(&quot;/internal/users/{id}/name&quot;)
+    public ResponseEntity&lt;Void&gt; updateUserNameInternal(
+            @PathVariable Long id,
+            @RequestParam String firstName,
+            @RequestParam String lastName) {
+<span class="nc" id="L231">        authService.updateUserName(id, firstName, lastName);</span>
+<span class="nc" id="L232">        return ResponseEntity.ok().build();</span>
+    }
+
+    private void addAuthCookies(HttpServletResponse response, AuthResponse authResponse, HttpServletRequest request) {
+<span class="fc" id="L236">        addAuthCookies(</span>
+                response,
+<span class="fc" id="L238">                authResponse.accessToken(),</span>
+<span class="fc" id="L239">                authResponse.refreshToken(),</span>
+<span class="fc" id="L240">                authResponse.expiresIn(),</span>
+                request
+        );
+<span class="fc" id="L243">    }</span>
+
+    private void addAuthCookies(HttpServletResponse response,
+                                String accessToken,
+                                String refreshToken,
+                                long accessTokenMaxAgeSeconds,
+                                HttpServletRequest request) {
+<span class="fc" id="L250">        CookieOptions cookieOptions = resolveCookieOptions(request);</span>
+<span class="fc" id="L251">        long refreshTokenMaxAgeSeconds = Math.max(1, jwtTokenProvider.getRefreshExpiration() / 1000);</span>
+
+<span class="fc" id="L253">        String accessTokenCookie = buildCookie(&quot;accessToken&quot;, accessToken, accessTokenMaxAgeSeconds, cookieOptions);</span>
+<span class="fc" id="L254">        String refreshTokenCookie = buildCookie(&quot;refreshToken&quot;, refreshToken, refreshTokenMaxAgeSeconds, cookieOptions);</span>
+
+<span class="fc" id="L256">        response.addHeader(&quot;Set-Cookie&quot;, accessTokenCookie);</span>
+<span class="fc" id="L257">        response.addHeader(&quot;Set-Cookie&quot;, refreshTokenCookie);</span>
+<span class="fc" id="L258">    }</span>
+
+    private void clearAuthCookies(HttpServletResponse response, HttpServletRequest request) {
+<span class="nc" id="L261">        CookieOptions cookieOptions = resolveCookieOptions(request);</span>
+
+<span class="nc" id="L263">        String accessCookie = buildCookie(&quot;accessToken&quot;, &quot;&quot;, 0, cookieOptions);</span>
+<span class="nc" id="L264">        String refreshCookie = buildCookie(&quot;refreshToken&quot;, &quot;&quot;, 0, cookieOptions);</span>
+        
+<span class="nc" id="L266">        response.addHeader(&quot;Set-Cookie&quot;, accessCookie);</span>
+<span class="nc" id="L267">        response.addHeader(&quot;Set-Cookie&quot;, refreshCookie);</span>
+<span class="nc" id="L268">    }</span>
+
+    private CookieOptions resolveCookieOptions(HttpServletRequest request) {
+<span class="fc" id="L271">        String serverHost = normalizeHost(request.getServerName());</span>
+<span class="fc" id="L272">        String forwardedHost = extractForwardedHost(request.getHeader(&quot;X-Forwarded-Host&quot;));</span>
+<span class="fc" id="L273">        String originHost = extractOriginHost(request.getHeader(&quot;Origin&quot;));</span>
+
+<span class="pc bpc" id="L275" title="1 of 2 branches missed.">        boolean isLocalHost = isLocalHost(serverHost)</span>
+<span class="nc bnc" id="L276" title="All 2 branches missed.">            || isLocalHost(forwardedHost)</span>
+<span class="pc bnc" id="L277" title="All 2 branches missed.">            || isLocalHost(originHost);</span>
+
+<span class="pc bpc" id="L279" title="1 of 2 branches missed.">        boolean secure = !isLocalHost;</span>
+<span class="pc bpc" id="L280" title="1 of 2 branches missed.">        String sameSite = StringUtils.hasText(configuredCookieSameSite)</span>
+<span class="nc" id="L281">                ? configuredCookieSameSite</span>
+<span class="pc bpc" id="L282" title="1 of 2 branches missed.">                : (secure ? &quot;None&quot; : &quot;Lax&quot;);</span>
+<span class="pc bpc" id="L283" title="3 of 4 branches missed.">        String domain = (!isLocalHost &amp;&amp; StringUtils.hasText(configuredCookieDomain))</span>
+<span class="nc" id="L284">            ? configuredCookieDomain.trim()</span>
+<span class="fc" id="L285">            : null;</span>
+
+<span class="fc" id="L287">        return new CookieOptions(secure, sameSite, domain);</span>
+    }
+
+    private String buildCookie(String cookieName, String value, long maxAgeSeconds, CookieOptions cookieOptions) {
+<span class="fc" id="L291">        ResponseCookie.ResponseCookieBuilder builder = ResponseCookie.from(cookieName, value)</span>
+<span class="fc" id="L292">                .httpOnly(true)</span>
+<span class="fc" id="L293">                .secure(cookieOptions.secure())</span>
+<span class="fc" id="L294">                .sameSite(cookieOptions.sameSite())</span>
+<span class="fc" id="L295">                .path(&quot;/&quot;)</span>
+<span class="fc" id="L296">                .maxAge(maxAgeSeconds);</span>
+
+<span class="pc bpc" id="L298" title="1 of 2 branches missed.">        if (StringUtils.hasText(cookieOptions.domain())) {</span>
+<span class="nc" id="L299">            builder.domain(cookieOptions.domain());</span>
+        }
+
+<span class="fc" id="L302">        return builder.build().toString();</span>
+    }
+
+    private boolean isLocalHost(String host) {
+<span class="pc bpc" id="L306" title="1 of 2 branches missed.">        if (!StringUtils.hasText(host)) {</span>
+<span class="nc" id="L307">            return false;</span>
+        }
+
+<span class="fc" id="L310">        String normalized = normalizeHost(host);</span>
+<span class="pc bpc" id="L311" title="1 of 2 branches missed.">        if (!StringUtils.hasText(normalized)) {</span>
+<span class="nc" id="L312">            return false;</span>
+        }
+
+<span class="pc bpc" id="L315" title="1 of 2 branches missed.">        return &quot;localhost&quot;.equals(normalized)</span>
+<span class="nc bnc" id="L316" title="All 2 branches missed.">                || &quot;127.0.0.1&quot;.equals(normalized)</span>
+<span class="pc bnc" id="L317" title="All 2 branches missed.">                || &quot;::1&quot;.equals(normalized);</span>
+    }
+
+    private String extractForwardedHost(String forwardedHostHeader) {
+<span class="pc bpc" id="L321" title="1 of 2 branches missed.">        if (!StringUtils.hasText(forwardedHostHeader)) {</span>
+<span class="fc" id="L322">            return null;</span>
+        }
+
+<span class="nc" id="L325">        String first = forwardedHostHeader.split(&quot;,&quot;)[0].trim();</span>
+<span class="nc" id="L326">        return normalizeHost(first);</span>
+    }
+
+    private String extractOriginHost(String originHeader) {
+<span class="pc bpc" id="L330" title="1 of 2 branches missed.">        if (!StringUtils.hasText(originHeader)) {</span>
+<span class="fc" id="L331">            return null;</span>
+        }
+
+        try {
+<span class="nc" id="L335">            return normalizeHost(URI.create(originHeader).getHost());</span>
+<span class="nc" id="L336">        } catch (IllegalArgumentException ex) {</span>
+<span class="nc" id="L337">            return null;</span>
+        }
+    }
+
+    private String normalizeHost(String host) {
+<span class="pc bpc" id="L342" title="1 of 2 branches missed.">        if (!StringUtils.hasText(host)) {</span>
+<span class="nc" id="L343">            return null;</span>
+        }
+
+<span class="fc" id="L346">        String normalized = host.trim().toLowerCase();</span>
+
+<span class="pc bpc" id="L348" title="3 of 4 branches missed.">        if (normalized.startsWith(&quot;[&quot;) &amp;&amp; normalized.contains(&quot;]&quot;)) {</span>
+<span class="nc" id="L349">            return normalized.substring(1, normalized.indexOf(']'));</span>
+        }
+
+<span class="fc" id="L352">        int colonIdx = normalized.indexOf(':');</span>
+<span class="pc bpc" id="L353" title="1 of 2 branches missed.">        if (colonIdx &gt; -1) {</span>
+<span class="nc" id="L354">            return normalized.substring(0, colonIdx);</span>
+        }
+
+<span class="fc" id="L357">        return normalized;</span>
+    }
+
+<span class="fc" id="L360">    private record CookieOptions(boolean secure, String sameSite, String domain) {}</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

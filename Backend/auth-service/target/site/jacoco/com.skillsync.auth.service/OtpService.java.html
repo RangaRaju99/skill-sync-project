@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>OtpService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">auth-service</a> &gt; <a href="index.source.html" class="el_package">com.skillsync.auth.service</a> &gt; <span class="el_source">OtpService.java</span></div><h1>OtpService.java</h1><pre class="source lang-java linenums">package com.skillsync.auth.service;
+
+import com.skillsync.auth.entity.AuthUser;
+import com.skillsync.auth.entity.OtpToken;
+import com.skillsync.auth.enums.OtpType;
+import com.skillsync.auth.repository.AuthUserRepository;
+import com.skillsync.auth.repository.OtpTokenRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.security.SecureRandom;
+import java.time.LocalDateTime;
+
+@Service
+@RequiredArgsConstructor
+<span class="fc" id="L19">@Slf4j</span>
+public class OtpService {
+
+    private final OtpTokenRepository otpTokenRepository;
+    private final AuthUserRepository authUserRepository;
+    private final EmailService emailService;
+
+    private static final int OTP_LENGTH = 6;
+    private static final int OTP_EXPIRY_MINUTES = 5;
+    private static final int MAX_ATTEMPTS = 5;
+    private final SecureRandom secureRandom = new SecureRandom();
+
+    /**
+     * Generates and sends a 6-digit OTP to the user's email after registration.
+     */
+    @Transactional
+    public void generateAndSendOtp(AuthUser user, OtpType type) {
+<span class="nc" id="L36">        String otp = generateOtp();</span>
+
+<span class="nc" id="L38">        OtpToken otpToken = OtpToken.builder()</span>
+<span class="nc" id="L39">                .userId(user.getId())</span>
+<span class="nc" id="L40">                .email(user.getEmail())</span>
+<span class="nc" id="L41">                .otp(otp)</span>
+<span class="nc" id="L42">                .expiresAt(LocalDateTime.now().plusMinutes(OTP_EXPIRY_MINUTES))</span>
+<span class="nc" id="L43">                .used(false)</span>
+<span class="nc" id="L44">                .attempts(0)</span>
+<span class="nc" id="L45">                .type(type)</span>
+<span class="nc" id="L46">                .build();</span>
+
+<span class="nc" id="L48">        otpTokenRepository.save(otpToken);</span>
+<span class="nc" id="L49">        emailService.sendOtpEmail(user.getEmail(), otp, user.getFirstName(), type);</span>
+
+<span class="nc" id="L51">        log.info(&quot;OTP generated and sent to: {}&quot;, user.getEmail());</span>
+<span class="nc" id="L52">    }</span>
+
+    /**
+     * Resend OTP — generates a fresh OTP for the given email.
+     */
+    @Transactional
+    public void resendOtp(String email) {
+<span class="nc" id="L59">        AuthUser user = authUserRepository.findByEmail(email)</span>
+<span class="nc" id="L60">                .orElseThrow(() -&gt; new RuntimeException(&quot;User not found with email: &quot; + email));</span>
+
+<span class="nc bnc" id="L62" title="All 2 branches missed.">        if (user.isVerified()) {</span>
+<span class="nc" id="L63">            throw new RuntimeException(&quot;Email is already verified&quot;);</span>
+        }
+
+<span class="nc" id="L66">        generateAndSendOtp(user, OtpType.REGISTRATION);</span>
+<span class="nc" id="L67">        log.info(&quot;OTP resent to: {}&quot;, email);</span>
+<span class="nc" id="L68">    }</span>
+
+    /**
+     * Verify the OTP submitted by the user.
+     * Marks the user as verified on success.
+     */
+    @Transactional
+    public boolean verifyOtp(String email, String otp, OtpType type) {
+<span class="nc" id="L76">        return verifyOtp(email, otp, type, true);</span>
+    }
+
+    /**
+     * Validate OTP without consuming it.
+     * Used by password reset flow before final password submission.
+     */
+    @Transactional
+    public boolean validateOtp(String email, String otp, OtpType type) {
+<span class="nc" id="L85">        return verifyOtp(email, otp, type, false);</span>
+    }
+
+    private boolean verifyOtp(String email, String otp, OtpType type, boolean consumeToken) {
+<span class="nc" id="L89">        AuthUser user = authUserRepository.findByEmail(email)</span>
+<span class="nc" id="L90">                .orElseThrow(() -&gt; new RuntimeException(&quot;User not found with email: &quot; + email));</span>
+
+<span class="nc bnc" id="L92" title="All 4 branches missed.">        if (type == OtpType.REGISTRATION &amp;&amp; user.isVerified()) {</span>
+<span class="nc" id="L93">            throw new RuntimeException(&quot;Email is already verified&quot;);</span>
+        }
+
+<span class="nc" id="L96">        OtpToken otpToken = otpTokenRepository</span>
+<span class="nc" id="L97">                .findTopByEmailAndTypeAndUsedFalseAndExpiresAtAfterOrderByCreatedAtDesc(email, type, LocalDateTime.now())</span>
+<span class="nc" id="L98">                .orElse(null);</span>
+
+        // Fail Case 1: Expired or not found
+<span class="nc bnc" id="L101" title="All 2 branches missed.">        if (otpToken == null) {</span>
+<span class="nc bnc" id="L102" title="All 4 branches missed.">            if (type == OtpType.REGISTRATION &amp;&amp; !user.isVerified()) {</span>
+<span class="nc" id="L103">                rollbackRegistration(email);</span>
+<span class="nc" id="L104">                throw new RuntimeException(&quot;OTP expired or not found. Registration rolled back for security. Please register again.&quot;);</span>
+            }
+<span class="nc" id="L106">            throw new RuntimeException(&quot;No valid OTP found. Please request a new one.&quot;);</span>
+        }
+
+        // Fail Case 2: Max attempts
+<span class="nc bnc" id="L110" title="All 2 branches missed.">        if (otpToken.getAttempts() &gt;= MAX_ATTEMPTS) {</span>
+<span class="nc" id="L111">            otpToken.setUsed(true);</span>
+<span class="nc" id="L112">            otpTokenRepository.save(otpToken);</span>
+<span class="nc bnc" id="L113" title="All 2 branches missed.">            if (type == OtpType.REGISTRATION) {</span>
+<span class="nc" id="L114">                rollbackRegistration(email);</span>
+<span class="nc" id="L115">                throw new RuntimeException(&quot;Too many failed attempts. Registration rolled back. Please register again.&quot;);</span>
+            }
+<span class="nc" id="L117">            throw new RuntimeException(&quot;Too many failed attempts. Please request a new OTP.&quot;);</span>
+        }
+
+        // Fail Case 3: Incorrect OTP
+<span class="nc bnc" id="L121" title="All 2 branches missed.">        if (!otpToken.getOtp().equals(otp)) {</span>
+<span class="nc" id="L122">            otpToken.setAttempts(otpToken.getAttempts() + 1);</span>
+<span class="nc" id="L123">            otpTokenRepository.save(otpToken);</span>
+<span class="nc" id="L124">            throw new RuntimeException(&quot;Invalid OTP. Attempts remaining: &quot; + (MAX_ATTEMPTS - otpToken.getAttempts()));</span>
+        }
+
+        // Success
+<span class="nc bnc" id="L128" title="All 2 branches missed.">        if (consumeToken) {</span>
+<span class="nc" id="L129">            otpToken.setUsed(true);</span>
+<span class="nc" id="L130">            otpTokenRepository.save(otpToken);</span>
+        }
+
+<span class="nc bnc" id="L133" title="All 2 branches missed.">        if (type == OtpType.REGISTRATION) {</span>
+<span class="nc" id="L134">            user.setVerified(true);</span>
+<span class="nc" id="L135">            authUserRepository.save(user);</span>
+        }
+
+<span class="nc bnc" id="L138" title="All 2 branches missed.">        log.info(&quot;OTP {} for: {} type: {}&quot;, consumeToken ? &quot;verified&quot; : &quot;validated&quot;, email, type);</span>
+<span class="nc" id="L139">        return true;</span>
+    }
+
+    private void rollbackRegistration(String email) {
+<span class="nc" id="L143">        log.warn(&quot;Rolling back registration for email: {}&quot;, email);</span>
+<span class="nc" id="L144">        otpTokenRepository.deleteByEmail(email);</span>
+<span class="nc" id="L145">        authUserRepository.deleteByEmail(email);</span>
+<span class="nc" id="L146">    }</span>
+
+    private String generateOtp() {
+<span class="nc" id="L149">        int min = (int) Math.pow(10, OTP_LENGTH - 1);</span>
+<span class="nc" id="L150">        int max = (int) Math.pow(10, OTP_LENGTH) - 1;</span>
+<span class="nc" id="L151">        int number = secureRandom.nextInt(max - min + 1) + min;</span>
+<span class="nc" id="L152">        return String.valueOf(number);</span>
+    }
+
+    /**
+     * Scheduled cleanup: remove expired OTP tokens every hour.
+     */
+    @Scheduled(fixedRate = 3600000)
+    @Transactional
+    public void cleanupExpiredOtps() {
+<span class="nc" id="L161">        otpTokenRepository.deleteByExpiresAtBefore(LocalDateTime.now());</span>
+<span class="nc" id="L162">        log.info(&quot;Expired OTP tokens cleaned up&quot;);</span>
+<span class="nc" id="L163">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

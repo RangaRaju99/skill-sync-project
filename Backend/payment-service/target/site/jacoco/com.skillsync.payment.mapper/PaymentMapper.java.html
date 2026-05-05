@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PaymentMapper.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">payment-service</a> &gt; <a href="index.source.html" class="el_package">com.skillsync.payment.mapper</a> &gt; <span class="el_source">PaymentMapper.java</span></div><h1>PaymentMapper.java</h1><pre class="source lang-java linenums">package com.skillsync.payment.mapper;
+
+import com.skillsync.payment.dto.PaymentResponse;
+import com.skillsync.payment.entity.Payment;
+
+/**
+ * Pure mapping functions for Payment entities.
+ * Used by PaymentService for response conversion.
+ * NO service calls, NO repository calls — ONLY transformation logic.
+ */
+public final class PaymentMapper {
+
+    private PaymentMapper() {}
+
+    public static PaymentResponse toResponse(Payment payment) {
+<span class="fc" id="L16">        return new PaymentResponse(</span>
+<span class="fc" id="L17">                payment.getId(),</span>
+<span class="fc" id="L18">                payment.getUserId(),</span>
+<span class="fc" id="L19">                payment.getType().name(),</span>
+<span class="fc" id="L20">                payment.getAmount(),</span>
+<span class="fc" id="L21">                payment.getRazorpayOrderId(),</span>
+<span class="fc" id="L22">                payment.getRazorpayPaymentId(),</span>
+<span class="fc" id="L23">                payment.getStatus().name(),</span>
+<span class="fc" id="L24">                payment.getReferenceId(),</span>
+<span class="fc bfc" id="L25" title="All 2 branches covered.">                payment.getReferenceType() != null ? payment.getReferenceType().name() : null,</span>
+<span class="fc" id="L26">                payment.getCompensationReason(),</span>
+<span class="fc" id="L27">                payment.getCreatedAt(),</span>
+<span class="fc" id="L28">                payment.getCompletedAt()</span>
+        );
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

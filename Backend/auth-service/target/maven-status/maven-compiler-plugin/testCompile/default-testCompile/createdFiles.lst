@@ -1,0 +1,3 @@
+com\skillsync\auth\controller\AuthControllerTest.class
+com\skillsync\auth\service\AuthServiceTest$OAuthFlowTests.class
+com\skillsync\auth\service\AuthServiceTest.class

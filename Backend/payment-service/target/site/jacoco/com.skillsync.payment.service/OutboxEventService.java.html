@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>OutboxEventService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">payment-service</a> &gt; <a href="index.source.html" class="el_package">com.skillsync.payment.service</a> &gt; <span class="el_source">OutboxEventService.java</span></div><h1>OutboxEventService.java</h1><pre class="source lang-java linenums">package com.skillsync.payment.service;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.skillsync.payment.entity.OutboxEvent;
+import com.skillsync.payment.repository.OutboxEventRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.UUID;
+
+/**
+ * Service for writing events to the Outbox table within the same transaction
+ * as the business entity write. This guarantees atomicity — if the business
+ * write fails, the outbox event is also rolled back.
+ *
+ * &lt;p&gt;This replaces direct {@code rabbitTemplate.convertAndSend()} calls.&lt;/p&gt;
+ */
+@Service
+@RequiredArgsConstructor
+<span class="fc" id="L24">@Slf4j</span>
+public class OutboxEventService {
+
+    private final OutboxEventRepository outboxEventRepository;
+    private final ObjectMapper objectMapper;
+
+    /**
+     * Saves an event to the outbox table within the caller's transaction.
+     * The OutboxPublisher scheduler will pick it up and publish to RabbitMQ.
+     *
+     * @param exchange   RabbitMQ exchange name
+     * @param routingKey RabbitMQ routing key
+     * @param eventType  human-readable event type for logging/debugging
+     * @param payload    the event payload object (will be serialized to JSON)
+     * @return the generated event ID (UUID)
+     */
+    @Transactional(propagation = Propagation.MANDATORY)
+    public String saveEvent(String exchange, String routingKey, String eventType, Object payload) {
+<span class="nc" id="L42">        String eventId = UUID.randomUUID().toString();</span>
+
+        try {
+<span class="nc" id="L45">            String jsonPayload = objectMapper.writeValueAsString(payload);</span>
+
+<span class="nc" id="L47">            OutboxEvent outboxEvent = OutboxEvent.builder()</span>
+<span class="nc" id="L48">                    .eventId(eventId)</span>
+<span class="nc" id="L49">                    .eventType(eventType)</span>
+<span class="nc" id="L50">                    .routingKey(routingKey)</span>
+<span class="nc" id="L51">                    .exchange(exchange)</span>
+<span class="nc" id="L52">                    .payload(jsonPayload)</span>
+<span class="nc" id="L53">                    .status(OutboxEvent.OutboxStatus.PENDING)</span>
+<span class="nc" id="L54">                    .retryCount(0)</span>
+<span class="nc" id="L55">                    .build();</span>
+
+<span class="nc" id="L57">            outboxEventRepository.save(outboxEvent);</span>
+<span class="nc" id="L58">            log.debug(&quot;[OUTBOX] Event saved: eventId={}, type={}, routingKey={}&quot;,</span>
+                    eventId, eventType, routingKey);
+
+<span class="nc" id="L61">            return eventId;</span>
+
+<span class="nc" id="L63">        } catch (JsonProcessingException e) {</span>
+<span class="nc" id="L64">            log.error(&quot;[OUTBOX] Failed to serialize event payload: type={}, error={}&quot;,</span>
+<span class="nc" id="L65">                    eventType, e.getMessage(), e);</span>
+<span class="nc" id="L66">            throw new RuntimeException(&quot;Failed to serialize outbox event payload&quot;, e);</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

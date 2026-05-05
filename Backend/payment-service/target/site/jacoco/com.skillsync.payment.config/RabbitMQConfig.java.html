@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RabbitMQConfig.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">payment-service</a> &gt; <a href="index.source.html" class="el_package">com.skillsync.payment.config</a> &gt; <span class="el_source">RabbitMQConfig.java</span></div><h1>RabbitMQConfig.java</h1><pre class="source lang-java linenums">package com.skillsync.payment.config;
+
+import org.springframework.amqp.core.*;
+import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
+import org.springframework.amqp.support.converter.MessageConverter;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
+<span class="nc" id="L10">public class RabbitMQConfig {</span>
+
+    // ─── Payment Events ───
+    public static final String PAYMENT_EXCHANGE = &quot;payment.exchange&quot;;
+
+    // ─── Versioned Queues (v1) ───
+    public static final String PAYMENT_SUCCESS_QUEUE = &quot;payment.success.v1.queue&quot;;
+    public static final String PAYMENT_FAILED_QUEUE = &quot;payment.failed.v1.queue&quot;;
+    public static final String PAYMENT_COMPENSATED_QUEUE = &quot;payment.compensated.v1.queue&quot;;
+    public static final String PAYMENT_BUSINESS_ACTION_QUEUE = &quot;payment.business.action.v1.queue&quot;;
+
+    // ─── Dead Letter Queues ───
+    public static final String DLX_EXCHANGE = &quot;payment.dlx.exchange&quot;;
+    public static final String DLQ_BUSINESS_ACTION = &quot;payment.business.action.dlq&quot;;
+    public static final String DLQ_SUCCESS = &quot;payment.success.dlq&quot;;
+    public static final String DLQ_FAILED = &quot;payment.failed.dlq&quot;;
+
+    // ─── Exchanges ───
+
+    @Bean
+    public TopicExchange paymentExchange() {
+<span class="nc" id="L31">        return new TopicExchange(PAYMENT_EXCHANGE, true, false);</span>
+    }
+
+    @Bean
+    public DirectExchange deadLetterExchange() {
+<span class="nc" id="L36">        return new DirectExchange(DLX_EXCHANGE, true, false);</span>
+    }
+
+    // ─── Main Queues (with DLQ binding) ───
+
+    @Bean
+    public Queue paymentSuccessQueue() {
+<span class="nc" id="L43">        return QueueBuilder.durable(PAYMENT_SUCCESS_QUEUE)</span>
+<span class="nc" id="L44">                .withArgument(&quot;x-dead-letter-exchange&quot;, DLX_EXCHANGE)</span>
+<span class="nc" id="L45">                .withArgument(&quot;x-dead-letter-routing-key&quot;, DLQ_SUCCESS)</span>
+<span class="nc" id="L46">                .build();</span>
+    }
+
+    @Bean
+    public Queue paymentFailedQueue() {
+<span class="nc" id="L51">        return QueueBuilder.durable(PAYMENT_FAILED_QUEUE)</span>
+<span class="nc" id="L52">                .withArgument(&quot;x-dead-letter-exchange&quot;, DLX_EXCHANGE)</span>
+<span class="nc" id="L53">                .withArgument(&quot;x-dead-letter-routing-key&quot;, DLQ_FAILED)</span>
+<span class="nc" id="L54">                .build();</span>
+    }
+
+    @Bean
+    public Queue paymentCompensatedQueue() {
+<span class="nc" id="L59">        return QueueBuilder.durable(PAYMENT_COMPENSATED_QUEUE).build();</span>
+    }
+
+    @Bean
+    public Queue paymentBusinessActionQueue() {
+<span class="nc" id="L64">        return QueueBuilder.durable(PAYMENT_BUSINESS_ACTION_QUEUE)</span>
+<span class="nc" id="L65">                .withArgument(&quot;x-dead-letter-exchange&quot;, DLX_EXCHANGE)</span>
+<span class="nc" id="L66">                .withArgument(&quot;x-dead-letter-routing-key&quot;, DLQ_BUSINESS_ACTION)</span>
+<span class="nc" id="L67">                .build();</span>
+    }
+
+    // ─── Dead Letter Queues ───
+
+    @Bean
+    public Queue dlqBusinessAction() {
+<span class="nc" id="L74">        return QueueBuilder.durable(DLQ_BUSINESS_ACTION).build();</span>
+    }
+
+    @Bean
+    public Queue dlqSuccess() {
+<span class="nc" id="L79">        return QueueBuilder.durable(DLQ_SUCCESS).build();</span>
+    }
+
+    @Bean
+    public Queue dlqFailed() {
+<span class="nc" id="L84">        return QueueBuilder.durable(DLQ_FAILED).build();</span>
+    }
+
+    // ─── Main Queue Bindings (versioned routing keys) ───
+
+    @Bean
+    public Binding paymentSuccessBinding() {
+<span class="nc" id="L91">        return BindingBuilder.bind(paymentSuccessQueue()).to(paymentExchange()).with(&quot;payment.success.v1&quot;);</span>
+    }
+
+    @Bean
+    public Binding paymentFailedBinding() {
+<span class="nc" id="L96">        return BindingBuilder.bind(paymentFailedQueue()).to(paymentExchange()).with(&quot;payment.failed.v1&quot;);</span>
+    }
+
+    @Bean
+    public Binding paymentCompensatedBinding() {
+<span class="nc" id="L101">        return BindingBuilder.bind(paymentCompensatedQueue()).to(paymentExchange()).with(&quot;payment.compensated.v1&quot;);</span>
+    }
+
+    @Bean
+    public Binding paymentBusinessActionBinding() {
+<span class="nc" id="L106">        return BindingBuilder.bind(paymentBusinessActionQueue()).to(paymentExchange()).with(&quot;payment.business.action.v1&quot;);</span>
+    }
+
+    // ─── DLQ Bindings ───
+
+    @Bean
+    public Binding dlqBusinessActionBinding() {
+<span class="nc" id="L113">        return BindingBuilder.bind(dlqBusinessAction()).to(deadLetterExchange()).with(DLQ_BUSINESS_ACTION);</span>
+    }
+
+    @Bean
+    public Binding dlqSuccessBinding() {
+<span class="nc" id="L118">        return BindingBuilder.bind(dlqSuccess()).to(deadLetterExchange()).with(DLQ_SUCCESS);</span>
+    }
+
+    @Bean
+    public Binding dlqFailedBinding() {
+<span class="nc" id="L123">        return BindingBuilder.bind(dlqFailed()).to(deadLetterExchange()).with(DLQ_FAILED);</span>
+    }
+
+    // ─── Message Converter (schema-evolution safe) ───
+
+    @Bean
+    public MessageConverter jsonMessageConverter() {
+<span class="nc" id="L130">        com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();</span>
+<span class="nc" id="L131">        mapper.configure(com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);</span>
+<span class="nc" id="L132">        return new Jackson2JsonMessageConverter(mapper);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

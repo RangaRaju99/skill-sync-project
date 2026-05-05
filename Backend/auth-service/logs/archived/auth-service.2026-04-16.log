@@ -1,0 +1,27 @@
+2026-04-16 10:51:10.405 INFO  [auth-service] [main] c.s.a.controller.AuthControllerTest - Starting AuthControllerTest using Java 17.0.12 with PID 22716 (started by hp in C:\Users\hp\projects\SkillSync\skill-sync-project\Backend\auth-service)
+2026-04-16 10:51:10.408 DEBUG [auth-service] [main] c.s.a.controller.AuthControllerTest - Running with Spring Boot v3.4.4, Spring v6.2.5
+2026-04-16 10:51:10.410 INFO  [auth-service] [main] c.s.a.controller.AuthControllerTest - No active profile set, falling back to 1 default profile: "default"
+2026-04-16 10:51:10.470 WARN  [auth-service] [main] o.s.c.c.c.ConfigServerConfigDataLoader - Could not locate PropertySource ([ConfigServerConfigDataResource@5af4328e uris = array<String>['http://localhost:8888'], optional = true, profiles = 'default']): I/O error on GET request for "http://localhost:8888/application/default": Connection refused: getsockopt
+2026-04-16 10:51:10.471 WARN  [auth-service] [main] o.s.c.c.c.ConfigServerConfigDataLoader - Could not locate PropertySource ([ConfigServerConfigDataResource@4fc256ec uris = array<String>['http://localhost:8888'], optional = true, profiles = 'default']): I/O error on GET request for "http://localhost:8888/application/default": Connection refused: getsockopt
+2026-04-16 10:51:10.471 WARN  [auth-service] [main] o.s.c.c.c.ConfigServerConfigDataLoader - Could not locate PropertySource ([ConfigServerConfigDataResource@3bc3d70e uris = array<String>['http://localhost:8888'], optional = true, profiles = 'default']): I/O error on GET request for "http://localhost:8888/application/default": Connection refused: getsockopt
+2026-04-16 10:51:16.771 WARN  [auth-service] [main] o.s.s.c.a.a.c.InitializeUserDetailsBeanManagerConfigurer$InitializeUserDetailsManagerConfigurer - Found 2 UserDetailsService beans, with names [inMemoryUserDetailsManager, com.skillsync.auth.security.UserDetailsServiceImpl#0]. Global Authentication Manager will not use a UserDetailsService for username/password login. Consider publishing a single UserDetailsService bean.
+2026-04-16 10:51:17.282 WARN  [auth-service] [main] o.s.b.a.s.s.UserDetailsServiceAutoConfiguration - 
+
+Using generated security password: ab3f69aa-8bd4-4895-a653-a8bc37ecdb91
+
+This generated password is for development use only. Your security configuration must be updated before running your application in production.
+
+2026-04-16 10:51:17.469 INFO  [auth-service] [main] c.s.a.controller.AuthControllerTest - Started AuthControllerTest in 10.4 seconds (process running for 14.084)
+2026-04-16 10:51:18.447 WARN  [auth-service] [main] c.s.a.e.GlobalExceptionHandler - Validation failed: {lastName=size must be between 2 and 100, firstName=must not be blank, password=size must be between 8 and 100, email=must be a well-formed email address}
+2026-04-16 10:51:19.379 INFO  [auth-service] [main] c.skillsync.auth.service.AuthService - User role updated to ROLE_MENTOR for userId: 1
+2026-04-16 10:51:19.437 INFO  [auth-service] [main] c.skillsync.auth.service.AuthService - User logged out
+2026-04-16 10:51:19.449 INFO  [auth-service] [main] c.skillsync.auth.service.AuthService - User registered successfully: test@example.com
+2026-04-16 10:51:19.465 INFO  [auth-service] [main] c.skillsync.auth.service.AuthService - User logged in: verified@example.com
+2026-04-16 10:51:19.477 WARN  [auth-service] [main] c.skillsync.auth.service.AuthService - Login attempt by unverified user: test@example.com
+2026-04-16 10:51:19.501 INFO  [auth-service] [main] c.skillsync.auth.service.AuthService - Password setup completed for OAuth user: oauth@gmail.com
+2026-04-16 10:51:19.516 INFO  [auth-service] [main] c.skillsync.auth.service.AuthService - OAuth new user created: newuser@gmail.com via google
+2026-04-16 10:51:19.517 INFO  [auth-service] [main] c.skillsync.auth.service.AuthService - OAuth login successful for: newuser@gmail.com via google
+2026-04-16 10:51:19.529 INFO  [auth-service] [main] c.skillsync.auth.service.AuthService - OAuth login verified previously unverified user: unverified@example.com
+2026-04-16 10:51:19.531 INFO  [auth-service] [main] c.skillsync.auth.service.AuthService - OAuth provider linked for existing user: unverified@example.com ? google
+2026-04-16 10:51:19.532 INFO  [auth-service] [main] c.skillsync.auth.service.AuthService - OAuth login successful for: unverified@example.com via google
+2026-04-16 10:51:19.542 INFO  [auth-service] [main] c.skillsync.auth.service.AuthService - OAuth login successful for: verified@example.com via google

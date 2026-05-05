@@ -1,0 +1,449 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AuthService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">auth-service</a> &gt; <a href="index.source.html" class="el_package">com.skillsync.auth.service</a> &gt; <span class="el_source">AuthService.java</span></div><h1>AuthService.java</h1><pre class="source lang-java linenums">package com.skillsync.auth.service;
+
+import com.skillsync.auth.dto.*;
+import com.skillsync.auth.entity.AuthUser;
+import com.skillsync.auth.entity.RefreshToken;
+import com.skillsync.auth.enums.OtpType;
+import com.skillsync.auth.enums.Role;
+import com.skillsync.auth.repository.AuthUserRepository;
+import com.skillsync.auth.repository.RefreshTokenRepository;
+import com.skillsync.auth.security.JwtTokenProvider;
+import com.skillsync.cache.CacheService;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.regex.Pattern;
+
+@Service
+@RequiredArgsConstructor
+<span class="fc" id="L29">@Slf4j</span>
+public class AuthService {
+
+    private final AuthUserRepository authUserRepository;
+    private final RefreshTokenRepository refreshTokenRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtTokenProvider jwtTokenProvider;
+    private final AuthenticationManager authenticationManager;
+    private final OtpService otpService;
+    private final EmailService emailService;
+    private final CacheService cacheService;
+
+    private static final int MAX_REFRESH_TOKENS = 5;
+<span class="fc" id="L42">    private static final Pattern STRONG_PASSWORD_PATTERN = Pattern.compile(</span>
+            &quot;^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d)(?=.*[^A-Za-z0-9]).{8,100}$&quot;
+    );
+
+    @Transactional
+    public AuthResponse register(RegisterRequest request) {
+        // Legacy support
+<span class="fc bfc" id="L49" title="All 2 branches covered.">        if (authUserRepository.existsByEmail(request.email())) {</span>
+<span class="fc" id="L50">            throw new RuntimeException(&quot;Email already registered: &quot; + request.email());</span>
+        }
+
+<span class="fc" id="L53">        AuthUser user = AuthUser.builder()</span>
+<span class="fc" id="L54">                .email(request.email())</span>
+<span class="fc" id="L55">                .passwordHash(passwordEncoder.encode(request.password()))</span>
+<span class="fc" id="L56">                .firstName(request.firstName())</span>
+<span class="fc" id="L57">                .lastName(request.lastName())</span>
+<span class="fc" id="L58">                .role(Role.ROLE_LEARNER)</span>
+<span class="fc" id="L59">                .isActive(true)</span>
+<span class="fc" id="L60">                .isVerified(false)</span>
+<span class="fc" id="L61">                .build();</span>
+
+<span class="fc" id="L63">        user = authUserRepository.save(user);</span>
+<span class="fc" id="L64">        log.info(&quot;User registered successfully: {}&quot;, user.getEmail());</span>
+
+<span class="fc" id="L66">        otpService.generateAndSendOtp(user, OtpType.REGISTRATION);</span>
+
+<span class="fc" id="L68">        return generateAuthResponse(user);</span>
+    }
+
+    @Transactional
+    public Map&lt;String, Object&gt; initiateRegistration(InitiateRegistrationRequest request) {
+<span class="nc" id="L73">        String normalizedEmail = request.email().trim().toLowerCase();</span>
+<span class="nc" id="L74">        Optional&lt;AuthUser&gt; existingUserOpt = authUserRepository.findByEmail(normalizedEmail);</span>
+<span class="nc bnc" id="L75" title="All 2 branches missed.">        if (existingUserOpt.isPresent()) {</span>
+<span class="nc" id="L76">            AuthUser existing = existingUserOpt.get();</span>
+<span class="nc bnc" id="L77" title="All 2 branches missed.">            if (existing.isVerified()) {</span>
+<span class="nc" id="L78">                return Map.of(&quot;exists&quot;, true, &quot;message&quot;, &quot;User already registered.&quot;);</span>
+            } else {
+<span class="nc" id="L80">                otpService.generateAndSendOtp(existing, OtpType.REGISTRATION);</span>
+<span class="nc" id="L81">                return Map.of(&quot;exists&quot;, false, &quot;otpSent&quot;, true);</span>
+            }
+        }
+
+<span class="nc" id="L85">        AuthUser user = AuthUser.builder()</span>
+<span class="nc" id="L86">                .email(normalizedEmail)</span>
+<span class="nc" id="L87">                .passwordHash(&quot;PENDING&quot;)</span>
+<span class="nc" id="L88">                .firstName(&quot;PENDING&quot;)</span>
+<span class="nc" id="L89">                .lastName(&quot;PENDING&quot;)</span>
+<span class="nc" id="L90">                .role(Role.ROLE_LEARNER)</span>
+<span class="nc" id="L91">                .isActive(true)</span>
+<span class="nc" id="L92">                .isVerified(false)</span>
+<span class="nc" id="L93">                .passwordSet(false)</span>
+<span class="nc" id="L94">                .build();</span>
+
+<span class="nc" id="L96">        user = authUserRepository.save(user);</span>
+<span class="nc" id="L97">        otpService.generateAndSendOtp(user, OtpType.REGISTRATION);</span>
+
+<span class="nc" id="L99">        return Map.of(&quot;exists&quot;, false, &quot;otpSent&quot;, true);</span>
+    }
+
+    @Transactional
+    public AuthResponse completeRegistration(CompleteRegistrationRequest request) {
+<span class="nc" id="L104">        AuthUser user = authUserRepository.findByEmail(request.email())</span>
+<span class="nc" id="L105">                .orElseThrow(() -&gt; new RuntimeException(&quot;User not found&quot;));</span>
+
+<span class="nc bnc" id="L107" title="All 2 branches missed.">        if (!user.isVerified()) {</span>
+<span class="nc" id="L108">            throw new RuntimeException(&quot;Email not verified. Please verify OTP first.&quot;);</span>
+        }
+
+<span class="nc bnc" id="L111" title="All 4 branches missed.">        if (user.isPasswordSet() &amp;&amp; !user.getPasswordHash().equals(&quot;PENDING&quot;)) {</span>
+<span class="nc" id="L112">            throw new RuntimeException(&quot;Registration already completed for this user.&quot;);</span>
+        }
+
+<span class="nc" id="L115">        validateStrongPassword(request.password());</span>
+
+<span class="nc" id="L117">        user.setFirstName(request.firstName());</span>
+<span class="nc" id="L118">        user.setLastName(request.lastName());</span>
+<span class="nc" id="L119">        user.setPasswordHash(passwordEncoder.encode(request.password()));</span>
+<span class="nc" id="L120">        user.setPasswordSet(true);</span>
+<span class="nc" id="L121">        user = authUserRepository.save(user);</span>
+        
+<span class="nc" id="L123">        log.info(&quot;User registration completed for: {}&quot;, user.getEmail());</span>
+
+        try {
+<span class="nc" id="L126">            emailService.sendWelcomeEmail(user.getEmail(), user.getFirstName());</span>
+<span class="nc" id="L127">        } catch (Exception ex) {</span>
+<span class="nc" id="L128">            log.warn(&quot;Failed to dispatch welcome email to {}: {}&quot;, user.getEmail(), ex.getMessage());</span>
+<span class="nc" id="L129">        }</span>
+
+<span class="nc" id="L131">        return generateAuthResponse(user);</span>
+    }
+
+    @Transactional
+    public AuthResponse login(LoginRequest request) {
+<span class="fc" id="L136">        authenticationManager.authenticate(</span>
+<span class="fc" id="L137">                new UsernamePasswordAuthenticationToken(request.email(), request.password()));</span>
+
+<span class="fc" id="L139">        AuthUser user = authUserRepository.findByEmail(request.email())</span>
+<span class="fc" id="L140">                .orElseThrow(() -&gt; new RuntimeException(&quot;User not found&quot;));</span>
+
+        // Email verification is mandatory — block login for unverified users
+<span class="fc bfc" id="L143" title="All 2 branches covered.">        if (!user.isVerified()) {</span>
+<span class="fc" id="L144">            log.warn(&quot;Login attempt by unverified user: {}&quot;, user.getEmail());</span>
+            // Auto-resend OTP so the user can verify immediately
+<span class="fc" id="L146">            otpService.generateAndSendOtp(user, OtpType.REGISTRATION);</span>
+<span class="fc" id="L147">            throw new RuntimeException(&quot;Email not verified. A new OTP has been sent to &quot; + user.getEmail()</span>
+                    + &quot;. Please verify your email before logging in.&quot;);
+        }
+
+<span class="fc" id="L151">        log.info(&quot;User logged in: {}&quot;, user.getEmail());</span>
+<span class="fc" id="L152">        return generateAuthResponse(user);</span>
+    }
+
+    @Transactional
+    public AuthResponse refreshToken(RefreshTokenRequest request) {
+<span class="nc" id="L157">        RefreshToken refreshToken = refreshTokenRepository.findByToken(request.refreshToken())</span>
+<span class="nc" id="L158">                .orElseThrow(() -&gt; new RuntimeException(&quot;Invalid refresh token&quot;));</span>
+
+<span class="nc bnc" id="L160" title="All 2 branches missed.">        if (refreshToken.getExpiresAt().isBefore(LocalDateTime.now())) {</span>
+<span class="nc" id="L161">            refreshTokenRepository.delete(refreshToken);</span>
+<span class="nc" id="L162">            throw new RuntimeException(&quot;Refresh token expired&quot;);</span>
+        }
+
+<span class="nc" id="L165">        AuthUser user = refreshToken.getUser();</span>
+<span class="nc" id="L166">        refreshTokenRepository.delete(refreshToken);</span>
+
+<span class="nc" id="L168">        log.info(&quot;Token refreshed for user: {}&quot;, user.getEmail());</span>
+<span class="nc" id="L169">        return generateAuthResponse(user);</span>
+    }
+
+    @Transactional
+    public void logout(String refreshToken) {
+<span class="fc" id="L174">        refreshTokenRepository.findByToken(refreshToken)</span>
+<span class="fc" id="L175">                .ifPresent(refreshTokenRepository::delete);</span>
+<span class="fc" id="L176">        log.info(&quot;User logged out&quot;);</span>
+<span class="fc" id="L177">    }</span>
+
+    @Transactional
+    public void updateUserRole(Long userId, String role) {
+<span class="fc" id="L181">        AuthUser user = authUserRepository.findById(userId)</span>
+<span class="pc" id="L182">                .orElseThrow(() -&gt; new RuntimeException(&quot;User not found with id: &quot; + userId));</span>
+<span class="fc" id="L183">        user.setRole(Role.valueOf(role));</span>
+<span class="fc" id="L184">        authUserRepository.save(user);</span>
+        
+        // Invalidate Redis profile cache so front-end gets updated role
+<span class="fc" id="L187">        cacheService.evict(CacheService.vKey(&quot;user:profile:&quot; + user.getId()));</span>
+        
+<span class="fc" id="L189">        log.info(&quot;User role updated to {} for userId: {}&quot;, role, userId);</span>
+<span class="fc" id="L190">    }</span>
+
+    @Transactional
+    public void updateUserName(Long userId, String firstName, String lastName) {
+<span class="nc" id="L194">        AuthUser user = authUserRepository.findById(userId)</span>
+<span class="nc" id="L195">                .orElseThrow(() -&gt; new RuntimeException(&quot;User not found with id: &quot; + userId));</span>
+
+<span class="nc bnc" id="L197" title="All 2 branches missed.">        String safeFirstName = firstName == null ? &quot;&quot; : firstName.trim();</span>
+<span class="nc bnc" id="L198" title="All 2 branches missed.">        String safeLastName = lastName == null ? &quot;&quot; : lastName.trim();</span>
+<span class="nc bnc" id="L199" title="All 4 branches missed.">        if (safeFirstName.isBlank() || safeLastName.isBlank()) {</span>
+<span class="nc" id="L200">            throw new RuntimeException(&quot;Both firstName and lastName are required&quot;);</span>
+        }
+
+<span class="nc" id="L203">        user.setFirstName(safeFirstName);</span>
+<span class="nc" id="L204">        user.setLastName(safeLastName);</span>
+<span class="nc" id="L205">        authUserRepository.save(user);</span>
+
+<span class="nc" id="L207">        cacheService.evict(CacheService.vKey(&quot;user:profile:&quot; + user.getId()));</span>
+<span class="nc" id="L208">        log.info(&quot;User name updated for userId: {}&quot;, userId);</span>
+<span class="nc" id="L209">    }</span>
+
+    @Transactional
+    public void forgotPassword(ForgotPasswordRequest request) {
+<span class="nc" id="L213">        AuthUser user = authUserRepository.findByEmail(request.email())</span>
+<span class="nc" id="L214">                .orElseThrow(() -&gt; new RuntimeException(&quot;User not found with email: &quot; + request.email()));</span>
+
+<span class="nc" id="L216">        otpService.generateAndSendOtp(user, OtpType.PASSWORD_RESET);</span>
+<span class="nc" id="L217">        log.info(&quot;Password reset OTP sent to: {}&quot;, request.email());</span>
+<span class="nc" id="L218">    }</span>
+
+    @Transactional
+    public void verifyPasswordResetOtp(String email, String otp) {
+<span class="nc" id="L222">        otpService.validateOtp(email, otp, OtpType.PASSWORD_RESET);</span>
+<span class="nc" id="L223">        log.info(&quot;Password reset OTP validated for: {}&quot;, email);</span>
+<span class="nc" id="L224">    }</span>
+
+    @Transactional
+    public void resetPassword(ResetPasswordRequest request) {
+<span class="nc" id="L228">        validateStrongPassword(request.newPassword());</span>
+
+<span class="nc" id="L230">        otpService.verifyOtp(request.email(), request.otp(), OtpType.PASSWORD_RESET);</span>
+
+<span class="nc" id="L232">        AuthUser user = authUserRepository.findByEmail(request.email())</span>
+<span class="nc" id="L233">                .orElseThrow(() -&gt; new RuntimeException(&quot;User not found with email: &quot; + request.email()));</span>
+
+<span class="nc bnc" id="L235" title="All 2 branches missed.">        if (passwordEncoder.matches(request.newPassword(), user.getPasswordHash())) {</span>
+<span class="nc" id="L236">            throw new RuntimeException(&quot;New password must be different from current password&quot;);</span>
+        }
+
+<span class="nc" id="L239">        applyPasswordUpdate(user, request.newPassword());</span>
+<span class="nc" id="L240">        log.info(&quot;Password reset successfully for user: {}&quot;, request.email());</span>
+<span class="nc" id="L241">    }</span>
+
+    @Transactional
+    public OAuthResponse loginWithOAuth(OAuthRequest request) {
+        // 1. Try to find user by provider+providerId first, then by email
+<span class="fc" id="L246">        AuthUser user = authUserRepository.findByProviderAndProviderId(request.provider(), request.providerId())</span>
+<span class="fc" id="L247">                .or(() -&gt; authUserRepository.findByEmail(request.email()))</span>
+<span class="fc" id="L248">                .orElse(null);</span>
+
+<span class="fc" id="L250">        boolean isNewUser = false;</span>
+
+<span class="fc bfc" id="L252" title="All 2 branches covered.">        if (user == null) {</span>
+            // === NEW USER: Create via OAuth ===
+<span class="fc" id="L254">            AuthUser newUser = AuthUser.builder()</span>
+<span class="fc" id="L255">                    .email(request.email())</span>
+<span class="fc" id="L256">                    .firstName(request.firstName())</span>
+<span class="fc" id="L257">                    .lastName(request.lastName())</span>
+<span class="fc" id="L258">                    .passwordHash(passwordEncoder.encode(UUID.randomUUID().toString())) // Placeholder</span>
+<span class="fc" id="L259">                    .role(Role.ROLE_LEARNER)</span>
+<span class="fc" id="L260">                    .isActive(true)</span>
+<span class="fc" id="L261">                    .isVerified(true) // Verified by OAuth provider</span>
+<span class="fc" id="L262">                    .passwordSet(false) // MUST set password before full access</span>
+<span class="fc" id="L263">                    .provider(request.provider())</span>
+<span class="fc" id="L264">                    .providerId(request.providerId())</span>
+<span class="fc" id="L265">                    .build();</span>
+<span class="fc" id="L266">            user = authUserRepository.save(newUser);</span>
+<span class="fc" id="L267">            isNewUser = true;</span>
+<span class="fc" id="L268">            log.info(&quot;OAuth new user created: {} via {}&quot;, user.getEmail(), request.provider());</span>
+<span class="fc" id="L269">        } else {</span>
+            // === EXISTING USER ===
+            // Mark user as verified if they weren't already (OAuth provider has verified
+            // the email)
+<span class="fc bfc" id="L273" title="All 2 branches covered.">            if (!user.isVerified()) {</span>
+<span class="fc" id="L274">                user.setVerified(true);</span>
+<span class="fc" id="L275">                log.info(&quot;OAuth login verified previously unverified user: {}&quot;, user.getEmail());</span>
+            }
+
+            // Link OAuth provider if user existed but was local-only
+<span class="fc bfc" id="L279" title="All 2 branches covered.">            if (user.getProvider() == null) {</span>
+<span class="fc" id="L280">                user.setProvider(request.provider());</span>
+<span class="fc" id="L281">                user.setProviderId(request.providerId());</span>
+<span class="fc" id="L282">                authUserRepository.save(user);</span>
+<span class="fc" id="L283">                cacheService.evict(CacheService.vKey(&quot;user:profile:&quot; + user.getId()));</span>
+<span class="fc" id="L284">                log.info(&quot;OAuth provider linked for existing user: {} → {}&quot;, user.getEmail(), request.provider());</span>
+            }
+        }
+
+<span class="fc" id="L288">        log.info(&quot;OAuth login successful for: {} via {}&quot;, user.getEmail(), user.getProvider());</span>
+
+        // Generate tokens
+<span class="fc" id="L291">        String accessToken = jwtTokenProvider.generateAccessToken(</span>
+<span class="fc" id="L292">                user.getId(), user.getEmail(), user.getRole().name());</span>
+<span class="fc" id="L293">        String refreshTokenStr = jwtTokenProvider.generateRefreshToken(user.getId());</span>
+
+<span class="fc" id="L295">        List&lt;RefreshToken&gt; existingTokens = refreshTokenRepository.findByUserOrderByCreatedAtAsc(user);</span>
+<span class="pc bpc" id="L296" title="1 of 2 branches missed.">        if (existingTokens.size() &gt;= MAX_REFRESH_TOKENS) {</span>
+<span class="nc" id="L297">            refreshTokenRepository.delete(existingTokens.get(0));</span>
+        }
+
+<span class="fc" id="L300">        RefreshToken refreshToken = RefreshToken.builder()</span>
+<span class="fc" id="L301">                .user(user).token(refreshTokenStr)</span>
+<span class="fc" id="L302">                .expiresAt(LocalDateTime.now().plusDays(7)).build();</span>
+<span class="fc" id="L303">        refreshTokenRepository.save(refreshToken);</span>
+
+<span class="fc" id="L305">        UserSummary userSummary = new UserSummary(user.getId(), user.getEmail(),</span>
+<span class="fc" id="L306">                user.getRole().name(), user.getFirstName(), user.getLastName());</span>
+
+        // For new users: passwordSetupRequired=true, existing users: false
+<span class="fc" id="L309">        boolean needsPasswordSetup = isNewUser;</span>
+
+<span class="fc" id="L311">        return new OAuthResponse(accessToken, refreshTokenStr,</span>
+<span class="fc" id="L312">                jwtTokenProvider.getAccessExpiration() / 1000, &quot;Bearer&quot;,</span>
+                userSummary, needsPasswordSetup);
+    }
+
+    /**
+     * Setup password for OAuth users who registered without one.
+     * This is a mandatory step before full access is granted.
+     */
+    @Transactional
+    public void setupPassword(SetupPasswordRequest request) {
+<span class="fc" id="L322">        AuthUser user = authUserRepository.findByEmail(request.email())</span>
+<span class="pc" id="L323">                .orElseThrow(() -&gt; new RuntimeException(&quot;User not found with email: &quot; + request.email()));</span>
+
+<span class="fc bfc" id="L325" title="All 2 branches covered.">        if (user.isPasswordSet()) {</span>
+<span class="fc" id="L326">            throw new RuntimeException(&quot;Password is already set for this account.&quot;);</span>
+        }
+
+<span class="fc" id="L329">        validateStrongPassword(request.password());</span>
+
+<span class="fc" id="L331">        user.setPasswordHash(passwordEncoder.encode(request.password()));</span>
+<span class="fc" id="L332">        user.setPasswordSet(true);</span>
+<span class="fc" id="L333">        authUserRepository.save(user);</span>
+
+        // Invalidate cache
+<span class="fc" id="L336">        cacheService.evict(CacheService.vKey(&quot;user:profile:&quot; + user.getId()));</span>
+
+<span class="fc" id="L338">        log.info(&quot;Password setup completed for OAuth user: {}&quot;, user.getEmail());</span>
+<span class="fc" id="L339">    }</span>
+
+    private void validateStrongPassword(String password) {
+<span class="pc bpc" id="L342" title="2 of 4 branches missed.">        if (password == null || password.isBlank()) {</span>
+<span class="nc" id="L343">            throw new RuntimeException(&quot;Password is mandatory&quot;);</span>
+        }
+
+<span class="pc bpc" id="L346" title="1 of 2 branches missed.">        if (!STRONG_PASSWORD_PATTERN.matcher(password).matches()) {</span>
+<span class="nc" id="L347">            throw new RuntimeException(</span>
+                    &quot;Password must be 8-100 chars and include uppercase, lowercase, number, and special character&quot;
+            );
+        }
+<span class="fc" id="L351">    }</span>
+
+    private void applyPasswordUpdate(AuthUser user, String newPassword) {
+<span class="nc" id="L354">        user.setPasswordHash(passwordEncoder.encode(newPassword));</span>
+<span class="nc" id="L355">        user.setPasswordSet(true);</span>
+<span class="nc" id="L356">        authUserRepository.save(user);</span>
+
+<span class="nc" id="L358">        refreshTokenRepository.deleteByUser(user);</span>
+<span class="nc" id="L359">        cacheService.evict(CacheService.vKey(&quot;user:profile:&quot; + user.getId()));</span>
+<span class="nc" id="L360">    }</span>
+
+    private AuthResponse generateAuthResponse(AuthUser user) {
+<span class="fc" id="L363">        String accessToken = jwtTokenProvider.generateAccessToken(</span>
+<span class="fc" id="L364">                user.getId(), user.getEmail(), user.getRole().name());</span>
+<span class="fc" id="L365">        String refreshTokenStr = jwtTokenProvider.generateRefreshToken(user.getId());</span>
+
+        // Enforce max refresh tokens per user (FIFO eviction)
+<span class="fc" id="L368">        List&lt;RefreshToken&gt; existingTokens = refreshTokenRepository.findByUserOrderByCreatedAtAsc(user);</span>
+<span class="pc bpc" id="L369" title="1 of 2 branches missed.">        if (existingTokens.size() &gt;= MAX_REFRESH_TOKENS) {</span>
+<span class="nc" id="L370">            refreshTokenRepository.delete(existingTokens.get(0));</span>
+        }
+
+<span class="fc" id="L373">        RefreshToken refreshToken = RefreshToken.builder()</span>
+<span class="fc" id="L374">                .user(user)</span>
+<span class="fc" id="L375">                .token(refreshTokenStr)</span>
+<span class="fc" id="L376">                .expiresAt(LocalDateTime.now().plusDays(7))</span>
+<span class="fc" id="L377">                .build();</span>
+<span class="fc" id="L378">        refreshTokenRepository.save(refreshToken);</span>
+
+<span class="fc" id="L380">        UserSummary userSummary = new UserSummary(</span>
+<span class="fc" id="L381">                user.getId(),</span>
+<span class="fc" id="L382">                user.getEmail(),</span>
+<span class="fc" id="L383">                user.getRole().name(),</span>
+<span class="fc" id="L384">                user.getFirstName(),</span>
+<span class="fc" id="L385">                user.getLastName());</span>
+
+<span class="fc" id="L387">        return new AuthResponse(</span>
+                accessToken,
+                refreshTokenStr,
+<span class="fc" id="L390">                jwtTokenProvider.getAccessExpiration() / 1000,</span>
+                &quot;Bearer&quot;,
+                userSummary);
+    }
+
+    public UserSummary getUserById(Long userId) {
+<span class="nc" id="L396">        AuthUser user = authUserRepository.findById(userId)</span>
+<span class="nc" id="L397">                .orElseThrow(() -&gt; new RuntimeException(&quot;User not found with id: &quot; + userId));</span>
+<span class="nc" id="L398">        return new UserSummary(</span>
+<span class="nc" id="L399">                user.getId(),</span>
+<span class="nc" id="L400">                user.getEmail(),</span>
+<span class="nc" id="L401">                user.getRole().name(),</span>
+<span class="nc" id="L402">                user.getFirstName(),</span>
+<span class="nc" id="L403">                user.getLastName());</span>
+    }
+
+    public Map&lt;String, Object&gt; getAllUsers(int page, int size) {
+<span class="nc" id="L407">        return getAllUsersFiltered(page, size, null, null);</span>
+    }
+
+    public Map&lt;String, Object&gt; getAllUsersFiltered(int page, int size, String role, String search) {
+<span class="nc" id="L411">        var pageable = org.springframework.data.domain.PageRequest.of(</span>
+                page,
+                size,
+<span class="nc" id="L414">                org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.ASC, &quot;id&quot;)</span>
+        );
+<span class="nc" id="L416">        Role roleEnum = null;</span>
+<span class="nc bnc" id="L417" title="All 4 branches missed.">        if (role != null &amp;&amp; !role.isBlank()) {</span>
+<span class="nc" id="L418">            try { roleEnum = Role.valueOf(role); } catch (IllegalArgumentException ignored) {}</span>
+        }
+<span class="nc" id="L420">        var usersPage = authUserRepository.findByFilters(roleEnum, search, pageable);</span>
+<span class="nc" id="L421">        var content = usersPage.getContent().stream()</span>
+<span class="nc" id="L422">                .map(u -&gt; new UserSummary(u.getId(), u.getEmail(), u.getRole().name(),</span>
+<span class="nc" id="L423">                        u.getFirstName(), u.getLastName()))</span>
+<span class="nc" id="L424">                .toList();</span>
+<span class="nc" id="L425">        return Map.of(</span>
+                &quot;content&quot;, content,
+<span class="nc" id="L427">                &quot;totalElements&quot;, usersPage.getTotalElements(),</span>
+<span class="nc" id="L428">                &quot;totalPages&quot;, usersPage.getTotalPages(),</span>
+<span class="nc" id="L429">                &quot;number&quot;, usersPage.getNumber()</span>
+        );
+    }
+
+    public long getUserCount(String role) {
+<span class="nc bnc" id="L434" title="All 4 branches missed.">        if (role != null &amp;&amp; !role.isBlank()) {</span>
+<span class="nc" id="L435">            return authUserRepository.countByRole(Role.valueOf(role));</span>
+        }
+<span class="nc" id="L437">        return authUserRepository.count();</span>
+    }
+
+    @Transactional
+    public void deleteUser(Long userId) {
+<span class="nc" id="L442">        AuthUser user = authUserRepository.findById(userId)</span>
+<span class="nc" id="L443">                .orElseThrow(() -&gt; new RuntimeException(&quot;User not found with id: &quot; + userId));</span>
+<span class="nc" id="L444">        refreshTokenRepository.deleteByUser(user);</span>
+<span class="nc" id="L445">        authUserRepository.delete(user);</span>
+<span class="nc" id="L446">        log.info(&quot;User deleted: id={}, email={}&quot;, userId, user.getEmail());</span>
+<span class="nc" id="L447">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

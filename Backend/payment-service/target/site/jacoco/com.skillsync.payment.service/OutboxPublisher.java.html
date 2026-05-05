@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>OutboxPublisher.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">payment-service</a> &gt; <a href="index.source.html" class="el_package">com.skillsync.payment.service</a> &gt; <span class="el_source">OutboxPublisher.java</span></div><h1>OutboxPublisher.java</h1><pre class="source lang-java linenums">package com.skillsync.payment.service;
+
+import com.skillsync.payment.entity.OutboxEvent;
+import com.skillsync.payment.repository.OutboxEventRepository;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
+import jakarta.annotation.PostConstruct;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.rabbit.connection.CorrelationData;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
+/**
+ * Production-grade Outbox Publisher with:
+ * &lt;ul&gt;
+ *   &lt;li&gt;&lt;b&gt;Publisher Confirms:&lt;/b&gt; Waits for broker ACK before marking SENT.
+ *       On NACK/timeout → marks FAILED for retry.&lt;/li&gt;
+ *   &lt;li&gt;&lt;b&gt;Distributed Locking:&lt;/b&gt; Uses {@code FOR UPDATE SKIP LOCKED} so
+ *       multiple instances never process the same event.&lt;/li&gt;
+ *   &lt;li&gt;&lt;b&gt;PROCESSING status:&lt;/b&gt; PENDING → PROCESSING → SENT/FAILED.
+ *       Stale PROCESSING rows (crashed publishers) are recovered automatically.&lt;/li&gt;
+ *   &lt;li&gt;&lt;b&gt;Metrics:&lt;/b&gt; Counters for publish success/failure via Micrometer.&lt;/li&gt;
+ * &lt;/ul&gt;
+ */
+@Component
+<span class="fc" id="L33">@Slf4j</span>
+public class OutboxPublisher {
+
+    private final OutboxEventRepository outboxEventRepository;
+    private final RabbitTemplate rabbitTemplate;
+    private final MeterRegistry meterRegistry;
+
+    @Value(&quot;${outbox.publisher.confirm-timeout-ms:5000}&quot;)
+    private long confirmTimeoutMs;
+
+    @Value(&quot;${outbox.publisher.batch-size:50}&quot;)
+    private int batchSize;
+
+    @Value(&quot;${outbox.publisher.max-retries:5}&quot;)
+    private int maxRetries;
+
+    private Counter publishSuccessCounter;
+    private Counter publishFailureCounter;
+
+    public OutboxPublisher(OutboxEventRepository outboxEventRepository,
+                           RabbitTemplate rabbitTemplate,
+<span class="fc" id="L54">                           MeterRegistry meterRegistry) {</span>
+<span class="fc" id="L55">        this.outboxEventRepository = outboxEventRepository;</span>
+<span class="fc" id="L56">        this.rabbitTemplate = rabbitTemplate;</span>
+<span class="fc" id="L57">        this.meterRegistry = meterRegistry;</span>
+<span class="fc" id="L58">    }</span>
+
+    @PostConstruct
+    void initMetrics() {
+<span class="fc" id="L62">        publishSuccessCounter = Counter.builder(&quot;outbox.publish.success&quot;)</span>
+<span class="fc" id="L63">                .description(&quot;Outbox events successfully published to RabbitMQ&quot;)</span>
+<span class="fc" id="L64">                .register(meterRegistry);</span>
+<span class="fc" id="L65">        publishFailureCounter = Counter.builder(&quot;outbox.publish.failure&quot;)</span>
+<span class="fc" id="L66">                .description(&quot;Outbox events that failed to publish&quot;)</span>
+<span class="fc" id="L67">                .register(meterRegistry);</span>
+<span class="fc" id="L68">    }</span>
+
+    // ─────────────────────────────────────────────
+    //  SCHEDULED: Publish PENDING events
+    // ─────────────────────────────────────────────
+
+    /**
+     * Claims and publishes PENDING outbox events every 2 seconds.
+     * Uses FOR UPDATE SKIP LOCKED — safe for multiple instances.
+     */
+    @Scheduled(fixedDelay = 2000)
+    @Transactional
+    public void publishPendingEvents() {
+<span class="fc" id="L81">        List&lt;OutboxEvent&gt; pendingEvents = outboxEventRepository.findAndLockPendingEvents(batchSize);</span>
+<span class="fc bfc" id="L82" title="All 2 branches covered.">        for (OutboxEvent event : pendingEvents) {</span>
+<span class="fc" id="L83">            claimAndPublish(event);</span>
+<span class="fc" id="L84">        }</span>
+
+        // Also retry FAILED events (up to maxRetries)
+<span class="fc" id="L87">        List&lt;OutboxEvent&gt; failedEvents = outboxEventRepository.findAndLockFailedEventsForRetry(maxRetries, batchSize);</span>
+<span class="pc bpc" id="L88" title="1 of 2 branches missed.">        for (OutboxEvent event : failedEvents) {</span>
+<span class="nc" id="L89">            claimAndPublish(event);</span>
+<span class="nc" id="L90">        }</span>
+
+        // Recover stale PROCESSING events (publisher crashed after claiming)
+<span class="fc" id="L93">        LocalDateTime staleThreshold = LocalDateTime.now().minusSeconds(confirmTimeoutMs / 1000 * 3);</span>
+<span class="fc" id="L94">        List&lt;OutboxEvent&gt; staleEvents = outboxEventRepository.findStaleProcessingEvents(staleThreshold, batchSize);</span>
+<span class="fc bfc" id="L95" title="All 2 branches covered.">        for (OutboxEvent event : staleEvents) {</span>
+<span class="fc" id="L96">            log.warn(&quot;[OUTBOX-RECOVERY] Recovering stale PROCESSING event: eventId={}, lastAttempt={}&quot;,</span>
+<span class="fc" id="L97">                    event.getEventId(), event.getLastAttemptAt());</span>
+<span class="fc" id="L98">            event.setStatus(OutboxEvent.OutboxStatus.FAILED);</span>
+<span class="fc" id="L99">            event.setLastError(&quot;Recovered from stale PROCESSING (publisher crash)&quot;);</span>
+<span class="fc" id="L100">            outboxEventRepository.save(event);</span>
+<span class="fc" id="L101">        }</span>
+<span class="fc" id="L102">    }</span>
+
+    // ─────────────────────────────────────────────
+    //  SCHEDULED: Cleanup old SENT events
+    // ─────────────────────────────────────────────
+
+    @Scheduled(fixedDelay = 3600000)
+    @Transactional
+    public void cleanupSentEvents() {
+<span class="nc" id="L111">        LocalDateTime cutoff = LocalDateTime.now().minusDays(7);</span>
+<span class="nc" id="L112">        int deleted = outboxEventRepository.deleteSentEventsBefore(cutoff);</span>
+<span class="nc bnc" id="L113" title="All 2 branches missed.">        if (deleted &gt; 0) {</span>
+<span class="nc" id="L114">            log.info(&quot;[OUTBOX-CLEANUP] Deleted {} sent events older than 7 days&quot;, deleted);</span>
+        }
+<span class="nc" id="L116">    }</span>
+
+    // ─────────────────────────────────────────────
+    //  CORE: Claim → Publish → Confirm → update status
+    // ─────────────────────────────────────────────
+
+    private void claimAndPublish(OutboxEvent event) {
+        // STEP 1: Transition PENDING/FAILED → PROCESSING
+<span class="fc" id="L124">        event.setStatus(OutboxEvent.OutboxStatus.PROCESSING);</span>
+<span class="fc" id="L125">        event.setLastAttemptAt(LocalDateTime.now());</span>
+<span class="fc" id="L126">        outboxEventRepository.save(event);</span>
+
+        // STEP 2: Publish with correlationData for broker ACK matching
+<span class="fc" id="L129">        CorrelationData correlationData = new CorrelationData(event.getEventId());</span>
+
+        try {
+<span class="fc" id="L132">            rabbitTemplate.convertAndSend(</span>
+<span class="fc" id="L133">                    event.getExchange(),</span>
+<span class="fc" id="L134">                    event.getRoutingKey(),</span>
+<span class="fc" id="L135">                    event.getPayload(),</span>
+                    message -&gt; {
+<span class="nc" id="L137">                        message.getMessageProperties().setHeader(&quot;x-event-id&quot;, event.getEventId());</span>
+<span class="nc" id="L138">                        message.getMessageProperties().setHeader(&quot;x-event-type&quot;, event.getEventType());</span>
+<span class="nc" id="L139">                        message.getMessageProperties().setHeader(&quot;x-event-version&quot;, &quot;1&quot;);</span>
+<span class="nc" id="L140">                        return message;</span>
+                    },
+                    correlationData
+            );
+
+            // STEP 3: Wait for broker ACK (publisher confirm)
+<span class="fc" id="L146">            CorrelationData.Confirm confirm = correlationData.getFuture()</span>
+<span class="fc" id="L147">                    .get(confirmTimeoutMs, TimeUnit.MILLISECONDS);</span>
+
+<span class="pc bpc" id="L149" title="2 of 4 branches missed.">            if (confirm != null &amp;&amp; confirm.isAck()) {</span>
+                // ✅ Broker confirmed receipt
+<span class="fc" id="L151">                event.setStatus(OutboxEvent.OutboxStatus.SENT);</span>
+<span class="fc" id="L152">                event.setProcessedAt(LocalDateTime.now());</span>
+<span class="fc" id="L153">                event.setLastError(null);</span>
+<span class="fc" id="L154">                outboxEventRepository.save(event);</span>
+
+<span class="fc" id="L156">                publishSuccessCounter.increment();</span>
+<span class="fc" id="L157">                log.info(&quot;[OUTBOX] Published &amp; confirmed: eventId={}, type={}, routingKey={}&quot;,</span>
+<span class="fc" id="L158">                        event.getEventId(), event.getEventType(), event.getRoutingKey());</span>
+            } else {
+                // ❌ Broker NACK'd the message
+<span class="nc bnc" id="L161" title="All 2 branches missed.">                String reason = confirm != null ? confirm.getReason() : &quot;NACK without reason&quot;;</span>
+<span class="nc" id="L162">                markFailed(event, &quot;Broker NACK: &quot; + reason);</span>
+            }
+
+<span class="fc" id="L165">        } catch (Exception e) {</span>
+            // ❌ Timeout or connection failure
+<span class="fc" id="L167">            markFailed(event, &quot;Publish exception: &quot; + e.getMessage());</span>
+<span class="fc" id="L168">        }</span>
+<span class="fc" id="L169">    }</span>
+
+    private void markFailed(OutboxEvent event, String reason) {
+<span class="fc" id="L172">        event.setRetryCount(event.getRetryCount() + 1);</span>
+<span class="fc" id="L173">        event.setStatus(OutboxEvent.OutboxStatus.FAILED);</span>
+<span class="fc" id="L174">        event.setLastError(reason);</span>
+<span class="fc" id="L175">        outboxEventRepository.save(event);</span>
+
+<span class="fc" id="L177">        publishFailureCounter.increment();</span>
+<span class="fc" id="L178">        log.error(&quot;[OUTBOX] Publish failed: eventId={}, type={}, attempt={}/{}, reason={}&quot;,</span>
+<span class="fc" id="L179">                event.getEventId(), event.getEventType(), event.getRetryCount(), maxRetries, reason);</span>
+<span class="fc" id="L180">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>
