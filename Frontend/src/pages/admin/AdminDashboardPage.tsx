@@ -129,7 +129,7 @@ const AdminDashboardPage = () => {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {statCards.map((card, idx) => (
+          {statCards.map((card) => (
             <GlassCard key={card.label} className="group hover:border-brand/30 transition-colors" animateIn={true}>
               <div className="flex items-start justify-between mb-4">
                 <div className={`w-12 h-12 ${card.bg} rounded-2xl flex items-center justify-center`}>
