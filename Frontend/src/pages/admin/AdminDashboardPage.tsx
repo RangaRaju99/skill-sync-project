@@ -2,6 +2,18 @@ import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import api from '../../services/axios';
 import PageLayout from '../../components/layout/PageLayout';
+import { GlassCard } from '../../components/ui/GlassCard';
+import { 
+  Users, 
+  GraduationCap, 
+  Calendar, 
+  Clock, 
+  UserCog, 
+  UserCheck, 
+  Brain, 
+  UsersRound,
+  ArrowRight
+} from 'lucide-react';
 
 interface AdminStats {
   totalUsers: number;
@@ -34,8 +46,9 @@ const AdminDashboardPage = () => {
   if (statsLoading) {
     return (
       <PageLayout>
-        <div className="flex items-center justify-center h-screen">
-          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary"></div>
+        <div className="flex flex-col items-center justify-center h-[70vh] text-text-muted">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand mb-4"></div>
+          <p className="font-medium">Loading dashboard...</p>
         </div>
       </PageLayout>
     );
@@ -45,34 +58,26 @@ const AdminDashboardPage = () => {
     {
       label: 'Total Users',
       value: stats?.totalUsers ?? 0,
-      icon: 'group',
-      gradient: 'from-blue-500 to-cyan-400',
-      bg: 'bg-blue-50',
-      text: 'text-blue-700',
+      icon: <Users className="w-6 h-6 text-brand" />,
+      bg: 'bg-brand/10',
     },
     {
       label: 'Approved Mentors',
       value: stats?.totalMentors ?? 0,
-      icon: 'school',
-      gradient: 'from-violet-500 to-purple-400',
-      bg: 'bg-violet-50',
-      text: 'text-violet-700',
+      icon: <GraduationCap className="w-6 h-6 text-accent-violet" />,
+      bg: 'bg-accent-violet/10',
     },
     {
       label: 'Total Sessions',
       value: stats?.totalSessions ?? 0,
-      icon: 'event',
-      gradient: 'from-emerald-500 to-green-400',
-      bg: 'bg-emerald-50',
-      text: 'text-emerald-700',
+      icon: <Calendar className="w-6 h-6 text-success" />,
+      bg: 'bg-success/10',
     },
     {
       label: 'Pending Approvals',
       value: stats?.pendingMentorApprovals ?? 0,
-      icon: 'pending_actions',
-      gradient: 'from-amber-500 to-orange-400',
-      bg: 'bg-amber-50',
-      text: 'text-amber-700',
+      icon: <Clock className="w-6 h-6 text-warning" />,
+      bg: 'bg-warning/10',
     },
   ];
 
@@ -80,85 +85,83 @@ const AdminDashboardPage = () => {
     {
       title: 'Manage Users',
       description: 'View, search, filter, and manage all platform users',
-      icon: 'manage_accounts',
+      icon: <UserCog className="w-6 h-6 text-brand" />,
       path: '/admin/users',
-      color: 'text-blue-600',
-      bg: 'bg-blue-100',
+      bg: 'bg-brand/10',
     },
     {
       title: 'Mentor Approvals',
       description: 'Review and approve/reject pending mentor applications',
-      icon: 'how_to_reg',
+      icon: <UserCheck className="w-6 h-6 text-accent-violet" />,
       path: '/admin/mentor-approvals',
-      color: 'text-purple-600',
-      bg: 'bg-purple-100',
+      bg: 'bg-accent-violet/10',
     },
     {
       title: 'Manage Skills',
       description: 'Add and manage platform skills for mentors',
-      icon: 'psychology',
+      icon: <Brain className="w-6 h-6 text-success" />,
       path: '/admin/skills',
-      color: 'text-emerald-600',
-      bg: 'bg-emerald-100',
+      bg: 'bg-success/10',
     },
     {
       title: 'Manage Groups',
       description: 'Create groups, edit group settings, and remove members',
-      icon: 'groups',
+      icon: <UsersRound className="w-6 h-6 text-cyan-500" />,
       path: '/admin/groups',
-      color: 'text-cyan-700',
-      bg: 'bg-cyan-100',
+      bg: 'bg-cyan-500/10',
     },
   ];
 
   return (
     <PageLayout>
-      <div className="space-y-8">
+      <div className="space-y-8 max-w-7xl mx-auto">
         {/* Header */}
-        <div className="bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 rounded-2xl p-8 text-white shadow-lg relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-20 -mt-20"></div>
-          <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full blur-2xl -ml-10 -mb-10"></div>
-          <h1 className="text-3xl font-extrabold mb-2 relative z-10">Admin Dashboard</h1>
-          <p className="text-purple-100 text-lg relative z-10">System overview and management tools</p>
+        <div className="relative overflow-hidden rounded-3xl bg-surface border border-border shadow-sm p-8 lg:p-12">
+          {/* Decorative background blobs */}
+          <div className="absolute top-0 right-0 w-96 h-96 bg-brand/10 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none"></div>
+          <div className="absolute bottom-0 left-0 w-72 h-72 bg-accent-violet/10 rounded-full blur-3xl -ml-10 -mb-10 pointer-events-none"></div>
+          
+          <div className="relative z-10">
+            <h1 className="text-4xl font-extrabold text-text-main mb-3 tracking-tight">Admin Dashboard</h1>
+            <p className="text-text-muted text-lg max-w-2xl">System overview, platform statistics, and quick access to management tools.</p>
+          </div>
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
-          {statCards.map((card) => (
-            <div
-              key={card.label}
-              className="bg-surface-container-lowest rounded-2xl p-6 shadow-sm border border-outline-variant/10 hover:shadow-md transition-all hover:-translate-y-0.5 relative overflow-hidden group"
-            >
-              <div className={`absolute top-0 right-0 w-20 h-20 bg-gradient-to-br ${card.gradient} opacity-10 rounded-full blur-xl -mr-6 -mt-6 group-hover:opacity-20 transition-opacity`}></div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {statCards.map((card, idx) => (
+            <GlassCard key={card.label} className="group hover:border-brand/30 transition-colors" animateIn={true}>
               <div className="flex items-start justify-between mb-4">
-                <div className={`w-12 h-12 ${card.bg} rounded-xl flex items-center justify-center`}>
-                  <span className={`material-symbols-outlined text-[24px] ${card.text}`}>{card.icon}</span>
+                <div className={`w-12 h-12 ${card.bg} rounded-2xl flex items-center justify-center`}>
+                  {card.icon}
                 </div>
               </div>
-              <p className="text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-1">{card.label}</p>
-              <p className="text-3xl font-black text-on-surface">{card.value}</p>
-            </div>
+              <p className="text-xs font-bold text-text-muted uppercase tracking-wider mb-1">{card.label}</p>
+              <p className="text-4xl font-black text-text-main">{card.value}</p>
+            </GlassCard>
           ))}
         </div>
 
         {/* Quick Actions */}
         <div>
-          <h2 className="text-xl font-extrabold text-on-surface mb-4 tracking-tight">Quick Actions</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+          <h2 className="text-2xl font-extrabold text-text-main mb-6 tracking-tight">Quick Actions</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {quickLinks.map((link) => (
               <button
                 key={link.path}
                 onClick={() => navigate(link.path)}
-                className="bg-surface-container-lowest rounded-2xl p-6 shadow-sm border border-outline-variant/10 hover:shadow-md hover:-translate-y-0.5 hover:border-primary/20 transition-all text-left group"
+                className="text-left w-full focus:outline-none"
               >
-                <div className={`w-12 h-12 ${link.bg} rounded-xl flex items-center justify-center mb-4`}>
-                  <span className={`material-symbols-outlined text-[24px] ${link.color}`}>{link.icon}</span>
-                </div>
-                <h3 className="text-lg font-extrabold text-on-surface mb-1 group-hover:text-primary transition-colors">{link.title}</h3>
-                <p className="text-sm text-on-surface-variant">{link.description}</p>
-                <div className="mt-4 flex items-center gap-1 text-sm font-bold text-primary opacity-0 group-hover:opacity-100 transition-opacity">
-                  Open <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
-                </div>
+                <GlassCard className="h-full group hover:border-brand/40 hover:shadow-md hover:bg-surface-hover/50 transition-all duration-300">
+                  <div className={`w-14 h-14 ${link.bg} rounded-2xl flex items-center justify-center mb-6`}>
+                    {link.icon}
+                  </div>
+                  <h3 className="text-xl font-bold text-text-main mb-2 group-hover:text-brand transition-colors">{link.title}</h3>
+                  <p className="text-sm text-text-muted mb-6 leading-relaxed">{link.description}</p>
+                  <div className="flex items-center gap-2 text-sm font-bold text-brand opacity-0 group-hover:opacity-100 transition-opacity mt-auto">
+                    Open Tool <ArrowRight className="w-4 h-4" />
+                  </div>
+                </GlassCard>
               </button>
             ))}
           </div>
