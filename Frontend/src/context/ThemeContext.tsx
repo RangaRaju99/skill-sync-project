@@ -13,10 +13,6 @@ export type CustomThemeSettings = {
   borderRadius: string; // in rem
   fontStyle: FontStyle;
   sidebarStyle: 'compact' | 'expanded' | 'floating' | 'glass';
-  glassBlur: number;
-  glassTransparency: number;
-  noiseOpacity: number;
-  glowIntensity: number;
 };
 
 type ThemeContextValue = {
@@ -39,10 +35,6 @@ const DEFAULT_SETTINGS: CustomThemeSettings = {
   borderRadius: '0.6',
   fontStyle: 'Outfit',
   sidebarStyle: 'expanded',
-  glassBlur: 16,
-  glassTransparency: 0.1,
-  noiseOpacity: 0.05,
-  glowIntensity: 0.5,
 };
 
 const getInitialTheme = (): ThemeMode => {
@@ -112,23 +104,17 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
       }
     }
 
-    // Advanced Effects
-    root.style.setProperty('--glass-blur', `${settings.glassBlur}px`);
-    root.style.setProperty('--glass-transparency', `${settings.glassTransparency}`);
-    root.style.setProperty('--noise-opacity', `${settings.noiseOpacity}`);
-    root.style.setProperty('--glow-intensity', `${settings.glowIntensity}`);
-
     // Card Styles
     const rootStyle = root.style;
     if (settings.cardStyle === 'glass') {
-      rootStyle.setProperty('--card-bg', `rgba(255, 255, 255, ${settings.glassTransparency})`);
-      rootStyle.setProperty('--card-blur', `${settings.glassBlur}px`);
+      rootStyle.setProperty('--card-bg', 'rgba(255, 255, 255, 0.05)');
+      rootStyle.setProperty('--card-blur', '16px');
       rootStyle.setProperty('--card-border-color', 'rgba(255, 255, 255, 0.1)');
       rootStyle.setProperty('--card-shadow', '0 8px 32px 0 rgba(0, 0, 0, 0.37)');
     } else if (settings.cardStyle === 'neon') {
       rootStyle.setProperty('--card-bg', 'rgba(0, 0, 0, 0.2)');
       rootStyle.setProperty('--card-border-color', settings.primaryColor);
-      rootStyle.setProperty('--card-shadow', `0 0 ${10 * settings.glowIntensity}px ${settings.primaryColor}33`);
+      rootStyle.setProperty('--card-shadow', `0 0 10px ${settings.primaryColor}33`);
       rootStyle.setProperty('--card-blur', '4px');
     } else if (settings.cardStyle === 'elevated') {
       rootStyle.setProperty('--card-bg', theme === 'dark' ? '#1e1e2e' : '#ffffff');

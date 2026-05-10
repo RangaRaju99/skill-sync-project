@@ -1,6 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
 import api from '../../services/axios';
 import PageLayout from '../../components/layout/PageLayout';
 
@@ -35,142 +34,136 @@ const AdminDashboardPage = () => {
   if (statsLoading) {
     return (
       <PageLayout>
-        <div className="flex items-center justify-center h-[60vh]">
-          <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+        <div className="flex items-center justify-center h-screen">
+          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary"></div>
         </div>
       </PageLayout>
     );
   }
 
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: { opacity: 1, transition: { staggerChildren: 0.1 } }
-  } as const;
-
-  const itemVariants = {
-    hidden: { y: 20, opacity: 0 },
-    visible: { y: 0, opacity: 1, transition: { type: 'spring', damping: 25, stiffness: 300 } }
-  } as const;
-
   const statCards = [
     {
-      label: 'Network Users',
+      label: 'Total Users',
       value: stats?.totalUsers ?? 0,
       icon: 'group',
-      color: 'text-blue-400',
+      gradient: 'from-blue-500 to-cyan-400',
+      bg: 'bg-blue-50',
+      text: 'text-blue-700',
     },
     {
-      label: 'Active Mentors',
+      label: 'Approved Mentors',
       value: stats?.totalMentors ?? 0,
       icon: 'school',
-      color: 'text-violet-400',
+      gradient: 'from-violet-500 to-purple-400',
+      bg: 'bg-violet-50',
+      text: 'text-violet-700',
     },
     {
-      label: 'Total Missions',
+      label: 'Total Sessions',
       value: stats?.totalSessions ?? 0,
       icon: 'event',
-      color: 'text-emerald-400',
+      gradient: 'from-emerald-500 to-green-400',
+      bg: 'bg-emerald-50',
+      text: 'text-emerald-700',
     },
     {
-      label: 'Pending Intel',
+      label: 'Pending Approvals',
       value: stats?.pendingMentorApprovals ?? 0,
       icon: 'pending_actions',
-      color: 'text-amber-400',
+      gradient: 'from-amber-500 to-orange-400',
+      bg: 'bg-amber-50',
+      text: 'text-amber-700',
     },
   ];
 
   const quickLinks = [
     {
-      title: 'Directory',
-      description: 'Global user registry and access control',
+      title: 'Manage Users',
+      description: 'View, search, filter, and manage all platform users',
       icon: 'manage_accounts',
       path: '/admin/users',
-      color: 'text-blue-400',
+      color: 'text-blue-600',
+      bg: 'bg-blue-100',
     },
     {
-      title: 'Validations',
-      description: 'Review and authorize pending mentor applications',
+      title: 'Mentor Approvals',
+      description: 'Review and approve/reject pending mentor applications',
       icon: 'how_to_reg',
       path: '/admin/mentor-approvals',
-      color: 'text-violet-400',
+      color: 'text-purple-600',
+      bg: 'bg-purple-100',
     },
     {
-      title: 'Taxonomy',
-      description: 'System skills and competency mapping',
+      title: 'Manage Skills',
+      description: 'Add and manage platform skills for mentors',
       icon: 'psychology',
       path: '/admin/skills',
-      color: 'text-emerald-400',
+      color: 'text-emerald-600',
+      bg: 'bg-emerald-100',
     },
     {
-      title: 'Circles',
-      description: 'Manage community groups and moderation',
+      title: 'Manage Groups',
+      description: 'Create groups, edit group settings, and remove members',
       icon: 'groups',
       path: '/admin/groups',
-      color: 'text-cyan-400',
+      color: 'text-cyan-700',
+      bg: 'bg-cyan-100',
     },
   ];
 
   return (
     <PageLayout>
-      <motion.div initial="hidden" animate="visible" variants={containerVariants} className="space-y-16">
+      <div className="space-y-8">
         {/* Header */}
-        <motion.section variants={itemVariants} className="relative py-4">
-          <div className="absolute -left-12 -top-12 w-64 h-64 bg-primary/10 blur-[100px] -z-10" />
-          <h1 className="text-6xl font-display font-black text-white tracking-tighter leading-[0.9]">
-            Admin <span className="bg-gradient-to-r from-primary to-violet-400 bg-clip-text text-transparent">Command</span>.
-          </h1>
-          <p className="text-lg text-white/40 font-bold uppercase tracking-[0.3em] mt-6 flex items-center gap-4">
-            <span className="w-12 h-[2px] bg-primary/30" />
-            System Control Center
-          </p>
-        </motion.section>
+        <div className="bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 rounded-2xl p-8 text-white shadow-lg relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-20 -mt-20"></div>
+          <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full blur-2xl -ml-10 -mb-10"></div>
+          <h1 className="text-3xl font-extrabold mb-2 relative z-10">Admin Dashboard</h1>
+          <p className="text-purple-100 text-lg relative z-10">System overview and management tools</p>
+        </div>
 
-        {/* Stats Row */}
-        <motion.section variants={itemVariants} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {statCards.map((card, i) => (
-            <div key={i} className="glass-card rounded-[2.5rem] p-10 flex flex-col items-center justify-center text-center relative overflow-hidden group">
-              <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-              <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center mb-6 border border-white/5 group-hover:border-white/10 transition-all">
-                <span className={`material-symbols-outlined text-[24px] ${card.color}`}>{card.icon}</span>
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+          {statCards.map((card) => (
+            <div
+              key={card.label}
+              className="bg-surface-container-lowest rounded-2xl p-6 shadow-sm border border-outline-variant/10 hover:shadow-md transition-all hover:-translate-y-0.5 relative overflow-hidden group"
+            >
+              <div className={`absolute top-0 right-0 w-20 h-20 bg-gradient-to-br ${card.gradient} opacity-10 rounded-full blur-xl -mr-6 -mt-6 group-hover:opacity-20 transition-opacity`}></div>
+              <div className="flex items-start justify-between mb-4">
+                <div className={`w-12 h-12 ${card.bg} rounded-xl flex items-center justify-center`}>
+                  <span className={`material-symbols-outlined text-[24px] ${card.text}`}>{card.icon}</span>
+                </div>
               </div>
-              <p className="text-4xl font-display font-black text-white mb-2 tracking-tighter">{card.value}</p>
-              <p className="text-[9px] font-black text-white/30 uppercase tracking-[0.3em]">{card.label}</p>
+              <p className="text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-1">{card.label}</p>
+              <p className="text-3xl font-black text-on-surface">{card.value}</p>
             </div>
           ))}
-        </motion.section>
+        </div>
 
         {/* Quick Actions */}
-        <motion.section variants={itemVariants}>
-          <div className="flex items-center gap-3 mb-10">
-            <h2 className="text-sm font-black text-white uppercase tracking-[0.3em] flex items-center gap-3">
-              <span className="w-2 h-2 rounded-full bg-primary" />
-              Operation Modules
-            </h2>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div>
+          <h2 className="text-xl font-extrabold text-on-surface mb-4 tracking-tight">Quick Actions</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
             {quickLinks.map((link) => (
-              <motion.button
-                whileHover={{ y: -8, backgroundColor: 'rgba(255,255,255,0.06)' }}
-                whileTap={{ scale: 0.98 }}
+              <button
                 key={link.path}
                 onClick={() => navigate(link.path)}
-                className="glass-card rounded-[2.5rem] p-8 text-left group transition-all relative overflow-hidden"
+                className="bg-surface-container-lowest rounded-2xl p-6 shadow-sm border border-outline-variant/10 hover:shadow-md hover:-translate-y-0.5 hover:border-primary/20 transition-all text-left group"
               >
-                <div className="absolute -right-8 -top-8 w-24 h-24 bg-primary/5 blur-[40px] group-hover:bg-primary/10 transition-colors" />
-                <div className="w-14 h-14 rounded-2xl bg-white/5 flex items-center justify-center mb-8 border border-white/5 group-hover:border-white/10 transition-all">
-                  <span className={`material-symbols-outlined text-[28px] ${link.color}`}>{link.icon}</span>
+                <div className={`w-12 h-12 ${link.bg} rounded-xl flex items-center justify-center mb-4`}>
+                  <span className={`material-symbols-outlined text-[24px] ${link.color}`}>{link.icon}</span>
                 </div>
-                <h3 className="text-xl font-display font-black text-white mb-3 tracking-tighter uppercase group-hover:text-primary transition-colors">{link.title}</h3>
-                <p className="text-[11px] font-bold text-white/40 uppercase tracking-widest leading-relaxed">{link.description}</p>
-                <div className="mt-8 flex items-center gap-2 text-[10px] font-black text-primary opacity-0 group-hover:opacity-100 transition-all transform translate-y-2 group-hover:translate-y-0 uppercase tracking-widest">
-                  Initialize <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
+                <h3 className="text-lg font-extrabold text-on-surface mb-1 group-hover:text-primary transition-colors">{link.title}</h3>
+                <p className="text-sm text-on-surface-variant">{link.description}</p>
+                <div className="mt-4 flex items-center gap-1 text-sm font-bold text-primary opacity-0 group-hover:opacity-100 transition-opacity">
+                  Open <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
                 </div>
-              </motion.button>
+              </button>
             ))}
           </div>
-        </motion.section>
-      </motion.div>
+        </div>
+      </div>
     </PageLayout>
   );
 };

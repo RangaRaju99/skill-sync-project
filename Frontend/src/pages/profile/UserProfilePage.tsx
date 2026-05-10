@@ -1,9 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import { useSelector, useDispatch } from 'react-redux';
-import { motion, AnimatePresence } from 'framer-motion';
-import { User, Mail, Shield, MapPin, Phone, Edit3, Save, X, Lock, Sparkles } from 'lucide-react';
+import { useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import userService from '../../services/userService';
 import PageLayout from '../../components/layout/PageLayout';
 import { useToast } from '../../components/ui/Toast';
@@ -27,6 +26,7 @@ const UserProfilePage = () => {
   });
   const [canSaveEdits, setCanSaveEdits] = useState(false);
 
+  // Fetch user profile
   const { data: profile, isLoading } = useQuery({
     queryKey: ['user', 'profile'],
     queryFn: () => userService.getMyProfile(),
@@ -34,6 +34,7 @@ const UserProfilePage = () => {
 
   useEffect(() => {
     if (!profile) return;
+
     setFormData({
       firstName: profile.firstName || '',
       lastName: profile.lastName || '',
@@ -48,10 +49,13 @@ const UserProfilePage = () => {
       setCanSaveEdits(false);
       return;
     }
+
+    // Prevent accidental immediate submit when switching from Edit button to Save button.
     const timer = window.setTimeout(() => setCanSaveEdits(true), 600);
     return () => window.clearTimeout(timer);
   }, [isEditing]);
 
+  // Update profile mutation
   const updateProfileMutation = useMutation({
     mutationFn: () => {
       const cleanedPayload = {
@@ -61,10 +65,11 @@ const UserProfilePage = () => {
         phone: formData.phone.trim() || undefined,
         location: formData.location.trim() || undefined,
       };
+
       return userService.updateProfile(cleanedPayload);
     },
     onSuccess: () => {
-      showToast({ message: 'Identity Matrix Updated.', type: 'success' });
+      showToast({ message: 'Profile updated successfully', type: 'success' });
       setIsEditing(false);
       dispatch(updateUserName({
         firstName: formData.firstName.trim(),
@@ -73,208 +78,183 @@ const UserProfilePage = () => {
       queryClient.invalidateQueries({ queryKey: ['user', 'profile'] });
     },
     onError: (error: any) => {
-      const msg = error?.response?.data?.message || 'Sync Failed.';
+      const msg = error?.response?.data?.message || 'Failed to update profile';
       showToast({ message: msg, type: 'error' });
     },
   });
 
+
   const handleSubmit = () => {
-    if (!isEditing || !canSaveEdits) return;
+    if (!isEditing || !canSaveEdits) {
+      return;
+    }
+
     if (formData.firstName.trim() && formData.firstName.trim().length < 2) {
-      showToast({ message: 'Minimum 2 characters required for First Name.', type: 'error' });
+      showToast({ message: 'First name must be at least 2 characters.', type: 'error' });
       return;
     }
+
     if (formData.lastName.trim() && formData.lastName.trim().length < 2) {
-      showToast({ message: 'Minimum 2 characters required for Last Name.', type: 'error' });
+      showToast({ message: 'Last name must be at least 2 characters.', type: 'error' });
       return;
     }
+
     updateProfileMutation.mutate();
   };
-
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: { opacity: 1, transition: { staggerChildren: 0.1 } }
-  } as const;
-
-  const itemVariants = {
-    hidden: { y: 20, opacity: 0 },
-    visible: { y: 0, opacity: 1, transition: { type: 'spring', damping: 25, stiffness: 300 } }
-  } as const;
 
   if (isLoading) {
     return (
       <PageLayout>
-        <div className="flex items-center justify-center h-[60vh]">
-          <div className="text-[10px] font-black text-white/20 uppercase tracking-[0.5em] animate-pulse italic">Scanning Identity...</div>
+        <div className="flex items-center justify-center h-screen">
+          <div className="text-lg text-gray-500">Loading profile...</div>
         </div>
       </PageLayout>
     );
   }
 
-  const initials = (profile?.firstName?.[0] || '') + (profile?.lastName?.[0] || '');
-
   return (
     <PageLayout>
-      <motion.div initial="hidden" animate="visible" variants={containerVariants} className="max-w-5xl mx-auto space-y-12">
-        {/* Header Section */}
-        <motion.section variants={itemVariants} className="relative group">
-          <div className="absolute -left-20 -top-20 w-96 h-96 bg-primary/10 blur-[120px] -z-10 group-hover:bg-primary/20 transition-colors duration-1000" />
-          <div className="glass-card rounded-[3rem] p-12 flex flex-col md:flex-row items-center gap-12 border-white/5 relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-8">
-              <Sparkles className="text-primary/20" size={32} />
-            </div>
-            
-            <div className="relative">
-              <div className="w-44 h-44 rounded-[2.5rem] bg-gradient-to-br from-primary to-violet-600 p-[2px] shadow-2xl shadow-primary/20 rotate-3 group-hover:rotate-6 transition-transform duration-500">
-                <div className="w-full h-full rounded-[2.4rem] bg-[#0a0514] flex items-center justify-center text-5xl font-black text-white italic tracking-tighter">
-                  {initials || 'U'}
+      <div className="w-full space-y-6">
+        {/* Header */}
+        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg p-8 text-white">
+          <h1 className="text-3xl font-bold">My Profile</h1>
+          <p className="text-blue-100 mt-2">Manage your personal information, bio, and profile image</p>
+        </div>
+
+        {/* Profile Card */}
+        <div className="bg-white rounded-lg p-8 shadow-sm border border-gray-200">
+          <div className="flex flex-col md:flex-row gap-8">
+            {/* Profile Picture */}
+            <div className="flex flex-col items-center">
+              <div className="relative">
+                <div className="w-32 h-32 rounded-full bg-blue-500 text-white flex items-center justify-center text-4xl font-bold border-4 border-gray-200">
+                  {(profile?.firstName?.[0] || '') + (profile?.lastName?.[0] || '') || 'U'}
                 </div>
               </div>
-              <div className="absolute -bottom-4 -right-4 w-12 h-12 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-xl flex items-center justify-center text-primary shadow-xl">
-                <Shield size={20} />
+              <div className="text-center mt-4">
+                <p className="font-semibold text-gray-900">
+                  {[profile?.firstName, profile?.lastName].filter(Boolean).join(' ') || 'Your Profile'}
+                </p>
+                <p className="text-sm text-gray-500">{profile?.email}</p>
+                <span className="inline-block mt-2 bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-xs font-semibold">
+                  {(role || 'ROLE_LEARNER').replace('ROLE_', '')}
+                </span>
               </div>
             </div>
 
-            <div className="text-center md:text-left space-y-4">
-              <div>
-                <h1 className="text-6xl font-display font-black text-white tracking-tighter uppercase italic leading-[0.8]">
-                  {profile?.firstName} <span className="text-primary">{profile?.lastName}</span>
-                </h1>
-                <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 mt-6">
-                  <span className="px-4 py-1.5 rounded-xl bg-primary/10 border border-primary/20 text-primary text-[10px] font-black uppercase tracking-widest">
-                    {(role || 'ROLE_LEARNER').replace('ROLE_', '')}
-                  </span>
-                  <span className="flex items-center gap-2 text-[10px] font-bold text-white/30 uppercase tracking-widest">
-                    <Mail size={12} className="text-primary" /> {profile?.email}
-                  </span>
-                </div>
-              </div>
-              
-              {profile?.profileCompletePct !== undefined && (
-                <div className="w-full max-w-xs pt-4">
-                  <div className="flex justify-between text-[9px] font-black text-white/40 uppercase tracking-widest mb-2">
-                    <span>Identity Sync</span>
-                    <span>{profile.profileCompletePct}%</span>
-                  </div>
-                  <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden p-[1px] border border-white/5">
-                    <motion.div 
-                      initial={{ width: 0 }}
-                      animate={{ width: `${profile.profileCompletePct}%` }}
-                      className="h-full bg-gradient-to-r from-primary to-cyan-400 rounded-full" 
-                    />
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </motion.section>
+            {/* Profile Form */}
+            <div className="flex-1">
+              <form className="space-y-4">
 
-        {/* Form Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-          <motion.div variants={itemVariants} className="lg:col-span-2 space-y-8">
-            <div className="glass-card rounded-[2.5rem] p-10 space-y-10 border-white/5">
-              <div className="flex items-center justify-between mb-2">
-                <h2 className="text-[10px] font-black text-white uppercase tracking-[0.4em] flex items-center gap-3">
-                  <User size={14} className="text-primary" /> Core Identity
-                </h2>
-                {!isEditing && (
-                  <button 
-                    onClick={() => setIsEditing(true)}
-                    className="flex items-center gap-2 px-6 py-2.5 rounded-2xl bg-white/5 border border-white/10 text-[10px] font-black text-white/60 uppercase tracking-widest hover:text-white hover:bg-white/10 transition-all"
-                  >
-                    <Edit3 size={14} /> Modify
-                  </button>
-                )}
-              </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">First Name</label>
+                  <input
+                    type="text"
+                    value={formData.firstName}
+                    onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                    disabled={!isEditing}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+                  />
+                </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                {[
-                  { label: 'First Name', key: 'firstName', icon: User },
-                  { label: 'Last Name', key: 'lastName', icon: User },
-                  { label: 'Location', key: 'location', icon: MapPin },
-                  { label: 'Phone', key: 'phone', icon: Phone },
-                ].map((field) => (
-                  <div key={field.key} className="space-y-3">
-                    <label className="text-[9px] font-black text-white/30 uppercase tracking-[0.3em] ml-2">{field.label}</label>
-                    <div className="relative group">
-                      <field.icon className="absolute left-4 top-1/2 -translate-y-1/2 text-white/10 group-focus-within:text-primary transition-colors" size={16} />
-                      <input
-                        type="text"
-                        value={(formData as any)[field.key]}
-                        onChange={(e) => setFormData({ ...formData, [field.key]: e.target.value })}
-                        disabled={!isEditing}
-                        className="w-full h-14 bg-white/[0.02] border border-white/5 rounded-2xl pl-12 pr-4 text-sm font-bold text-white outline-none focus:border-primary/30 focus:bg-white/[0.04] transition-all disabled:opacity-40"
-                      />
-                    </div>
-                  </div>
-                ))}
-                <div className="md:col-span-2 space-y-3">
-                  <label className="text-[9px] font-black text-white/30 uppercase tracking-[0.3em] ml-2">Bio / Professional Directive</label>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
+                  <input
+                    type="text"
+                    value={formData.lastName}
+                    onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                    disabled={!isEditing}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Bio</label>
                   <textarea
                     value={formData.bio}
                     onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
                     disabled={!isEditing}
-                    rows={4}
-                    className="w-full bg-white/[0.02] border border-white/5 rounded-[2rem] p-6 text-sm font-bold text-white outline-none focus:border-primary/30 focus:bg-white/[0.04] transition-all disabled:opacity-40 resize-none"
-                    placeholder="Initialize professional biography..."
+                    rows={3}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+                    placeholder="Tell us about yourself..."
                   />
                 </div>
-              </div>
 
-              <AnimatePresence>
-                {isEditing && (
-                  <motion.div 
-                    initial={{ opacity: 0, y: 10 }} 
-                    animate={{ opacity: 1, y: 0 }} 
-                    exit={{ opacity: 0, y: 10 }}
-                    className="flex gap-4 pt-4"
-                  >
-                    <button
-                      onClick={handleSubmit}
-                      disabled={updateProfileMutation.isPending || !canSaveEdits}
-                      className="flex-1 h-14 bg-primary text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl shadow-primary/20 hover:brightness-110 transition-all flex items-center justify-center gap-3 disabled:opacity-50"
-                    >
-                      <Save size={16} /> Commit Changes
-                    </button>
-                    <button
-                      onClick={() => setIsEditing(false)}
-                      className="px-8 h-14 bg-white/5 border border-white/10 text-white/40 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:text-white hover:bg-white/10 transition-all flex items-center justify-center gap-3"
-                    >
-                      <X size={16} /> Abort
-                    </button>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-          </motion.div>
-
-          <motion.div variants={itemVariants} className="space-y-8">
-            <div className="glass-card rounded-[2.5rem] p-8 border-white/5 space-y-8">
-              <h2 className="text-[10px] font-black text-white uppercase tracking-[0.4em] flex items-center gap-3">
-                <Lock size={14} className="text-primary" /> Security Hub
-              </h2>
-              
-              <button
-                onClick={() => navigate('/settings/password')}
-                className="w-full p-6 rounded-3xl bg-white/[0.02] border border-white/5 hover:border-primary/30 hover:bg-white/[0.05] transition-all text-left group"
-              >
-                <div className="flex items-center gap-4 mb-2">
-                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
-                    <Lock size={18} />
-                  </div>
-                  <p className="font-black text-white text-[11px] uppercase tracking-widest">Update Password</p>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                  <input
+                    type="tel"
+                    value={formData.phone}
+                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                    disabled={!isEditing}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+                  />
                 </div>
-                <p className="text-[10px] text-white/20 font-bold uppercase tracking-tighter leading-tight">Rotate security credentials to maintain protocol integrity.</p>
-              </button>
 
-              <div className="p-6 rounded-3xl bg-primary/5 border border-primary/10">
-                <p className="text-[9px] font-black text-primary uppercase tracking-[0.2em] mb-2">System Notice</p>
-                <p className="text-[10px] text-white/40 font-bold leading-relaxed">Your account is currently synchronized with the global network. Any changes to your identity will propagate immediately.</p>
-              </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
+                  <input
+                    type="text"
+                    value={formData.location}
+                    onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                    disabled={!isEditing}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+                  />
+                </div>
+
+                <div className="flex gap-2 pt-4">
+                  {!isEditing ? (
+                    <button
+                      type="button"
+                      onClick={() => setIsEditing(true)}
+                      className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition"
+                    >
+                      Edit Profile
+                    </button>
+                  ) : (
+                    <>
+                      <button
+                        type="button"
+                        onClick={handleSubmit}
+                        disabled={updateProfileMutation.isPending || !canSaveEdits}
+                        className="flex-1 bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition disabled:opacity-50"
+                      >
+                        Save Changes
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setIsEditing(false)}
+                        className="flex-1 bg-gray-400 text-white py-2 rounded-lg hover:bg-gray-500 transition"
+                      >
+                        Cancel
+                      </button>
+                    </>
+                  )}
+                </div>
+              </form>
             </div>
-          </motion.div>
+          </div>
         </div>
-      </motion.div>
+
+        {/* Account Settings */}
+        <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+          <h2 className="text-lg font-bold text-gray-900 mb-4">Account Settings</h2>
+          {profile?.profileCompletePct !== undefined && (
+            <div className="mb-4 rounded-lg border border-blue-100 bg-blue-50 px-4 py-3 text-sm text-blue-900">
+              Profile completion: {profile.profileCompletePct}%
+            </div>
+          )}
+          <div className="space-y-3">
+            <button
+              onClick={() => navigate('/settings/password')}
+              className="w-full text-left p-4 rounded bg-gray-50 hover:bg-gray-100 transition border border-gray-200"
+            >
+              <p className="font-medium text-gray-900">Change Password</p>
+              <p className="text-sm text-gray-500">Update your password regularly for security</p>
+            </button>
+          </div>
+        </div>
+      </div>
     </PageLayout>
   );
 };
