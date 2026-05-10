@@ -89,21 +89,17 @@ html,
 }
 
 * {
-  transition: background-color var(--animation-speed, 180ms) ease, border-color var(--animation-speed, 180ms) ease, color var(--animation-speed, 180ms) ease;
+  transition: background-color 180ms ease, border-color 180ms ease, color 180ms ease;
 }
 
 /* ─── Utility Classes ─── */
 .glass-nav {
-  backdrop-filter: blur(var(--blur-intensity, 12px));
-  -webkit-backdrop-filter: blur(var(--blur-intensity, 12px));
-}
-
-.font-display {
-  font-family: var(--font-sans);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
 .transition-ui {
-  transition: all var(--animation-speed, 150ms) cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .gradient-btn {
@@ -111,7 +107,7 @@ html,
 }
 
 /* ─── Custom Theme Overrides ─── */
-.bg-surface-container-lowest,
+.bg-surface-container-lowest, 
 .bg-white,
 .mock-card {
   background: var(--card-bg, var(--color-surface-container-lowest)) !important;
@@ -122,20 +118,11 @@ html,
   border-radius: var(--radius) !important;
 }
 
-button,
-input,
-select,
-.rounded-xl,
-.rounded-lg,
-.rounded-2xl {
+button, input, select, .rounded-xl, .rounded-lg, .rounded-2xl {
   border-radius: var(--radius) !important;
 }
 
-h1,
-h2,
-h3,
-h4,
-.font-display {
+h1, h2, h3, h4, .font-display {
   font-family: var(--font-sans) !important;
 }
 
