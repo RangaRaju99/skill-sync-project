@@ -256,8 +256,8 @@ const MySessionsPage = () => {
                 </div>
               );
             })
-          </div>
-        )}
+          )}
+        </div>
 
         {/* Pagination */}
         {data?.totalElements > 10 && (

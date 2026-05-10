@@ -5,33 +5,33 @@
   --font-display: "Space Grotesk", "Outfit", sans-serif;
 
   /* Color System - Refined Navy/Charcoal (Balanced Contrast) */
-  --primary: #8b5cf6;
-  --primary-dark: #7c3aed;
-  --on-primary: #ffffff;
+  --color-primary: #8b5cf6;
+  --color-primary-dark: #7c3aed;
+  --color-on-primary: #ffffff;
 
-  --secondary: #0ea5e9;
-  --on-secondary: #ffffff;
+  --color-secondary: #0ea5e9;
+  --color-on-secondary: #ffffff;
 
   /* Slightly brighter backgrounds to avoid "too dark" feeling */
-  --surface: #0f111a;
-  --on-surface: #f8fafc;
-  --on-surface-variant: #94a3b8;
+  --color-surface: #0f111a;
+  --color-on-surface: #f8fafc;
+  --color-on-surface-variant: #94a3b8;
 
-  --surface-container-lowest: #0a0b10;
-  --surface-container-low: #141721;
-  --surface-container: #1b1f2b;
-  --surface-container-high: #24293a;
-  --surface-container-highest: #2d344a;
+  --color-surface-container-lowest: #0a0b10;
+  --color-surface-container-low: #141721;
+  --color-surface-container: #1b1f2b;
+  --color-surface-container-high: #24293a;
+  --color-surface-container-highest: #2d344a;
 
   /* Crisp borders */
-  --outline: #334155;
-  --outline-variant: #1e293b;
+  --color-outline: #334155;
+  --color-outline-variant: #1e293b;
 
-  --error: #f43f5e;
-  --on-error: #ffffff;
+  --color-error: #f43f5e;
+  --color-on-error: #ffffff;
 
-  --success: #10b981;
-  --on-success: #ffffff;
+  --color-success: #10b981;
+  --color-on-success: #ffffff;
 
   /* Standardized Spacing & Radius */
   --radius-xl: 1rem;
