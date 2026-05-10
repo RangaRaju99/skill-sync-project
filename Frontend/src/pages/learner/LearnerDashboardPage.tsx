@@ -164,7 +164,7 @@ const LearnerDashboardPage = () => {
         staggerChildren: 0.1
       }
     }
-  };
+  } as const;
 
   const itemVariants = {
     hidden: { y: 20, opacity: 0 },
@@ -173,7 +173,7 @@ const LearnerDashboardPage = () => {
       opacity: 1,
       transition: { type: 'spring', damping: 25, stiffness: 300 }
     }
-  };
+  } as const;
 
   const rightPanel = (
     <motion.div initial="hidden" animate="visible" variants={containerVariants} className="space-y-8">

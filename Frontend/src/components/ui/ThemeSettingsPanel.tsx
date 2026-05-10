@@ -36,7 +36,7 @@ const ThemeSettingsPanel: React.FC = () => {
   const containerVariants = {
     hidden: { x: '100%' },
     visible: { x: 0, transition: { type: 'spring', damping: 25, stiffness: 200 } }
-  };
+  } as const;
 
   const TabButton = ({ id, icon: Icon, label }: { id: typeof activeTab, icon: any, label: string }) => (
     <button

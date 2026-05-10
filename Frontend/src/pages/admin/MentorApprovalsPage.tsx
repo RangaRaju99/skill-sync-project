@@ -66,12 +66,12 @@ const MentorApprovalsPage = () => {
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: { opacity: 1, transition: { staggerChildren: 0.05 } }
-  };
+  } as const;
 
   const itemVariants = {
     hidden: { y: 20, opacity: 0 },
     visible: { y: 0, opacity: 1, transition: { type: 'spring', damping: 25, stiffness: 300 } }
-  };
+  } as const;
 
   return (
     <PageLayout>
