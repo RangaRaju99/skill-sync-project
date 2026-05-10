@@ -4,6 +4,7 @@ import { useSelector } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../../services/axios';
 import type { RootState } from '../../store';
+import { motion, AnimatePresence } from 'framer-motion';
 import PageLayout from '../../components/layout/PageLayout';
 import { useToast } from '../../components/ui/Toast';
 import { formatDateTimeIST } from '../../utils/dateTime';
@@ -155,309 +156,414 @@ const LearnerDashboardPage = () => {
     applyMutation.mutate();
   };
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: { type: 'spring', damping: 25, stiffness: 300 }
+    }
+  };
+
   const rightPanel = (
-    <>
-      <div className="bg-surface-container-lowest p-6 rounded-2xl shadow-sm border border-outline-variant/15">
-        <h3 className="font-bold text-lg text-on-surface mb-2">Apply As Mentor</h3>
+    <motion.div initial="hidden" animate="visible" variants={containerVariants} className="space-y-8">
+      <motion.div variants={itemVariants} className="glass-card p-8 rounded-[2.5rem] relative overflow-hidden group">
+        <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 blur-[80px] -z-10 group-hover:bg-primary/20 transition-colors" />
+        <h3 className="font-display font-black text-xl text-white mb-4 uppercase tracking-tighter">Become a Mentor</h3>
         {mentorApplied ? (
-          <div className={`rounded-xl border p-4 ${
-            mentorStatus === 'APPROVED' ? 'border-green-300 bg-green-50' :
-            mentorStatus === 'REJECTED' ? 'border-red-300 bg-red-50' :
-            'border-amber-300 bg-amber-50'
+          <div className={`rounded-2xl border p-5 ${
+            mentorStatus === 'APPROVED' ? 'border-green-500/20 bg-green-500/5' :
+            mentorStatus === 'REJECTED' ? 'border-red-500/20 bg-red-500/5' :
+            'border-amber-500/20 bg-amber-500/5'
           }`}>
-            <p className="text-sm font-semibold text-on-surface">
-              Application Status: <span className={`font-bold ${
-                mentorStatus === 'APPROVED' ? 'text-green-600' :
-                mentorStatus === 'REJECTED' ? 'text-red-600' :
-                'text-amber-600'
-              }`}>{mentorStatus || 'PENDING'}</span>
+            <p className="text-sm font-bold text-white flex items-center gap-2">
+              <span className={`w-2 h-2 rounded-full ${
+                mentorStatus === 'APPROVED' ? 'bg-green-500 animate-pulse' :
+                mentorStatus === 'REJECTED' ? 'bg-red-500' :
+                'bg-amber-500 animate-pulse'
+              }`} />
+              {mentorStatus || 'PENDING'}
             </p>
-            <p className="text-xs text-on-surface-variant mt-2">
-              {mentorStatus === 'APPROVED' ? 'Congratulations! You are now a mentor. Log out and back in to access your mentor dashboard.' :
-               mentorStatus === 'REJECTED' ? 'Your application was not approved. You may contact support for more details.' :
-               'Your application is under review by an admin. You will be notified once it is approved.'}
+            <p className="text-[11px] text-white/50 mt-3 font-medium leading-relaxed">
+              {mentorStatus === 'APPROVED' ? 'Congratulations! Your expertise is now officially recognized. Relogin to access your Studio.' :
+               mentorStatus === 'REJECTED' ? 'Your application was not approved. Review your profile and reach out to our support.' :
+               'Your application is currently being evaluated by our design council. You will receive an update shortly.'}
             </p>
           </div>
         ) : (
           <>
-            <p className="text-sm text-on-surface-variant mb-4">
+            <p className="text-sm text-white/40 mb-6 font-medium leading-relaxed">
               {canReapply
-                ? 'Your mentor role was demoted/rejected. You can submit a fresh mentor application now.'
-                : 'Share your expertise and start mentoring learners.'}
+                ? 'Your previous application was rejected. Ready to showcase your refined expertise?'
+                : 'Empower others with your knowledge and define the next generation of talent.'}
             </p>
-            <button
+            <motion.button
+              whileHover={{ scale: 1.02, y: -2 }}
+              whileTap={{ scale: 0.98 }}
               onClick={() => setShowApplyForm(true)}
-              className="w-full gradient-btn text-white py-2.5 rounded-xl font-bold"
+              className="w-full bg-primary text-white py-4 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] shadow-[0_0_20px_rgba(139,92,246,0.3)] hover:shadow-primary/40 transition-all"
             >
-              {canReapply ? 'Re-apply as Mentor' : 'Start Mentor Application'}
-            </button>
+              {canReapply ? 'Revive Application' : 'Open Application'}
+            </motion.button>
           </>
         )}
-      </div>
+      </motion.div>
 
-      <div className="bg-surface-container-lowest p-6 rounded-2xl shadow-sm border border-outline-variant/15">
-        <h3 className="font-bold text-lg text-on-surface mb-4">Practice Links</h3>
-        <div className="space-y-2 text-sm font-semibold">
-          <a href="https://leetcode.com" target="_blank" rel="noreferrer" className="block text-primary hover:underline">LeetCode</a>
-          <a href="https://www.hackerrank.com" target="_blank" rel="noreferrer" className="block text-primary hover:underline">HackerRank</a>
-          <a href="https://www.geeksforgeeks.org" target="_blank" rel="noreferrer" className="block text-primary hover:underline">GeeksforGeeks</a>
-          <a href="https://www.codechef.com" target="_blank" rel="noreferrer" className="block text-primary hover:underline">CodeChef</a>
+      <motion.div variants={itemVariants} className="glass-card p-8 rounded-[2.5rem]">
+        <h3 className="font-display font-black text-xl text-white mb-6 uppercase tracking-tighter">Resources</h3>
+        <div className="grid grid-cols-2 gap-3">
+          {[
+            { name: 'LeetCode', url: 'https://leetcode.com' },
+            { name: 'HackerRank', url: 'https://www.hackerrank.com' },
+            { name: 'GeeksforGeeks', url: 'https://www.geeksforgeeks.org' },
+            { name: 'CodeChef', url: 'https://www.codechef.com' }
+          ].map((link) => (
+            <a 
+              key={link.name}
+              href={link.url} 
+              target="_blank" 
+              rel="noreferrer" 
+              className="p-3 rounded-xl bg-white/5 border border-white/5 text-[11px] font-black uppercase tracking-widest text-white/60 hover:text-primary hover:bg-primary/10 hover:border-primary/20 transition-all text-center"
+            >
+              {link.name}
+            </a>
+          ))}
         </div>
-      </div>
+      </motion.div>
 
-      <div className="bg-surface-container-lowest p-6 rounded-2xl shadow-sm border border-outline-variant/15">
-        <h3 className="font-bold text-lg text-on-surface mb-4">My Groups</h3>
+      <motion.div variants={itemVariants} className="glass-card p-8 rounded-[2.5rem]">
+        <h3 className="font-display font-black text-xl text-white mb-6 uppercase tracking-tighter">My Circles</h3>
         {groups.length === 0 ? (
-          <div className="flex flex-col items-center py-6 text-center">
-            <span className="material-symbols-outlined text-4xl text-outline-variant mb-2">group_add</span>
-            <p className="text-sm font-semibold text-on-surface-variant mb-4">No active groups yet</p>
-            <Link to="/groups" className="text-primary border border-primary hover:bg-primary/5 font-bold px-6 py-2 rounded-xl transition-all text-sm">
-              Find a Group
+          <div className="flex flex-col items-center py-4 text-center">
+            <div className="w-16 h-16 rounded-2xl bg-white/5 flex items-center justify-center mb-4">
+              <span className="material-symbols-outlined text-3xl text-white/20">group_add</span>
+            </div>
+            <p className="text-xs font-bold text-white/40 mb-6 uppercase tracking-widest leading-loose">No active circles yet</p>
+            <Link to="/groups" className="w-full py-3 rounded-xl border border-white/10 text-white text-[10px] font-black uppercase tracking-[0.2em] hover:bg-white/5 transition-all text-center">
+              Join Circle
             </Link>
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-4">
             {groups.map((g: any, i: number) => (
-              <div key={i} className="flex justify-between items-center text-sm font-semibold p-2 rounded-lg hover:bg-surface-container-low transition-colors">
-                <span>{g.name}</span>
-                <span className="text-on-surface-variant text-xs">{g.memberCount || 1} members</span>
-              </div>
+              <motion.div 
+                whileHover={{ x: 4 }}
+                key={i} 
+                className="flex justify-between items-center p-4 rounded-2xl bg-white/5 border border-white/5 hover:border-white/10 transition-all"
+              >
+                <span className="text-xs font-bold text-white">{g.name}</span>
+                <span className="text-[10px] font-black text-primary uppercase tracking-tighter">{g.memberCount || 1} Members</span>
+              </motion.div>
             ))}
           </div>
         )}
-      </div>
-
-
-    </>
+      </motion.div>
+    </motion.div>
   );
 
   return (
     <PageLayout rightPanel={rightPanel}>
-      {showApplyForm && !mentorApplied && (
-        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl bg-surface-container-lowest border border-outline-variant/20 shadow-xl p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-2xl font-extrabold text-on-surface">Mentor Application</h2>
-              <button onClick={() => setShowApplyForm(false)} className="text-on-surface-variant hover:text-on-surface">
-                <span className="material-symbols-outlined">close</span>
-              </button>
-            </div>
-
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-bold text-on-surface mb-1">Bio (minimum 50 characters)</label>
-                <textarea
-                  value={applyData.bio}
-                  onChange={(e) => setApplyData((prev) => ({ ...prev, bio: e.target.value }))}
-                  rows={5}
-                  className="w-full rounded-xl border border-outline-variant/30 bg-surface px-4 py-3 text-sm text-on-surface outline-none focus:ring-2 focus:ring-primary/40"
-                />
-                <p className={`mt-1 text-xs font-semibold ${applyData.bio.trim().length >= 50 ? 'text-emerald-600' : 'text-error'}`}>
-                  {applyData.bio.trim().length}/50 characters minimum
-                </p>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <AnimatePresence>
+        {showApplyForm && !mentorApplied && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-md flex items-center justify-center p-4"
+          >
+            <motion.div 
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-[3rem] bg-slate-900 border border-white/10 shadow-[0_0_100px_rgba(0,0,0,0.5)] p-10"
+            >
+              <div className="flex items-center justify-between mb-10">
                 <div>
-                  <label className="block text-sm font-bold text-on-surface mb-1">Experience (years)</label>
-                  <input
-                    type="number"
-                    min={0}
-                    max={50}
-                    value={applyData.experienceYears}
-                    onChange={(e) => setApplyData((prev) => ({ ...prev, experienceYears: Number(e.target.value) }))}
-                    className="w-full rounded-xl border border-outline-variant/30 bg-surface px-4 py-3 text-sm text-on-surface outline-none focus:ring-2 focus:ring-primary/40"
-                  />
+                  <h2 className="text-3xl font-display font-black text-white tracking-tighter uppercase">Mentor Application</h2>
+                  <p className="text-[10px] font-bold text-primary tracking-[0.3em] uppercase mt-2">Elevate the community</p>
                 </div>
-                <div>
-                  <label className="block text-sm font-bold text-on-surface mb-1">Hourly Rate (₹ per hour)</label>
-                  <input
-                    type="number"
-                    min={5}
-                    max={500}
-                    value={applyData.hourlyRate}
-                    onChange={(e) => setApplyData((prev) => ({ ...prev, hourlyRate: Number(e.target.value) }))}
-                    className="w-full rounded-xl border border-outline-variant/30 bg-surface px-4 py-3 text-sm text-on-surface outline-none focus:ring-2 focus:ring-primary/40"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-bold text-on-surface mb-2">Select Skills (max 10)</label>
-                <div className="max-h-56 overflow-y-auto rounded-xl border border-outline-variant/30 p-3">
-                  <div className="flex flex-wrap gap-2">
-                    {skills.map((skill: any) => {
-                      const selected = applyData.skillIds.includes(skill.id);
-                      return (
-                        <button
-                          key={skill.id}
-                          type="button"
-                          onClick={() => toggleSkill(skill.id)}
-                          className={`px-3 py-1.5 rounded-full text-xs font-bold border transition-colors ${
-                            selected
-                              ? 'bg-primary text-white border-primary'
-                              : 'bg-surface-container-low text-on-surface-variant border-outline-variant/30 hover:border-primary/40'
-                          }`}
-                        >
-                          {skill.name}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex gap-3 pt-2">
-                <button
-                  onClick={submitMentorApplication}
-                  disabled={applyMutation.isPending}
-                  className="flex-1 gradient-btn text-white py-2.5 rounded-xl font-bold disabled:opacity-50"
-                >
-                  {applyMutation.isPending ? 'Submitting...' : 'Submit Application'}
-                </button>
-                <button
-                  onClick={() => setShowApplyForm(false)}
-                  className="flex-1 bg-surface-container text-on-surface py-2.5 rounded-xl font-bold"
-                >
-                  Cancel
+                <button onClick={() => setShowApplyForm(false)} className="w-12 h-12 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 transition-all">
+                  <span className="material-symbols-outlined text-white">close</span>
                 </button>
               </div>
-            </div>
-          </div>
-        </div>
-      )}
 
-      {/* Header Section */}
-      <section className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
-        <div>
-          <h1 className="text-3xl font-extrabold text-on-surface tracking-tight">Welcome back, {user?.firstName}!</h1>
-          <p className="text-on-surface-variant font-medium mt-1">You're making great progress. Keep it up.</p>
-        </div>
+              <div className="space-y-8">
+                <div className="space-y-3">
+                  <label className="text-[10px] font-black text-white uppercase tracking-widest flex justify-between">
+                    <span>Professional Bio</span>
+                    <span className={applyData.bio.trim().length >= 50 ? 'text-primary' : 'text-rose-500'}>
+                      {applyData.bio.trim().length}/50
+                    </span>
+                  </label>
+                  <textarea
+                    value={applyData.bio}
+                    onChange={(e) => setApplyData((prev) => ({ ...prev, bio: e.target.value }))}
+                    rows={5}
+                    placeholder="Briefly describe your journey and expertise..."
+                    className="w-full rounded-2xl border border-white/10 bg-white/5 px-6 py-4 text-sm text-white outline-none focus:border-primary/50 focus:ring-4 focus:ring-primary/10 transition-all placeholder:text-white/20"
+                  />
+                </div>
 
-      </section>
-
-      {/* Upcoming Sessions Section */}
-      <section>
-        <div className="flex justify-between items-end mb-4">
-          <h2 className="text-xl font-bold text-on-surface">Upcoming Sessions</h2>
-          {upSessions?.content?.length > 0 && <Link to="/sessions" className="text-sm font-bold text-primary hover:underline">View Schedule</Link>}
-        </div>
-        
-        <div className="space-y-3">
-          {loadingUp ? (
-            Array(3).fill(0).map((_, i) => (
-              <div key={i} className="h-20 rounded-xl bg-surface-container-low animate-pulse"></div>
-            ))
-          ) : upSessions?.content?.length > 0 ? (
-            upSessions.content.map((session: any) => (
-              <div key={session.id} className="bg-surface-container-lowest rounded-xl p-4 flex flex-col md:flex-row md:items-center gap-4 shadow-sm border border-outline-variant/10 hover:shadow-md transition-shadow">
-                <div className="flex items-center gap-4 flex-1">
-                  <div className={`w-10 h-10 rounded-full text-white flex items-center justify-center font-bold shadow-sm shrink-0 ${getAvatarColor(getSessionMentorName(session))}`}>
-                    {getInitials(getSessionMentorName(session))}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-3">
+                    <label className="text-[10px] font-black text-white uppercase tracking-widest">Industry Experience (Years)</label>
+                    <input
+                      type="number"
+                      min={0}
+                      max={50}
+                      value={applyData.experienceYears}
+                      onChange={(e) => setApplyData((prev) => ({ ...prev, experienceYears: Number(e.target.value) }))}
+                      className="w-full rounded-2xl border border-white/10 bg-white/5 px-6 py-4 text-sm text-white outline-none focus:border-primary/50 focus:ring-4 focus:ring-primary/10 transition-all"
+                    />
                   </div>
-                  <div>
-                    <h4 className="font-bold text-on-surface">{getSessionMentorName(session)}</h4>
-                    <p className="text-xs font-semibold text-on-surface-variant">{session.topic || 'Mentorship Session'}</p>
+                  <div className="space-y-3">
+                    <label className="text-[10px] font-black text-white uppercase tracking-widest">Hourly Value (₹ per hour)</label>
+                    <input
+                      type="number"
+                      min={5}
+                      max={5000}
+                      value={applyData.hourlyRate}
+                      onChange={(e) => setApplyData((prev) => ({ ...prev, hourlyRate: Number(e.target.value) }))}
+                      className="w-full rounded-2xl border border-white/10 bg-white/5 px-6 py-4 text-sm text-white outline-none focus:border-primary/50 focus:ring-4 focus:ring-primary/10 transition-all"
+                    />
                   </div>
                 </div>
-                <div className="flex items-center justify-between md:justify-end gap-6 w-full md:w-auto">
-                  <p className="text-sm font-semibold text-on-surface-variant text-right">{formatDateTime(getSessionDateTime(session))}</p>
-                  <span className="bg-primary-container/20 text-primary-container px-3 py-1 rounded-md text-xs font-bold uppercase tracking-wider">
-                    {session.status}
-                  </span>
-                </div>
-              </div>
-            ))
-          ) : (
-            <div className="bg-surface-container-lowest rounded-xl p-8 flex flex-col items-center text-center shadow-sm border border-outline-variant/10">
-              <span className="material-symbols-outlined text-4xl text-outline-variant mb-2">calendar_today</span>
-              <p className="text-sm font-semibold text-on-surface-variant mb-4">No upcoming sessions</p>
-              <button onClick={() => navigate('/mentors')} className="gradient-btn text-white px-6 py-2.5 rounded-xl font-bold hover:shadow-lg transition-all text-sm">
-                Find a Mentor
-              </button>
-            </div>
-          )}
-        </div>
-      </section>
 
-      {/* Recommended Mentors Section */}
-      <section>
-        <div className="flex justify-between items-end mb-4">
-          <h2 className="text-xl font-bold text-on-surface">Recommended Mentors</h2>
-          <div className="flex gap-2 text-on-surface-variant">
-            <button className="hover:text-primary transition-colors"><span className="material-symbols-outlined">arrow_back</span></button>
-            <button className="hover:text-primary transition-colors"><span className="material-symbols-outlined">arrow_forward</span></button>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {loadingMentors ? (
-            Array(2).fill(0).map((_, i) => (
-              <div key={i} className="h-48 rounded-xl bg-surface-container-low animate-pulse"></div>
-            ))
-          ) : mentors?.content?.map((mnt: any) => {
-            const avgRating = Number(mnt.avgRating ?? mnt.rating ?? 0);
-            const sessionsHeld = Number(mnt.totalSessions ?? 0);
-            const isNewMentor = sessionsHeld === 0;
-
-            return (
-              <div key={mnt.id} className="bg-surface-container-lowest p-6 rounded-xl shadow-sm border border-transparent hover:border-primary/20 hover:-translate-y-1 transition-all duration-300 flex flex-col">
-              <div className="flex items-start gap-4 mb-4">
-                <div className="relative">
-                  <div className={`w-14 h-14 rounded-xl text-white flex items-center justify-center font-bold text-lg shadow-sm ${getAvatarColor(mnt.firstName)}`}>
-                    {getInitials(`${mnt.firstName} ${mnt.lastName}`)}
-                  </div>
-                  <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-green-500 rounded-full border-2 border-white"></div>
-                </div>
-                <div className="flex-1">
-                  <div className="flex justify-between items-start">
-                    <h3 className="font-bold text-on-surface leading-tight">{mnt.firstName} {mnt.lastName}</h3>
-                    <div className="flex items-center gap-1 bg-secondary-container/30 px-2 py-0.5 rounded text-xs font-bold text-on-secondary-container">
-                      <span className="material-symbols-outlined text-[14px]">star</span>
-                      {isNewMentor ? 'NEW' : avgRating.toFixed(1)}
+                <div className="space-y-4">
+                  <label className="text-[10px] font-black text-white uppercase tracking-widest">Select Core Skills (max 10)</label>
+                  <div className="max-h-64 overflow-y-auto rounded-[2rem] border border-white/10 p-6 bg-white/5">
+                    <div className="flex flex-wrap gap-2">
+                      {skills.map((skill: any) => {
+                        const selected = applyData.skillIds.includes(skill.id);
+                        return (
+                          <motion.button
+                            key={skill.id}
+                            type="button"
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={() => toggleSkill(skill.id)}
+                            className={`px-4 py-2 rounded-xl text-[11px] font-black uppercase tracking-widest border transition-all ${
+                              selected
+                                ? 'bg-primary text-white border-primary shadow-[0_0_15px_rgba(139,92,246,0.3)]'
+                                : 'bg-white/5 text-white/40 border-white/5 hover:border-primary/40'
+                            }`}
+                          >
+                            {skill.name}
+                          </motion.button>
+                        );
+                      })}
                     </div>
                   </div>
-                  <p className="text-xs font-medium text-on-surface-variant mt-1 line-clamp-2">{mnt.headline}</p>
                 </div>
-              </div>
-              
-              <div className="flex flex-wrap gap-1.5 mb-6">
-                {(mnt.skills || []).slice(0, 3).map((skill: any, i: number) => (
-                  <span key={i} className="bg-surface-container-low text-on-surface-variant text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider">
-                    {typeof skill === 'string' ? skill : (skill.name || `Skill #${skill.id}`)}
-                  </span>
-                ))}
-                {(mnt.skills?.length > 3) && (
-                  <span className="bg-surface-container-low text-on-surface-variant text-[10px] font-bold px-2 py-1 rounded">+{mnt.skills.length - 3}</span>
-                )}
-              </div>
 
-              <div className="flex justify-between items-end mt-auto pt-4 border-t border-outline-variant/10">
-                <div>
-                  <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-0.5">Starting at</p>
-                  <p className="text-lg font-black text-primary">₹{mnt.hourlyRate}/<span className="text-sm font-semibold text-on-surface-variant">hr</span></p>
+                <div className="flex gap-4 pt-6">
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={submitMentorApplication}
+                    disabled={applyMutation.isPending}
+                    className="flex-1 bg-primary text-white py-4 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] shadow-xl disabled:opacity-50"
+                  >
+                    {applyMutation.isPending ? 'Propagating...' : 'Deploy Application'}
+                  </motion.button>
+                  <button
+                    onClick={() => setShowApplyForm(false)}
+                    className="flex-1 bg-white/5 text-white py-4 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] hover:bg-white/10 transition-all"
+                  >
+                    Retreat
+                  </button>
                 </div>
-                <button 
-                  onClick={() => navigate(`/mentors/${mnt.id}`)}
-                  className="bg-surface-container-high hover:bg-primary hover:text-white px-5 py-2 rounded-lg text-sm font-bold transition-all duration-300"
-                >
-                  Book Session
-                </button>
               </div>
-            </div>
-            );
-          })}
-        </div>
-      </section>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <motion.div 
+        initial="hidden" 
+        animate="visible" 
+        variants={containerVariants} 
+        className="space-y-16"
+      >
+        {/* Header Section */}
+        <motion.section variants={itemVariants} className="relative py-4">
+          <div className="absolute -left-12 -top-12 w-64 h-64 bg-primary/10 blur-[100px] -z-10" />
+          <h1 className="text-6xl font-display font-black text-white tracking-tighter leading-[0.9]">
+            Systems <span className="bg-gradient-to-r from-primary to-violet-400 bg-clip-text text-transparent">Online</span>, {user?.firstName}.
+          </h1>
+          <p className="text-lg text-white/40 font-bold uppercase tracking-[0.3em] mt-6 flex items-center gap-4">
+            <span className="w-12 h-[2px] bg-primary/30" />
+            Workspace Integrity Optimal
+          </p>
+        </motion.section>
+
+        {/* Upcoming Sessions Section */}
+        <motion.section variants={itemVariants}>
+          <div className="flex justify-between items-center mb-8">
+            <h2 className="text-sm font-black text-white uppercase tracking-[0.3em] flex items-center gap-3">
+              <span className="w-2 h-2 rounded-full bg-primary" />
+              Upcoming Missions
+            </h2>
+            {upSessions?.content?.length > 0 && (
+              <Link to="/sessions" className="text-[10px] font-black text-primary uppercase tracking-widest hover:brightness-125 transition-all">
+                Full Schedule →
+              </Link>
+            )}
+          </div>
+          
+          <div className="grid grid-cols-1 gap-4">
+            {loadingUp ? (
+              Array(2).fill(0).map((_, i) => (
+                <div key={i} className="h-24 rounded-3xl glass-card animate-pulse"></div>
+              ))
+            ) : upSessions?.content?.length > 0 ? (
+              upSessions.content.map((session: any) => (
+                <motion.div 
+                  whileHover={{ x: 8, backgroundColor: 'rgba(255,255,255,0.06)' }}
+                  key={session.id} 
+                  className="glass-card rounded-[2rem] p-6 flex flex-col md:flex-row md:items-center gap-6 group transition-all"
+                >
+                  <div className="flex items-center gap-5 flex-1">
+                    <div className="relative">
+                      <div className={`w-14 h-14 rounded-2xl text-white flex items-center justify-center font-black text-xl shadow-2xl transition-transform group-hover:rotate-6 ${getAvatarColor(getSessionMentorName(session))}`}>
+                        {getInitials(getSessionMentorName(session))}
+                      </div>
+                      <div className="absolute -top-1 -right-1 w-4 h-4 bg-primary border-4 border-slate-900 rounded-full" />
+                    </div>
+                    <div>
+                      <h4 className="font-black text-white text-lg tracking-tight leading-none mb-1">{getSessionMentorName(session)}</h4>
+                      <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest">{session.topic || 'Advanced Mentorship'}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between md:justify-end gap-10">
+                    <div className="text-right">
+                      <p className="text-xs font-black text-white uppercase tracking-tighter">{formatDateTime(getSessionDateTime(session)).split(',')[0]}</p>
+                      <p className="text-[10px] font-bold text-white/40 uppercase tracking-tighter mt-0.5">{formatDateTime(getSessionDateTime(session)).split(',')[1]}</p>
+                    </div>
+                    <span className="bg-primary/10 text-primary border border-primary/20 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-[0_0_15px_rgba(139,92,246,0.1)]">
+                      {session.status}
+                    </span>
+                  </div>
+                </motion.div>
+              ))
+            ) : (
+              <div className="glass-card rounded-[3rem] p-16 flex flex-col items-center text-center">
+                <div className="w-20 h-20 rounded-3xl bg-white/5 flex items-center justify-center mb-6">
+                  <span className="material-symbols-outlined text-4xl text-white/20">event_busy</span>
+                </div>
+                <p className="text-xs font-bold text-white/30 uppercase tracking-[0.2em] mb-8">No missions assigned</p>
+                <motion.button 
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => navigate('/mentors')} 
+                  className="bg-primary text-white px-10 py-4 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] shadow-lg"
+                >
+                  Acquire Mentor
+                </motion.button>
+              </div>
+            )}
+          </div>
+        </motion.section>
+
+        {/* Recommended Mentors Section */}
+        <motion.section variants={itemVariants}>
+          <div className="flex justify-between items-center mb-8">
+            <h2 className="text-sm font-black text-white uppercase tracking-[0.3em] flex items-center gap-3">
+              <span className="w-2 h-2 rounded-full bg-primary" />
+              Top Operatives
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {loadingMentors ? (
+              Array(2).fill(0).map((_, i) => (
+                <div key={i} className="h-64 rounded-3xl glass-card animate-pulse"></div>
+              ))
+            ) : mentors?.content?.map((mnt: any) => {
+              const avgRating = Number(mnt.avgRating ?? mnt.rating ?? 0);
+              const sessionsHeld = Number(mnt.totalSessions ?? 0);
+              const isNewMentor = sessionsHeld === 0;
+
+              return (
+                <motion.div 
+                  whileHover={{ y: -8 }}
+                  key={mnt.id} 
+                  className="glass-card p-8 rounded-[2.5rem] relative overflow-hidden group"
+                >
+                  <div className="absolute -right-12 -top-12 w-48 h-48 bg-primary/5 blur-[60px] group-hover:bg-primary/10 transition-colors" />
+                  
+                  <div className="flex items-start gap-5 mb-8 relative z-10">
+                    <div className="relative">
+                      <div className={`w-16 h-16 rounded-[1.5rem] text-white flex items-center justify-center font-black text-2xl shadow-xl transition-all group-hover:scale-110 group-hover:rotate-3 ${getAvatarColor(mnt.firstName)}`}>
+                        {getInitials(`${mnt.firstName} ${mnt.lastName}`)}
+                      </div>
+                      <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 rounded-full border-4 border-slate-900 shadow-lg"></div>
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex justify-between items-start">
+                        <h3 className="text-xl font-black text-white tracking-tighter leading-none mb-2">{mnt.firstName} {mnt.lastName}</h3>
+                        <div className="flex items-center gap-1.5 bg-white/5 border border-white/10 px-3 py-1.5 rounded-full shadow-inner">
+                          <span className="material-symbols-outlined text-[16px] text-primary">star</span>
+                          <span className="text-[11px] font-black text-white">{isNewMentor ? 'NEW' : avgRating.toFixed(1)}</span>
+                        </div>
+                      </div>
+                      <p className="text-[11px] font-bold text-white/40 uppercase tracking-widest line-clamp-2 leading-relaxed">{mnt.headline}</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex flex-wrap gap-2 mb-10 relative z-10">
+                    {(mnt.skills || []).slice(0, 3).map((skill: any, i: number) => (
+                      <span key={i} className="bg-white/5 border border-white/5 text-[9px] font-black text-white/50 px-3 py-1.5 rounded-lg uppercase tracking-widest">
+                        {typeof skill === 'string' ? skill : (skill.name || `Skill #${skill.id}`)}
+                      </span>
+                    ))}
+                    {(mnt.skills?.length > 3) && (
+                      <span className="bg-white/5 border border-white/5 text-[9px] font-black text-white/30 px-3 py-1.5 rounded-lg">+{mnt.skills.length - 3}</span>
+                    )}
+                  </div>
+
+                  <div className="flex justify-between items-center mt-auto pt-8 border-t border-white/5 relative z-10">
+                    <div>
+                      <p className="text-[9px] font-black text-white/30 uppercase tracking-[0.2em] mb-1">Standard Rate</p>
+                      <p className="text-2xl font-black text-white">₹{mnt.hourlyRate}<span className="text-xs font-bold text-white/20 ml-1">/hr</span></p>
+                    </div>
+                    <motion.button 
+                      whileHover={{ scale: 1.05, backgroundColor: '#8b5cf6', color: '#fff' }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => navigate(`/mentors/${mnt.id}`)}
+                      className="px-8 py-3.5 rounded-2xl bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-[0.2em] text-white transition-all shadow-xl"
+                    >
+                      Initialize
+                    </motion.button>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
+        </motion.section>
+      </motion.div>
 
       {/* Mobile FAB */}
-      <button 
+      <motion.button 
+        initial={{ scale: 0 }}
+        animate={{ scale: 1 }}
+        whileHover={{ scale: 1.1, rotate: 12 }}
+        whileTap={{ scale: 0.9 }}
         onClick={() => navigate('/mentors')}
-        className="lg:hidden fixed bottom-6 right-6 w-14 h-14 bg-primary text-white rounded-full shadow-2xl flex items-center justify-center hover:scale-105 active:scale-95 transition-transform z-50"
+        className="lg:hidden fixed bottom-10 right-10 w-16 h-16 bg-primary text-white rounded-[2rem] shadow-[0_20px_50px_rgba(139,92,246,0.5)] flex items-center justify-center z-50 border-4 border-slate-900"
       >
-        <span className="material-symbols-outlined text-2xl">search</span>
-      </button>
-
+        <span className="material-symbols-outlined text-3xl">search</span>
+      </motion.button>
     </PageLayout>
   );
 };

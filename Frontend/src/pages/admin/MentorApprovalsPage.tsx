@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { motion, AnimatePresence } from 'framer-motion';
+import { CheckCircle, XCircle, User, Mail, Briefcase, Award, ArrowLeft, ArrowRight, ShieldCheck } from 'lucide-react';
 import PageLayout from '../../components/layout/PageLayout';
 import api from '../../services/axios';
 import { useToast } from '../../components/ui/Toast';
@@ -18,7 +20,6 @@ const MentorApprovalsPage = () => {
       params.append('page', String(page));
       params.append('size', String(PAGE_SIZE));
       params.append('sort', 'id,asc');
-
       const { data } = await api.get(`/api/admin/mentors/pending?${params.toString()}`);
       return data;
     },
@@ -29,11 +30,11 @@ const MentorApprovalsPage = () => {
       await api.post(`/api/admin/mentors/${id}/approve`);
     },
     onSuccess: () => {
-      showToast({ message: 'Mentor approved successfully', type: 'success' });
+      showToast({ message: 'Identity Authorized.', type: 'success' });
       queryClient.invalidateQueries({ queryKey: ['admin', 'mentors', 'pending'] });
       queryClient.invalidateQueries({ queryKey: ['admin', 'stats'] });
     },
-    onError: () => showToast({ message: 'Failed to approve mentor', type: 'error' }),
+    onError: () => showToast({ message: 'Authorization Failed.', type: 'error' }),
   });
 
   const rejectMutation = useMutation({
@@ -41,11 +42,11 @@ const MentorApprovalsPage = () => {
       await api.post(`/api/admin/mentors/${id}/reject?reason=Rejected+by+admin`);
     },
     onSuccess: () => {
-      showToast({ message: 'Mentor rejected', type: 'success' });
+      showToast({ message: 'Identity Purged.', type: 'success' });
       queryClient.invalidateQueries({ queryKey: ['admin', 'mentors', 'pending'] });
       queryClient.invalidateQueries({ queryKey: ['admin', 'stats'] });
     },
-    onError: () => showToast({ message: 'Failed to reject mentor', type: 'error' }),
+    onError: () => showToast({ message: 'Purge Failed.', type: 'error' }),
   });
 
   const pendingMentors = mentorsData?.content || mentorsData || [];
@@ -62,133 +63,160 @@ const MentorApprovalsPage = () => {
     ? Number(mentorsData?.number ?? page)
     : 0;
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1, transition: { staggerChildren: 0.05 } }
+  };
+
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: { y: 0, opacity: 1, transition: { type: 'spring', damping: 25, stiffness: 300 } }
+  };
+
   return (
     <PageLayout>
-      <div className="space-y-6">
-        <div className="bg-surface-container-lowest border border-outline-variant/10 rounded-2xl p-6 shadow-sm">
-          <h1 className="text-3xl font-extrabold text-on-surface tracking-tight">Mentor Approvals</h1>
-          <p className="text-on-surface-variant mt-2">Review and manage pending mentor applications</p>
-          {!isLoading && (
-            <p className="mt-3 text-sm font-bold text-primary bg-primary/10 inline-block px-3 py-1 rounded-full">
-              {totalElements} pending application{totalElements !== 1 ? 's' : ''}
+      <motion.div initial="hidden" animate="visible" variants={containerVariants} className="space-y-12">
+        {/* Header */}
+        <motion.section variants={itemVariants} className="relative py-4">
+          <div className="absolute -left-12 -top-12 w-64 h-64 bg-primary/10 blur-[100px] -z-10" />
+          <h1 className="text-6xl font-display font-black text-white tracking-tighter leading-[0.9]">
+            Intel <span className="bg-gradient-to-r from-primary to-cyan-400 bg-clip-text text-transparent">Verification</span>.
+          </h1>
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mt-8">
+            <p className="text-lg text-white/40 font-bold uppercase tracking-[0.3em] flex items-center gap-4">
+              <span className="w-12 h-[2px] bg-primary/30" />
+              Pending Network Clearances
             </p>
-          )}
-        </div>
-
-        {isLoading ? (
-          <div className="text-center py-10">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-3"></div>
-            <p className="text-on-surface-variant">Loading pending mentors...</p>
-          </div>
-        ) : mentorsList.length === 0 ? (
-          <div className="text-center py-16 bg-surface-container-lowest rounded-2xl border border-outline-variant/10 shadow-sm">
-            <span className="material-symbols-outlined text-5xl text-outline-variant mb-3 block">how_to_reg</span>
-            <h3 className="text-lg font-bold text-on-surface mb-1">All caught up!</h3>
-            <p className="text-sm text-on-surface-variant">No pending mentor applications to review.</p>
-          </div>
-        ) : (
-          <>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {mentorsList.map((mentor: any) => (
-                <div key={mentor.id} className="bg-surface-container-lowest border border-outline-variant/10 rounded-2xl p-6 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
-                <div>
-                  <div className="flex items-start justify-between mb-4">
-                    <div>
-                      <h3 className="text-lg font-extrabold text-on-surface">
-                        {mentor.firstName && mentor.lastName
-                          ? `${mentor.firstName} ${mentor.lastName}`
-                          : 'Mentor'}
-                      </h3>
-                      <p className="text-xs font-semibold text-on-surface-variant">
-                        #{mentor.id} •
-                        {' '}
-                        {mentor.email || `User ID: ${mentor.userId}`}
-                      </p>
-                    </div>
-                    <span className="text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-md bg-amber-100 text-amber-700 border border-amber-200">
-                      Pending
-                    </span>
-                  </div>
-
-                  <div className="space-y-3 mb-6">
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="bg-surface-container rounded-lg p-3">
-                        <p className="text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-0.5">Experience</p>
-                        <p className="text-sm font-bold text-on-surface">{mentor.experienceYears || 0} years</p>
-                      </div>
-                      <div className="bg-surface-container rounded-lg p-3">
-                        <p className="text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-0.5">Hourly Rate</p>
-                        <p className="text-sm font-bold text-primary">₹{mentor.hourlyRate || 'N/A'}/hr</p>
-                      </div>
-                    </div>
-
-                    <div>
-                      <p className="text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-1">Bio</p>
-                      <p className="text-sm text-on-surface-variant line-clamp-3">{mentor.bio || 'No bio provided'}</p>
-                    </div>
-
-                    <div>
-                      <p className="text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-1">Skills</p>
-                      <div className="flex flex-wrap gap-1.5">
-                        {(mentor.skills || []).map((skill: any, index: number) => (
-                          <span key={index} className="bg-surface-container text-on-surface-variant text-[10px] font-bold px-2 py-1 rounded-md uppercase tracking-wider border border-outline-variant/10">
-                            {typeof skill === 'string' ? skill : skill.name || `Skill #${skill.skillId || skill.id}`}
-                          </span>
-                        ))}
-                        {(!mentor.skills || mentor.skills.length === 0) && (
-                          <span className="text-xs text-on-surface-variant/50">None listed</span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex gap-3 pt-4 border-t border-outline-variant/10 mt-auto">
-                  <button
-                    onClick={() => approveMutation.mutate(mentor.id)}
-                    disabled={approveMutation.isPending}
-                    className="flex-1 h-10 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2"
-                  >
-                    <span className="material-symbols-outlined text-[18px]">check_circle</span>
-                    Approve
-                  </button>
-                  <button
-                    onClick={() => rejectMutation.mutate(mentor.id)}
-                    disabled={rejectMutation.isPending}
-                    className="flex-1 h-10 bg-red-100 hover:bg-red-200 text-red-700 font-bold rounded-xl transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2"
-                  >
-                    <span className="material-symbols-outlined text-[18px]">cancel</span>
-                    Reject
-                  </button>
-                </div>
-                </div>
-              ))}
-            </div>
-
-            {totalPages > 1 && (
-              <div className="px-5 py-3 border border-outline-variant/10 rounded-xl bg-surface-container-lowest flex items-center justify-between gap-3">
-                <button
-                  onClick={() => setPage((p) => Math.max(0, p - 1))}
-                  disabled={currentPage <= 0}
-                  className="px-3 py-1.5 rounded-md text-sm font-bold bg-surface-container hover:bg-surface-container-high text-on-surface disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Previous
-                </button>
-                <p className="text-xs font-semibold text-on-surface-variant">
-                  Page {currentPage + 1} of {totalPages}
-                </p>
-                <button
-                  onClick={() => setPage((p) => p + 1)}
-                  disabled={currentPage >= totalPages - 1}
-                  className="px-3 py-1.5 rounded-md text-sm font-bold bg-surface-container hover:bg-surface-container-high text-on-surface disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Next
-                </button>
+            {!isLoading && (
+              <div className="flex items-center gap-3 px-6 py-2.5 rounded-2xl bg-amber-500/10 border border-amber-500/20">
+                <div className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+                <span className="text-[10px] font-black text-amber-500 uppercase tracking-widest">{totalElements} Unresolved Applications</span>
               </div>
             )}
-          </>
+          </div>
+        </motion.section>
+
+        {isLoading ? (
+          <div className="flex items-center justify-center h-[40vh]">
+            <div className="text-[10px] font-black text-white/20 uppercase tracking-[0.5em] animate-pulse italic">Scanning Registry...</div>
+          </div>
+        ) : mentorsList.length === 0 ? (
+          <motion.div variants={itemVariants} className="glass-card rounded-[3rem] p-24 text-center flex flex-col items-center">
+            <div className="w-24 h-24 rounded-[2rem] bg-white/5 flex items-center justify-center mb-8 border border-white/5">
+              <ShieldCheck className="text-white/10" size={48} />
+            </div>
+            <h3 className="text-2xl font-display font-black text-white uppercase tracking-tighter mb-4 italic">Registry Clear</h3>
+            <p className="text-[10px] font-bold text-white/20 uppercase tracking-[0.3em]">All pending mentor nodes have been successfully processed.</p>
+          </motion.div>
+        ) : (
+          <motion.div variants={containerVariants} className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <AnimatePresence mode="popLayout">
+              {mentorsList.map((mentor: any) => (
+                <motion.div
+                  layout
+                  key={mentor.id}
+                  variants={itemVariants}
+                  whileHover={{ y: -8 }}
+                  className="glass-card rounded-[3rem] p-10 border-white/5 group relative overflow-hidden flex flex-col"
+                >
+                  <div className="absolute -right-12 -top-12 w-48 h-48 bg-white/5 blur-[60px] group-hover:bg-primary/5 transition-colors duration-700" />
+                  
+                  <div className="flex justify-between items-start mb-8 relative">
+                    <div className="space-y-1">
+                      <h3 className="text-2xl font-display font-black text-white tracking-tighter uppercase italic group-hover:text-primary transition-colors">
+                        {mentor.firstName} {mentor.lastName}
+                      </h3>
+                      <div className="flex items-center gap-3">
+                        <span className="text-[10px] font-black text-white/20 uppercase tracking-widest flex items-center gap-1.5">
+                           <Mail size={12} /> {mentor.email || `ID: ${mentor.userId}`}
+                        </span>
+                        <span className="w-1 h-1 rounded-full bg-white/10" />
+                        <span className="text-[10px] font-black text-amber-500 uppercase tracking-widest">Awaiting Command</span>
+                      </div>
+                    </div>
+                    <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/5 flex items-center justify-center text-white/20 italic font-black text-sm">
+                       #{mentor.id}
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-6 mb-8 relative">
+                    <div className="p-6 rounded-3xl bg-white/[0.02] border border-white/5">
+                      <p className="text-[9px] font-black text-white/20 uppercase tracking-[0.2em] mb-2 flex items-center gap-2">
+                        <Briefcase size={12} className="text-primary" /> Seniority
+                      </p>
+                      <p className="text-xl font-black text-white tracking-tighter italic">{mentor.experienceYears || 0} Cycles</p>
+                    </div>
+                    <div className="p-6 rounded-3xl bg-white/[0.02] border border-white/5">
+                      <p className="text-[9px] font-black text-white/20 uppercase tracking-[0.2em] mb-2 flex items-center gap-2">
+                        <Award size={12} className="text-primary" /> Credit Value
+                      </p>
+                      <p className="text-xl font-black text-white tracking-tighter italic">₹{mentor.hourlyRate || '0'}<span className="text-[10px] ml-1">/HR</span></p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-6 flex-1 relative">
+                    <div className="space-y-3">
+                      <p className="text-[9px] font-black text-white/20 uppercase tracking-[0.2em] ml-2">Mission Intelligence</p>
+                      <div className="p-6 rounded-3xl bg-white/[0.02] border border-white/5 text-[11px] text-white/40 font-bold leading-relaxed uppercase tracking-widest italic min-h-[80px]">
+                        {mentor.bio || 'Initial bio data stream empty...'}
+                      </div>
+                    </div>
+
+                    <div className="space-y-3">
+                      <p className="text-[9px] font-black text-white/20 uppercase tracking-[0.2em] ml-2">Module Competencies</p>
+                      <div className="flex flex-wrap gap-2">
+                        {(mentor.skills || []).map((skill: any, index: number) => (
+                          <span key={index} className="px-4 py-1.5 rounded-xl bg-white/5 border border-white/5 text-[9px] font-black text-white/40 uppercase tracking-widest">
+                            {typeof skill === 'string' ? skill : skill.name || 'Module'}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-4 pt-10 mt-auto relative">
+                    <button
+                      onClick={() => approveMutation.mutate(mentor.id)}
+                      disabled={approveMutation.isPending}
+                      className="flex-1 h-14 bg-primary text-white font-black text-[10px] uppercase tracking-widest rounded-2xl shadow-xl shadow-primary/20 hover:brightness-110 transition-all flex items-center justify-center gap-3 disabled:opacity-50"
+                    >
+                      <CheckCircle size={18} /> Authorize Node
+                    </button>
+                    <button
+                      onClick={() => rejectMutation.mutate(mentor.id)}
+                      disabled={rejectMutation.isPending}
+                      className="w-14 h-14 bg-rose-500/10 border border-rose-500/20 text-rose-500 rounded-2xl hover:bg-rose-500 hover:text-white transition-all flex items-center justify-center disabled:opacity-50"
+                    >
+                      <XCircle size={22} />
+                    </button>
+                  </div>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </motion.div>
         )}
-      </div>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <motion.div variants={itemVariants} className="flex justify-center items-center gap-6 pt-12">
+            <button
+              onClick={() => setPage((p) => Math.max(0, p - 1))}
+              disabled={currentPage <= 0}
+              className="w-12 h-12 glass-card rounded-2xl flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-all disabled:opacity-20"
+            >
+              <ArrowLeft size={20} />
+            </button>
+            <span className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em]">Registry Sector {currentPage + 1} / {totalPages}</span>
+            <button
+              onClick={() => setPage((p) => p + 1)}
+              disabled={currentPage >= totalPages - 1}
+              className="w-12 h-12 glass-card rounded-2xl flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-all disabled:opacity-20"
+            >
+              <ArrowRight size={20} />
+            </button>
+          </motion.div>
+        )}
+      </motion.div>
     </PageLayout>
   );
 };
