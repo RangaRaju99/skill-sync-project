@@ -196,7 +196,7 @@ const LoginPage = () => {
           </p>
         </div>
       </div>
-      
+
       {/* Footer Links */}
       <div className="mt-12 flex gap-8 text-[11px] font-black uppercase tracking-widest text-on-surface-variant/40">
         <Link to="/terms" className="hover:text-primary transition-colors">Terms</Link>

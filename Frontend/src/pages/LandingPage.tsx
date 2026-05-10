@@ -137,161 +137,209 @@ const LandingPage = () => {
   const signalsRef = useRevealOnScroll();
   const finaleRef = useRevealOnScroll();
 
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      const btn = target.closest('.btn-premium');
+      if (btn instanceof HTMLElement) {
+        const rect = btn.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        btn.style.setProperty('--x', `${x}px`);
+        btn.style.setProperty('--y', `${y}px`);
+      }
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, []);
+
   return (
     <div className="ppt-page" id="top">
-      <div className="ppt-grid-overlay" aria-hidden="true" />
-      <div className="ppt-aura aura-one" aria-hidden="true" />
-      <div className="ppt-aura aura-two" aria-hidden="true" />
-      <div className="ppt-aura aura-three" aria-hidden="true" />
+      {/* Cinematic Background Elements */}
+      <div className="premium-bg-container" aria-hidden="true">
+        <div className="mesh-gradient" />
+        <div className="ambient-orb orb-1" />
+        <div className="ambient-orb orb-2" />
+        <div className="ambient-orb orb-3" />
+        <div className="noise-overlay" />
+      </div>
 
       <header className="ppt-nav">
+        <div className="nav-blur-layer" />
         <a className="ppt-brand" href="#top" aria-label="SkillSync Presentation Home">
-          <img src={logo} alt="SkillSync logo" className="ppt-logo" />
-          <span>SkillSync</span>
+          <div className="brand-logo-wrapper">
+            <img src={logo} alt="SkillSync logo" className="ppt-logo" />
+            <div className="logo-glow" />
+          </div>
+          <span className="brand-text">SkillSync</span>
         </a>
 
         <div className="ppt-nav-actions">
           <ThemeToggleButton className="ppt-theme-toggle" showLabel={false} />
-          <Link className="ppt-btn ghost" to="/register">
+          <Link className="ppt-btn-new ghost" to="/register">
             Register
           </Link>
-          <Link className="ppt-btn solid" to="/login">
+          <Link className="ppt-btn-new primary" to="/login">
             Sign In
           </Link>
         </div>
       </header>
 
       <main className="ppt-main">
-        {/* ── Hero 1: Brand showcase with logo, orbs ── */}
-        <section className="hero-card">
-          <div className="hero-aura hero-aura-one" aria-hidden="true" />
-          <div className="hero-aura hero-aura-two" aria-hidden="true" />
-          <div className="hero-aura hero-aura-three" aria-hidden="true" />
-          <div className="brand-stage" aria-hidden="true">
-            <div className="gravity-orb orb-a" />
-            <div className="gravity-orb orb-b" />
-            <div className="gravity-orb orb-c" />
-            <img src={logo} alt="" className="hero-logo" />
-          </div>
-          <h2 className="hero-brand-title">SkillSync</h2>
-          <p className="hero-tagline">Peer To Peer Learning Platform</p>
-          <div className="hero-cta-row">
-            <Link className="landing-btn landing-btn-solid" to="/dashboard">
-              Get Started
-            </Link>
-            <a className="landing-btn landing-btn-ghost" href="#platform-story">
-              Why SkillSync
-            </a>
-          </div>
-        </section>
+        {/* ── Hero Section: Combined & Reimagined ── */}
+        <section className="hero-master reveal-section" ref={heroTextRef}>
+          <div className="hero-content-wrapper">
+            <div className="hero-visual-side" aria-hidden="true">
+              <div className="floating-glass-card card-1">
+                <div className="card-inner">
+                  <div className="shimmer" />
+                </div>
+              </div>
+              <div className="floating-glass-card card-2">
+                <div className="card-inner" />
+              </div>
+              <div className="hero-central-logo">
+                <img src={logo} alt="" className="hero-logo-main" />
+                <div className="logo-pulse-ring" />
+              </div>
+            </div>
 
-        {/* ── Hero 2: Full-screen text headline + metrics ── */}
-        <section className="ppt-hero reveal-section" ref={heroTextRef}>
-          <div className="ppt-hero-copy">
-            <p className="ppt-kicker">Peer To Peer Learning Platform</p>
-            <h1>
-              Built For Real Sessions,
-              <span> Not Just Pretty Screens.</span>
-            </h1>
-            <p className="ppt-subtext">
-              SkillSync maps the full mentorship lifecycle: learner request, payment verification, mentor response,
-              live session delivery, and post-session trust signals, all in a single reliable flow.
-            </p>
+            <div className="hero-text-side">
+              <div className="badge-kicker stagger-child">
+                <span className="kicker-dot" />
+                Peer To Peer Learning Platform
+              </div>
+              <h1 className="main-headline stagger-child">
+                Built For Real Sessions,
+                <span className="gradient-text"> Not Just Pretty Screens.</span>
+              </h1>
+              <p className="hero-description stagger-child">
+                SkillSync maps the full mentorship lifecycle: learner request, payment verification, mentor response,
+                live session delivery, and post-session trust signals, all in a single reliable flow.
+              </p>
+              
+              <div className="hero-action-group stagger-child">
+                <Link className="btn-premium primary" to="/dashboard">
+                  <span>Get Started</span>
+                  <div className="btn-glow" />
+                </Link>
+                <a className="btn-premium secondary" href="#platform-story">
+                  <span>Why SkillSync</span>
+                </a>
+              </div>
 
-
-
-            <div className="ppt-metrics">
-              {metrics.map((metric, i) => (
-                <article key={metric.label} className="ppt-metric-card stagger-child" style={{ transitionDelay: `${i * 120}ms` }}>
-                  <p>{metric.label}</p>
-                  <h3>{metric.value}</h3>
-                  <small>{metric.helper}</small>
-                </article>
-              ))}
+              <div className="hero-metrics-grid">
+                {metrics.map((metric, i) => (
+                  <article key={metric.label} className="metric-item stagger-child" style={{ transitionDelay: `${i * 120}ms` }}>
+                    <div className="metric-val">{metric.value}</div>
+                    <div className="metric-label">{metric.label}</div>
+                    <div className="metric-helper">{metric.helper}</div>
+                  </article>
+                ))}
+              </div>
             </div>
           </div>
         </section>
 
         {/* ── Experience Lanes ── */}
-        <section className="ppt-section reveal-section" id="platform-story" ref={lanesRef}>
-          <div className="ppt-section-head">
-            <p>Real Workflow, Real Context</p>
-            <h2>Every role sees the right state, at the right moment.</h2>
+        <section className="section-container reveal-section" id="platform-story" ref={lanesRef}>
+          <div className="section-header">
+            <span className="section-label">Real Workflow, Real Context</span>
+            <h2 className="section-title">Every role sees the right state, at the right moment.</h2>
           </div>
 
-          <div className="ppt-lane-grid">
+          <div className="lane-stack">
             {experienceLanes.map((lane, i) => (
-              <article key={lane.role} className={`ppt-lane-card ${lane.accentClass} stagger-child`} style={{ transitionDelay: `${i * 150}ms` }}>
-                <div className="lane-top">
-                  <span className="lane-role">{lane.role}</span>
-                  <span className="lane-metric">{lane.metric}</span>
+              <article key={lane.role} className={`premium-lane-card ${lane.accentClass} stagger-child`} style={{ transitionDelay: `${i * 150}ms` }}>
+                <div className="card-glass-effect" />
+                <div className="lane-content">
+                  <div className="lane-header">
+                    <div className="role-tag">{lane.role}</div>
+                    <div className="metric-tag">{lane.metric}</div>
+                  </div>
+                  <h3 className="lane-headline">{lane.headline}</h3>
+                  <p className="lane-summary">{lane.summary}</p>
+                  <ul className="lane-list">
+                    {lane.bullets.map((bullet) => (
+                      <li key={bullet}>{bullet}</li>
+                    ))}
+                  </ul>
+                  <div className="lane-footer">
+                    <div className="pulse-indicator">
+                      <span className="pulse-dot" />
+                      {lane.pulse}
+                    </div>
+                  </div>
                 </div>
-                <h3>{lane.headline}</h3>
-                <p>{lane.summary}</p>
-                <ul>
-                  {lane.bullets.map((bullet) => (
-                    <li key={bullet}>{bullet}</li>
-                  ))}
-                </ul>
-                <div className="lane-pulse">{lane.pulse}</div>
               </article>
             ))}
           </div>
         </section>
 
         {/* ── Reliability Signals ── */}
-        <section className="ppt-section reveal-section" ref={signalsRef}>
-          <div className="ppt-section-head">
-            <p>Operational Reliability</p>
-            <h2>Production-safe behavior is part of the UX, not an afterthought.</h2>
+        <section className="section-container reveal-section" ref={signalsRef}>
+          <div className="section-header centered">
+            <span className="section-label">Operational Reliability</span>
+            <h2 className="section-title">Production-safe behavior is part of the UX.</h2>
           </div>
 
-          <div className="ppt-signal-grid">
+          <div className="signals-grid">
             {reliabilitySignals.map((signal, i) => (
-              <article key={signal.label} className="ppt-signal-card stagger-child" style={{ transitionDelay: `${i * 150}ms` }}>
-                <p>{signal.label}</p>
-                <h3>{signal.value}</h3>
-                <small>{signal.helper}</small>
+              <article key={signal.label} className="signal-glass-card stagger-child" style={{ transitionDelay: `${i * 150}ms` }}>
+                <div className="signal-content">
+                  <div className="signal-val-wrapper">
+                    <span className="signal-val">{signal.value}</span>
+                  </div>
+                  <p className="signal-label">{signal.label}</p>
+                  <small className="signal-helper">{signal.helper}</small>
+                </div>
+                <div className="signal-glow" />
               </article>
             ))}
           </div>
         </section>
 
         {/* ── Final CTA ── */}
-        <section className="ppt-final-cta reveal-section" ref={finaleRef}>
-          <p className="final-kicker">Ready To Scale Learning?</p>
-          <h2>Give every learner a premium mentorship experience.</h2>
-          <p>
-            SkillSync blends trust, velocity, and clarity into one polished platform where users discover mentors,
-            book confidently, and improve continuously with feedback that actually matters.
-          </p>
-          <div className="ppt-cta-row">
-            <Link className="ppt-btn solid" to="/dashboard">
-              Enter Application
-            </Link>
-            <Link className="ppt-btn ghost" to="/register">
-              Create Account
-            </Link>
-          </div>
+        <section className="finale-section reveal-section" ref={finaleRef}>
+          <div className="finale-glass-wrap">
+            <div className="finale-content">
+              <span className="final-kicker">Ready To Scale Learning?</span>
+              <h2 className="final-title">Give every learner a premium mentorship experience.</h2>
+              <p className="final-desc">
+                SkillSync blends trust, velocity, and clarity into one polished platform where users discover mentors,
+                book confidently, and improve continuously.
+              </p>
+              
+              <div className="final-actions">
+                <Link className="btn-premium primary large" to="/dashboard">
+                  <span>Enter Application</span>
+                  <div className="btn-glow" />
+                </Link>
+                <Link className="btn-premium secondary large" to="/register">
+                  <span>Create Account</span>
+                </Link>
+              </div>
 
-          <div className="ppt-finale-ribbon" aria-label="Platform highlights">
-            {finaleTags.map((tag, i) => (
-              <span key={tag} className="ribbon-chip stagger-child" style={{ transitionDelay: `${i * 80}ms` }}>
-                {tag}
-              </span>
-            ))}
-          </div>
+              <div className="tag-cloud">
+                {finaleTags.map((tag, i) => (
+                  <span key={tag} className="cloud-tag stagger-child" style={{ transitionDelay: `${i * 80}ms` }}>
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            </div>
 
-          <div className="ppt-finale-orbit" aria-hidden="true">
-            <div className="orbit-ring ring-a" />
-            <div className="orbit-ring ring-b" />
-            <div className="orbit-ring ring-c" />
-            <div className="orbit-pulse pulse-a" />
-            <div className="orbit-pulse pulse-b" />
-            <div className="orbit-pulse pulse-c" />
-            <div className="orbit-core">
-              <img src={logo} alt="" className="orbit-core-logo" />
-              <span>SkillSync</span>
+            <div className="finale-visual" aria-hidden="true">
+              <div className="orbit-system">
+                <div className="orbit-path path-1" />
+                <div className="orbit-path path-2" />
+                <div className="orbit-path path-3" />
+                <div className="center-node">
+                  <img src={logo} alt="" className="node-logo" />
+                  <div className="node-glow" />
+                </div>
+              </div>
             </div>
           </div>
         </section>
