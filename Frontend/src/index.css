@@ -1,69 +1,59 @@
 /* ─── Google Fonts ─── */
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Outfit:wght@300;400;600;800&display=swap');
 
 @import "tailwindcss";
 
 /* ─── Tailwind v4 Theme Configuration ─── */
 @theme {
-  /* Colors - Amethyst Night Palette */
-  --color-primary: #8b5cf6;
-  --color-primary-container: #a78bfa;
-  --color-on-primary: #ffffff;
-  --color-surface: #faf9ff;
-  --color-surface-container-lowest: #ffffff;
-  --color-surface-container-low: #f5f3ff;
-  --color-surface-container: #ede9fe;
-  --color-surface-container-high: #ddd6fe;
-  --color-surface-container-highest: #c4b5fd;
-  --color-on-surface: #1e1b4b;
-  --color-on-surface-variant: #4c1d95;
-  --color-secondary-container: #ddd6fe;
-  --color-on-secondary-container: #2e1065;
-  --color-outline: #7c3aed;
-  --color-outline-variant: #c4b5fd;
-  --color-secondary: #7c3aed;
-  --color-error: #ef4444;
+  /* Colors - OLED Stealth Palette */
+  --color-primary: #00f2ff;
+  --color-primary-container: #004d52;
+  --color-on-primary: #000000;
+  --color-surface: #000000;
+  --color-surface-container-lowest: #000000;
+  --color-surface-container-low: #050505;
+  --color-surface-container: #0a0a0a;
+  --color-surface-container-high: #111111;
+  --color-surface-container-highest: #1a1a1a;
+  --color-on-surface: #ffffff;
+  --color-on-surface-variant: #a0a0a0;
+  --color-secondary-container: #1a1a1a;
+  --color-on-secondary-container: #00f2ff;
+  --color-outline: #222222;
+  --color-outline-variant: #111111;
+  --color-secondary: #ffffff;
+  --color-error: #ff003c;
 
-  /* Font Family - Modern Outfit Font */
+  /* Font Family - Technical & Modern */
   --font-sans: 'Outfit', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
 
-  /* Border Radius - Softer, more organic feel */
-  --radius: 0.6rem;
-  --radius-lg: 0.85rem;
-  --radius-xl: 1.25rem;
-  --radius-full: 2rem;
+  /* Border Radius - Sharp but Premium */
+  --radius: 0.25rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.75rem;
+  --radius-full: 9999px;
 }
 
 :root {
-  --gradient-btn-start: #8b5cf6;
-  --gradient-btn-end: #d8b4fe;
-  --app-bg-glow-a: rgba(139, 92, 246, 0.12);
-  --app-bg-glow-b: rgba(216, 180, 254, 0.08);
+  --gradient-btn-start: #00f2ff;
+  --gradient-btn-end: #0066ff;
+  --app-bg-glow-a: rgba(0, 242, 255, 0.05);
+  --app-bg-glow-b: rgba(0, 102, 255, 0.03);
 }
 
 html.theme-dark {
-  --color-primary: #c4b5fd;
-  --color-primary-container: #7c3aed;
-  --color-on-primary: #1e1b4b;
-  --color-surface: #0a0514;
-  --color-surface-container-lowest: #0f0a1f;
-  --color-surface-container-low: #150e2a;
-  --color-surface-container: #1b1235;
-  --color-surface-container-high: #251a45;
-  --color-surface-container-highest: #2d1f50;
-  --color-on-surface: #f5f3ff;
-  --color-on-surface-variant: #d8b4fe;
-  --color-secondary-container: #2e1065;
-  --color-on-secondary-container: #ede9fe;
-  --color-outline: #a78bfa;
-  --color-outline-variant: #4c1d95;
-  --color-secondary: #c4b5fd;
-  --color-error: #f87171;
-
-  --gradient-btn-start: #7c3aed;
-  --gradient-btn-end: #a855f7;
-  --app-bg-glow-a: rgba(124, 58, 237, 0.22);
-  --app-bg-glow-b: rgba(168, 85, 247, 0.15);
+  /* OLED is naturally dark, we keep it consistent or even deeper */
+  --color-primary: #00f2ff;
+  --color-primary-container: #002d30;
+  --color-on-primary: #000000;
+  --color-surface: #000000;
+  --color-on-surface: #ffffff;
+  --color-on-surface-variant: #888888;
+  --color-outline: #111111;
+  
+  --gradient-btn-start: #00f2ff;
+  --gradient-btn-end: #0033ff;
 }
 
 /* ─── Base Styles ─── */
@@ -92,18 +82,32 @@ html,
   transition: background-color 180ms ease, border-color 180ms ease, color 180ms ease;
 }
 
-/* ─── Utility Classes ─── */
-.glass-nav {
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+.glow-border {
+  border: 1px solid var(--color-outline);
+  box-shadow: 0 0 10px rgba(0, 242, 255, 0.05);
+  transition: all 0.3s ease;
 }
 
-.transition-ui {
-  transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
+.glow-border:hover {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 15px rgba(0, 242, 255, 0.15);
+}
+
+.glow-card {
+  background: #050505;
+  border: 1px solid #111;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
 }
 
 .gradient-btn {
   background: linear-gradient(135deg, var(--gradient-btn-start), var(--gradient-btn-end));
+  box-shadow: 0 0 20px rgba(0, 242, 255, 0.2);
+  transition: all 0.3s ease;
+}
+
+.gradient-btn:hover {
+  box-shadow: 0 0 30px rgba(0, 242, 255, 0.4);
+  transform: translateY(-1px);
 }
 
 /* ─── Dark Theme Overrides For Legacy Utility Classes ─── */
