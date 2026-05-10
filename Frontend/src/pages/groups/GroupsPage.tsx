@@ -229,7 +229,7 @@ const GroupsPage = () => {
         </AnimatePresence>
 
         {/* Pagination */}
-        {(exploreData?.totalElements > 10 || myGroupsData?.totalElements > 10) && (
+        {((exploreData?.totalElements ?? 0) > 10 || (myGroupsData?.totalElements ?? 0) > 10) && (
           <motion.div variants={itemVariants} className="flex justify-center items-center gap-6 pt-10">
             <button
               onClick={() => setPage(Math.max(0, page - 1))}
@@ -241,7 +241,7 @@ const GroupsPage = () => {
             <span className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em]">Registry Page {page + 1}</span>
             <button
               onClick={() => setPage(page + 1)}
-              disabled={page >= Math.ceil((activeTab === 'explore' ? exploreData.totalElements : myGroupsData.totalElements) / 10) - 1}
+              disabled={page >= Math.ceil((activeTab === 'explore' ? (exploreData?.totalElements ?? 0) : (myGroupsData?.totalElements ?? 0)) / 10) - 1}
               className="w-12 h-12 glass-card rounded-2xl flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-all disabled:opacity-20"
             >
               <span className="material-symbols-outlined">arrow_forward</span>

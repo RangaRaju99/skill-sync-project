@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Settings, X, RotateCcw, Check, Sparkles, Layout, Palette, Type, Box, Sliders, Eye, Zap } from 'lucide-react';
-import { useTheme, type BackgroundStyle, type CardStyle, type FontStyle } from '../../context/ThemeContext';
+import { Settings, X, RotateCcw, Check, Sparkles, Layout, Palette, Type, Box, Eye, Zap } from 'lucide-react';
+import { useTheme, type BackgroundStyle, type FontStyle } from '../../context/ThemeContext';
 
 const ACCENT_COLORS = [
   { name: 'Violet', value: '#8b5cf6' },
