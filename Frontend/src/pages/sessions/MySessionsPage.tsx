@@ -126,8 +126,8 @@ const MySessionsPage = () => {
               key={tab}
               onClick={() => { setActiveTab(tab); setPage(0); }}
               className={`whitespace-nowrap px-8 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 ${activeTab === tab
-                  ? 'bg-primary text-white shadow-lg shadow-primary/10 scale-[1.02]'
-                  : 'text-on-surface-variant hover:text-on-surface hover:bg-white/[0.03]'
+                  ? 'bg-primary text-on-primary shadow-lg shadow-primary/10 scale-[1.02]'
+                  : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low'
                 }`}
             >
               {tab}

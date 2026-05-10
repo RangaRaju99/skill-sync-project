@@ -78,7 +78,7 @@ export const ActionConfirmProvider = ({ children }: { children: ReactNode }) => 
       {children}
 
       {isOpen && (
-        <div className="fixed inset-0 z-[120] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[120] bg-black/20 dark:bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="w-full max-w-sm rounded-2xl border border-outline-variant/20 bg-surface-container-lowest shadow-2xl overflow-hidden">
             <div className="px-6 py-5 border-b border-outline-variant/10 bg-surface-container-low">
               <h2 className="text-xl font-extrabold text-on-surface">{options.title}</h2>

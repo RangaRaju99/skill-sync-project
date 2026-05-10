@@ -46,7 +46,7 @@ const ReviewModal = ({ isOpen, onClose, mentorId, sessionId, onSuccess }: Review
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4 backdrop-blur-sm animate-in fade-in duration-200">
+    <div className="fixed inset-0 bg-black/20 dark:bg-black/60 flex items-center justify-center z-50 p-4 backdrop-blur-sm animate-in fade-in duration-200">
       <div className="bg-surface-container-lowest rounded-2xl p-8 max-w-md w-full shadow-2xl relative animate-in zoom-in-95 duration-200">
         
         <button 
@@ -94,7 +94,7 @@ const ReviewModal = ({ isOpen, onClose, mentorId, sessionId, onSuccess }: Review
           <button 
             onClick={() => reviewMutation.mutate()}
             disabled={rating === 0 || reviewMutation.isPending}
-            className="flex-1 gradient-btn text-white font-bold py-3 rounded-xl shadow-md hover:shadow-lg disabled:opacity-50 disabled:scale-100 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+            className="flex-1 btn-primary py-3 rounded-xl shadow-md hover:shadow-lg disabled:opacity-50 disabled:scale-100 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
           >
             {reviewMutation.isPending ? (
               <span className="material-symbols-outlined animate-spin text-[20px]">autorenew</span>

@@ -38,25 +38,25 @@
 
 @layer base {
   :root {
-    /* Premium SaaS Light Palette */
+    /* Premium SaaS Light Palette - inspired by Linear/Vercel */
     --primary: #6366f1; /* Indigo 500 */
     --primary-dark: #4f46e5; /* Indigo 600 */
     --on-primary: #ffffff;
     --secondary: #f59e0b; /* Amber 500 */
     --on-secondary: #ffffff;
     
-    --surface: #fafafa; /* Very light neutral gray */
-    --on-surface: #111827; /* Gray 900 - High contrast */
-    --on-surface-variant: #4b5563; /* Gray 600 - Secondary text */
+    --surface: #ffffff; /* Clean white */
+    --on-surface: #0f172a; /* Slate 900 - very crisp */
+    --on-surface-variant: #64748b; /* Slate 500 - elegant gray */
     
     --surface-container-lowest: #ffffff;
-    --surface-container-low: #f3f4f6; /* Gray 100 */
-    --surface-container: #e5e7eb; /* Gray 200 */
-    --surface-container-high: #d1d5db; /* Gray 300 */
-    --surface-container-highest: #9ca3af; /* Gray 400 */
+    --surface-container-low: #f8fafc; /* Slate 50 */
+    --surface-container: #f1f5f9; /* Slate 100 */
+    --surface-container-high: #e2e8f0; /* Slate 200 */
+    --surface-container-highest: #cbd5e1; /* Slate 300 */
     
-    --outline: #d1d5db; /* Gray 300 - more defined borders for light mode */
-    --outline-variant: #f3f4f6; /* Gray 100 */
+    --outline: #e2e8f0; /* Slate 200 */
+    --outline-variant: #f1f5f9; /* Slate 100 */
     
     --error: #ef4444;
     --on-error: #ffffff;
@@ -92,8 +92,8 @@
   body {
     @apply bg-surface text-on-surface font-sans selection:bg-primary/30 selection:text-white antialiased;
     background-image: 
-      radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.015) 0px, transparent 50%),
-      radial-gradient(at 100% 100%, rgba(245, 158, 11, 0.015) 0px, transparent 50%);
+      radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.03) 0px, transparent 50%),
+      radial-gradient(at 100% 100%, rgba(245, 158, 11, 0.03) 0px, transparent 50%);
     background-attachment: fixed;
     transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1), color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   }
@@ -107,11 +107,15 @@
   h1, h2, h3, h4, h5, h6 {
     @apply font-display tracking-tight text-on-surface font-bold;
   }
+
+  input, textarea, select {
+    @apply bg-surface-container-low border border-outline/50 rounded-xl px-4 py-2.5 text-on-surface font-medium outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all placeholder:text-on-surface-variant/50;
+  }
 }
 
 @layer components {
   .surface-card {
-    @apply bg-surface-container-lowest border border-outline/40 rounded-2xl shadow-sm hover:border-primary/20 transition-all duration-300;
+    @apply bg-surface-container-lowest border border-outline/40 rounded-2xl shadow-[0_1px_3px_0_rgba(0,0,0,0.02),0_1px_2px_-1px_rgba(0,0,0,0.02)] hover:border-primary/20 transition-all duration-300;
   }
 
   .theme-dark .surface-card {
@@ -123,7 +127,7 @@
   }
 
   .btn-secondary {
-    @apply bg-surface-container-low hover:bg-surface-container-highest text-on-surface font-bold py-2.5 px-6 rounded-xl transition-all duration-300 flex items-center justify-center gap-2 border border-outline/20 hover:border-primary/40;
+    @apply bg-surface-container-low hover:bg-surface-container-high text-on-surface font-bold py-2.5 px-6 rounded-xl transition-all duration-300 flex items-center justify-center gap-2 border border-outline/40 hover:border-primary/40;
   }
 
   .nav-item {

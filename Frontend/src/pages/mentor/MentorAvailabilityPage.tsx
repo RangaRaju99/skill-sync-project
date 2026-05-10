@@ -109,7 +109,7 @@ const MentorAvailabilityPage = () => {
               <select
                 value={dayOfWeek}
                 onChange={(e) => setDayOfWeek(e.target.value)}
-                className="w-full h-11 px-3 bg-surface-container rounded-lg text-sm font-semibold text-on-surface outline-none focus:ring-1 focus:ring-primary border border-transparent"
+                className="w-full h-11 px-3 bg-surface-container-low border border-outline/30 rounded-xl text-sm font-bold text-on-surface outline-none focus:ring-2 focus:ring-primary/20 transition-all"
               >
                 {weekdayNames.map((name, index) => (
                   <option key={name} value={index}>{name}</option>
@@ -123,7 +123,7 @@ const MentorAvailabilityPage = () => {
                 type="time"
                 value={startTime}
                 onChange={(e) => setStartTime(e.target.value)}
-                className="w-full h-11 px-3 bg-surface-container rounded-lg text-sm font-semibold text-on-surface outline-none focus:ring-1 focus:ring-primary border border-transparent"
+                className="w-full h-11 px-3 bg-surface-container-low border border-outline/30 rounded-xl text-sm font-bold text-on-surface outline-none focus:ring-2 focus:ring-primary/20 transition-all"
               />
             </div>
 
@@ -133,7 +133,7 @@ const MentorAvailabilityPage = () => {
                 type="time"
                 value={endTime}
                 onChange={(e) => setEndTime(e.target.value)}
-                className="w-full h-11 px-3 bg-surface-container rounded-lg text-sm font-semibold text-on-surface outline-none focus:ring-1 focus:ring-primary border border-transparent"
+                className="w-full h-11 px-3 bg-surface-container-low border border-outline/30 rounded-xl text-sm font-bold text-on-surface outline-none focus:ring-2 focus:ring-primary/20 transition-all"
               />
             </div>
 

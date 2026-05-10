@@ -132,7 +132,7 @@ const UserProfilePage = () => {
                 <div className="w-40 h-40 rounded-3xl bg-primary/10 text-primary flex items-center justify-center text-5xl font-black border border-primary/20 shadow-2xl group-hover:scale-105 transition-transform duration-500">
                   {(profile?.firstName?.[0] || '') + (profile?.lastName?.[0] || '') || 'U'}
                 </div>
-                <div className="absolute -bottom-2 -right-2 w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center text-white border-4 border-[#0f111a] shadow-lg">
+                <div className="absolute -bottom-2 -right-2 w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center text-white border-4 border-surface shadow-lg">
                   <span className="material-symbols-outlined text-[18px]">verified</span>
                 </div>
               </div>

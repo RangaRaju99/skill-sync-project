@@ -342,10 +342,10 @@ const LearnerDashboardPage = () => {
 
       {/* Mentor Application Modal */}
       {showApplyForm && !mentorApplied && (
-        <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-md flex items-center justify-center p-4 animate-in">
-          <div className="w-full max-w-2xl bg-surface-container border border-outline/20 rounded-3xl p-8 lg:p-10 relative overflow-hidden shadow-2xl">
+        <div className="fixed inset-0 z-[100] bg-black/20 dark:bg-black/80 backdrop-blur-md flex items-center justify-center p-4 animate-in">
+          <div className="w-full max-w-2xl bg-surface-container-lowest border border-outline/20 rounded-3xl p-8 lg:p-10 relative overflow-hidden shadow-2xl">
             <div className="absolute top-0 right-0 p-6">
-              <button onClick={() => setShowApplyForm(false)} className="w-10 h-10 rounded-full hover:bg-white/5 flex items-center justify-center text-on-surface-variant hover:text-on-surface transition-all">
+              <button onClick={() => setShowApplyForm(false)} className="w-10 h-10 rounded-full hover:bg-surface-container flex items-center justify-center text-on-surface-variant hover:text-on-surface transition-all">
                 <ArrowRight className="rotate-180" size={24} />
               </button>
             </div>

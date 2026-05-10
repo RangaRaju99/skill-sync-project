@@ -323,7 +323,7 @@ const MentorDetailPage = () => {
         <div className="bg-surface-container-lowest rounded-2xl shadow-sm border border-outline-variant/10 overflow-hidden">
           <div className="h-32 bg-gradient-to-r from-primary/20 via-primary/10 to-primary/5 relative">
             <div className="absolute -bottom-12 left-8">
-              <div className="w-24 h-24 rounded-2xl bg-gradient-to-tr from-primary to-primary/70 text-white flex items-center justify-center text-3xl font-black shadow-lg ring-4 ring-surface-container-lowest">
+              <div className="w-24 h-24 rounded-2xl bg-gradient-to-tr from-primary to-primary/70 text-white flex items-center justify-center text-3xl font-black shadow-lg ring-[6px] ring-surface">
                 {getInitials(m.firstName, m.lastName)}
               </div>
             </div>

@@ -219,7 +219,7 @@ const DiscoverMentorsPage = () => {
                 <div key={mentor.id} className="surface-card rounded-3xl overflow-hidden hover:-translate-y-1 group flex flex-col border-outline/5">
                   <div className="h-44 bg-surface-container-high relative flex items-center justify-center p-4 overflow-hidden border-b border-outline/5">
                     <div className="absolute inset-0 bg-primary/5 group-hover:bg-primary/10 transition-colors"></div>
-                    <div className={`w-20 h-20 rounded-2xl bg-gradient-to-tr ${getAvatarColor(mentor.firstName)} text-white flex items-center justify-center text-3xl font-black shadow-2xl z-10 ring-[6px] ring-black/10`}>
+                    <div className={`w-20 h-20 rounded-2xl bg-gradient-to-tr ${getAvatarColor(mentor.firstName)} text-white flex items-center justify-center text-3xl font-black shadow-2xl z-10 ring-[6px] ring-surface/60`}>
                       {getInitials(mentor.firstName, mentor.lastName)}
                     </div>
                   </div>

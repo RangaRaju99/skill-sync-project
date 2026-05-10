@@ -78,7 +78,7 @@ const Sidebar = ({ role }: SidebarProps) => {
             />
           )}
 
-          <span className={`material-symbols-outlined text-2xl transition-all duration-300 ${isActive ? 'scale-110' : 'group-hover/navitem:scale-110 opacity-70 group-hover/navitem:opacity-100'
+          <span className={`material-symbols-outlined text-2xl transition-all duration-300 ${isActive ? 'scale-110 opacity-100' : 'group-hover/navitem:scale-110 opacity-90'
             }`}>
             {item.icon}
           </span>
@@ -129,7 +129,7 @@ const Sidebar = ({ role }: SidebarProps) => {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setIsMobileMenuOpen(false)}
-            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[45] lg:hidden"
+            className="fixed inset-0 bg-black/20 dark:bg-black/60 backdrop-blur-sm z-[45] lg:hidden"
           />
         )}
       </AnimatePresence>
