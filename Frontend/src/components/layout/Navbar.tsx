@@ -50,11 +50,11 @@ const Navbar = () => {
   });
 
   const unreadCount = notificationData?.count || 0;
-  
+
   const initial1 = user?.firstName?.[0]?.toUpperCase() || 'U';
   const initial2 = user?.lastName?.[0]?.toUpperCase() || '';
   const initials = `${initial1}${initial2}`;
-  
+
   const colors = ['bg-blue-500', 'bg-emerald-500', 'bg-violet-500', 'bg-amber-500', 'bg-rose-500'];
   const colorIndex = (initial1.charCodeAt(0) % colors.length);
   const avatarClass = colors[colorIndex] || 'bg-primary';
@@ -67,9 +67,9 @@ const Navbar = () => {
           className="p-2 mr-4 rounded-xl hover:bg-surface-container text-on-surface-variant hover:text-primary transition-all duration-300 group"
           aria-label="Toggle Sidebar"
         >
-          <Menu 
-            size={24} 
-            className={`transition-transform duration-500 ${isSidebarCollapsed ? '' : 'rotate-180'}`} 
+          <Menu
+            size={24}
+            className={`transition-transform duration-500 ${isSidebarCollapsed ? '' : 'rotate-180'}`}
           />
         </button>
       </div>

@@ -1,7 +1,18 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-
 import { useSelector } from 'react-redux';
+import { 
+  Calendar, 
+  Clock, 
+  CheckCircle2, 
+  XCircle, 
+  AlertCircle,
+  MessageSquare,
+  Video,
+  MoreVertical,
+  ChevronLeft,
+  ChevronRight
+} from 'lucide-react';
 import PageLayout from '../../components/layout/PageLayout';
 import ReviewModal from '../../components/modals/ReviewModal';
 import api from '../../services/axios';
@@ -10,11 +21,9 @@ import { useActionConfirm } from '../../components/ui/ActionConfirm';
 import type { RootState } from '../../store';
 import { formatDateTimeIST } from '../../utils/dateTime';
 
-
 type Tab = 'Upcoming' | 'Pending' | 'Completed' | 'Cancelled';
 
 const statusMap: Record<Tab, string[]> = {
-  // Include REQUESTED in Upcoming so newly booked sessions are visible immediately.
   Upcoming: ['ACCEPTED', 'REQUESTED'],
   Pending: ['REQUESTED'],
   Completed: ['COMPLETED'],
@@ -22,7 +31,6 @@ const statusMap: Record<Tab, string[]> = {
 };
 
 const MySessionsPage = () => {
-
   const queryClient = useQueryClient();
   const { showToast } = useToast();
   const { requestConfirmation } = useActionConfirm();
@@ -76,22 +84,8 @@ const MySessionsPage = () => {
     return p.length > 1 ? `${p[0][0]}${p[1][0]}`.toUpperCase() : p[0][0].toUpperCase();
   };
 
-  const getAvatarColor = (name?: string) => {
-    const colors = ['bg-blue-500', 'bg-emerald-500', 'bg-violet-500', 'bg-amber-500', 'bg-rose-500'];
-    return colors[name ? name.charCodeAt(0) % colors.length : 0];
-  };
-
   const getSessionLabel = (session: any) => {
-    if (isMentor) {
-      return session.learnerName || 'Learner';
-    }
-
-    return session.mentorName || 'Mentor';
-  };
-
-  const getSessionDateTimeLabel = (sessionDateTime?: string) => {
-    if (!sessionDateTime) return 'Time unavailable';
-    return formatDateTimeIST(sessionDateTime);
+    return isMentor ? (session.learnerName || 'Learner') : (session.mentorName || 'Mentor');
   };
 
   const handleLearnerCancel = async (sessionId: number) => {
@@ -101,10 +95,7 @@ const MySessionsPage = () => {
       confirmLabel: 'Yes, cancel session',
     });
 
-    if (!confirmed) {
-      return;
-    }
-
+    if (!confirmed) return;
     cancelMutation.mutate(sessionId);
   };
 
@@ -123,169 +114,189 @@ const MySessionsPage = () => {
 
   return (
     <PageLayout>
-      <div className="mb-8">
-        <h1 className="text-4xl font-extrabold text-on-surface tracking-tight mb-2">My Sessions</h1>
-        <p className="text-on-surface-variant text-lg">
-          {isMentor
-            ? 'Review learner bookings, accept or reject requests, and manage your completed sessions.'
-            : 'Manage your upcoming and past mentoring sessions.'}
-        </p>
-      </div>
+      <div className="space-y-8 animate-in">
+        <div className="surface-card p-8">
+          <h1 className="text-4xl font-bold text-on-surface tracking-tight mb-2">My Sessions</h1>
+          <p className="text-on-surface-variant font-medium leading-relaxed max-w-2xl">
+            {isMentor
+              ? 'Review learner bookings, manage incoming requests, and track your completed sessions in real-time.'
+              : 'Synchronize with your mentors, manage scheduled sessions, and review your learning progress.'}
+          </p>
+        </div>
 
-      <div className="bg-surface-container-lowest border border-outline-variant/10 rounded-xl p-1.5 inline-flex gap-1 mb-6 shadow-sm overflow-x-auto max-w-full print:hidden scrollbar-hide">
-        {tabs.map((tab) => (
-          <button
-            key={tab}
-            onClick={() => { setActiveTab(tab); setPage(0); }}
-            className={`whitespace-nowrap px-5 py-2.5 rounded-lg text-sm font-bold transition-all duration-300 ${
-              activeTab === tab
-                ? 'bg-primary text-white shadow-md scale-[1.02]'
-                : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface'
-            }`}
-          >
-            {tab}
-          </button>
-        ))}
-      </div>
+        <div className="bg-surface-container-low p-1.5 inline-flex gap-1 rounded-2xl border border-outline shadow-inner">
+          {tabs.map((tab) => (
+            <button
+              key={tab}
+              onClick={() => { setActiveTab(tab); setPage(0); }}
+              className={`whitespace-nowrap px-6 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 ${activeTab === tab
+                  ? 'bg-primary text-white shadow-lg shadow-primary/20 scale-[1.02]'
+                  : 'text-on-surface-variant hover:text-on-surface'
+                }`}
+            >
+              {tab}
+            </button>
+          ))}
+        </div>
 
-      <div className="space-y-4">
-        {isLoading ? (
-          Array(3).fill(0).map((_, i) => (
-            <div key={i} className="h-24 bg-surface-container-lowest rounded-xl border border-outline-variant/10 animate-pulse"></div>
-          ))
-        ) : isError ? (
-          <div className="text-center py-10 text-error font-medium">Failed to load sessions.</div>
-        ) : sessions.length === 0 ? (
-          <div className="bg-surface-container-lowest rounded-xl p-12 text-center border border-outline-variant/10 shadow-sm flex flex-col items-center">
-            <span className="material-symbols-outlined text-5xl text-outline-variant mb-4">event_busy</span>
-            <p className="font-semibold text-lg text-on-surface mb-2">
-              {activeTab === 'Pending' && 'No pending requests'}
-              {activeTab === 'Upcoming' && 'No upcoming sessions'}
-              {activeTab === 'Completed' && 'No completed sessions yet'}
-              {activeTab === 'Cancelled' && 'No cancelled sessions'}
-            </p>
+        <div className="space-y-4">
+          {isLoading ? (
+            Array(3).fill(0).map((_, i) => <div key={i} className="h-28 surface-card animate-pulse" />)
+          ) : isError ? (
+            <div className="surface-card p-12 text-center text-error font-bold">Protocol failure: Failed to load sessions.</div>
+          ) : sessions.length === 0 ? (
+            <div className="surface-card p-20 text-center flex flex-col items-center">
+              <Calendar className="text-on-surface-variant/20 mb-6" size={64} />
+              <p className="text-xl font-bold text-on-surface mb-2">No records found</p>
+              <p className="text-on-surface-variant font-medium">System reports zero active sessions in this category.</p>
+            </div>
+          ) : (
+            sessions.map((session: any) => {
+              const displayName = getSessionLabel(session);
+              const sessionDateTime = session.startTime || session.sessionDate;
 
-          </div>
-        ) : (
-          sessions.map((session: any) => {
-            const displayName = getSessionLabel(session);
-            const sessionDateTime = session.startTime || session.sessionDate;
-            
-            let statusClasses = 'bg-surface-container text-on-surface-variant';
-            if (session.status === 'REQUESTED') statusClasses = 'bg-amber-100 text-amber-700';
-            if (session.status === 'ACCEPTED') statusClasses = 'bg-blue-100 text-blue-700';
-            if (session.status === 'COMPLETED') statusClasses = 'bg-green-100 text-green-800';
-            if (session.status === 'CANCELLED') statusClasses = 'bg-red-100 text-red-700';
+              let statusVariant = 'bg-primary/10 text-primary border-primary/10';
+              if (session.status === 'REQUESTED') statusVariant = 'bg-amber-500/10 text-amber-500 border-amber-500/10';
+              if (session.status === 'ACCEPTED') statusVariant = 'bg-primary text-white border-primary/20 shadow-[0_0_15px_rgba(139,92,246,0.3)]';
+              if (session.status === 'COMPLETED') statusVariant = 'bg-emerald-500/10 text-emerald-500 border-emerald-500/10';
+              if (session.status === 'CANCELLED') statusVariant = 'bg-error/10 text-error border-error/10';
 
-            return (
-              <div key={session.id} className="bg-surface-container-lowest rounded-xl p-5 md:p-6 shadow-sm border border-outline-variant/10 hover:shadow-md hover:border-outline-variant/30 transition-all flex flex-col md:flex-row items-start md:items-center justify-between gap-4 group">
-                
-                {/* LEFT */}
-                <div className="flex items-center gap-4 min-w-[240px]">
-                  <div className={`w-12 h-12 rounded-full text-white flex items-center justify-center font-bold text-lg shadow-sm shrink-0 ${getAvatarColor(displayName)}`}>
-                    {getInitials(displayName)}
+              return (
+                <div key={session.id} className="surface-card p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 group hover:border-primary/20 transition-all">
+                  
+                  {/* Participant Info */}
+                  <div className="flex items-center gap-5 min-w-[280px]">
+                    <div className="w-14 h-14 rounded-2xl bg-primary/20 text-primary flex items-center justify-center font-bold text-xl shadow-inner border border-primary/10 group-hover:scale-105 transition-transform">
+                      {getInitials(displayName)}
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-lg text-on-surface leading-tight group-hover:text-primary transition-colors">{displayName}</h3>
+                      <div className="flex items-center gap-2 text-xs font-bold text-on-surface-variant mt-1.5 uppercase tracking-widest opacity-80">
+                        <Clock size={12} className="text-primary" />
+                        <span>{formatDateTimeIST(sessionDateTime)}</span>
+                      </div>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="font-bold text-on-surface text-lg leading-tight group-hover:text-primary transition-colors">{displayName}</h3>
-                    <div className="flex items-center gap-2 text-sm text-on-surface-variant font-medium mt-0.5">
-                      <span className="material-symbols-outlined text-[16px]">schedule</span>
-                      <span>{getSessionDateTimeLabel(sessionDateTime)}</span>
+
+                  {/* Topic Section */}
+                  <div className="flex-1 md:px-8 w-full">
+                    <div className="bg-surface-container-low px-4 py-3 rounded-xl border border-outline/5 group-hover:bg-primary/5 transition-colors">
+                      <p className="text-sm font-bold text-on-surface-variant group-hover:text-on-surface transition-colors line-clamp-1">
+                        {session.topic || 'General Knowledge Exchange'}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Actions & Status */}
+                  <div className="flex items-center justify-between md:justify-end gap-6 w-full md:w-auto">
+                    <span className={`px-3 py-1 rounded-lg text-[10px] font-bold uppercase tracking-widest border transition-all ${statusVariant}`}>
+                      {session.status}
+                    </span>
+
+                    <div className="flex items-center gap-3">
+                      {isMentor && session.status === 'REQUESTED' && (
+                        <>
+                          <button
+                            onClick={() => handleMentorSessionAction(session.id, 'reject')}
+                            className="h-10 px-4 bg-error/10 text-error rounded-xl text-xs font-bold hover:bg-error hover:text-white transition-all border border-error/10"
+                          >
+                            Reject
+                          </button>
+                          <button
+                            onClick={() => handleMentorSessionAction(session.id, 'accept')}
+                            className="btn-primary h-10 px-6 text-xs"
+                          >
+                            Accept Sync
+                          </button>
+                        </>
+                      )}
+
+                      {!isMentor && session.status === 'REQUESTED' && (
+                        <button
+                          onClick={() => void handleLearnerCancel(session.id)}
+                          disabled={cancelMutation.isPending}
+                          className="h-10 px-4 bg-error/10 text-error rounded-xl text-xs font-bold hover:bg-error hover:text-white transition-all border border-error/10 disabled:opacity-50"
+                        >
+                          Terminate
+                        </button>
+                      )}
+
+                      {!isMentor && session.status === 'ACCEPTED' && (
+                        <div className="flex items-center gap-2">
+                          <button className="h-10 px-6 bg-emerald-500 text-white rounded-xl text-xs font-bold flex items-center gap-2 hover:bg-emerald-600 transition-all shadow-lg shadow-emerald-500/20">
+                            <Video size={14} />
+                            Join Session
+                          </button>
+                          <button
+                            onClick={() => void handleLearnerCancel(session.id)}
+                            disabled={cancelMutation.isPending}
+                            className="w-10 h-10 flex items-center justify-center text-on-surface-variant hover:text-error transition-colors"
+                          >
+                            <XCircle size={20} />
+                          </button>
+                        </div>
+                      )}
+
+                      {isMentor && session.status === 'ACCEPTED' && (
+                        <button
+                          onClick={() => handleMentorSessionAction(session.id, 'complete')}
+                          className="h-10 px-6 bg-emerald-500/10 text-emerald-500 rounded-xl text-xs font-bold hover:bg-emerald-500 hover:text-white transition-all border border-emerald-500/10"
+                        >
+                          Complete Sync
+                        </button>
+                      )}
+
+                      {!isMentor && session.status === 'COMPLETED' && (
+                        <button
+                          onClick={() => setReviewModalData({ isOpen: true, mentorId: session.mentorId, sessionId: session.id })}
+                          className="h-10 px-6 bg-primary/10 text-primary rounded-xl text-xs font-bold hover:bg-primary hover:text-white transition-all border border-primary/20"
+                        >
+                          Log Feedback
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>
+              );
+            })
+          )}
+        </div>
 
-                {/* CENTER */}
-                <div className="flex-1 md:px-6 w-full md:w-auto">
-                  <p className="text-sm font-semibold text-on-surface-variant bg-surface-container-low px-3 py-1.5 rounded-lg inline-block border border-outline-variant/5 truncate max-w-full">
-                    {session.topic || 'Mentoring Session'}
-                  </p>
-                </div>
-
-                {/* RIGHT */}
-                <div className="flex items-center justify-between md:justify-end gap-4 w-full md:w-auto mt-2 md:mt-0">
-                  <span className={`px-3 py-1 rounded-md text-[10px] font-extrabold uppercase tracking-widest ${statusClasses}`}>
-                    {session.status}
-                  </span>
-
-                  <div className="flex items-center gap-2">
-                    {isMentor && session.status === 'REQUESTED' && (
-                      <>
-                        <button 
-                          onClick={() => handleMentorSessionAction(session.id, 'reject')}
-                          className="text-error bg-error/10 hover:bg-error/20 px-4 py-2 rounded-lg text-sm font-bold transition-colors border border-transparent hover:border-error/20 shrink-0"
-                        >
-                          Reject
-                        </button>
-                        <button 
-                          onClick={() => handleMentorSessionAction(session.id, 'accept')}
-                          className="bg-primary text-white px-4 py-2 rounded-lg text-sm font-bold transition-colors shrink-0"
-                        >
-                          Accept Request
-                        </button>
-                      </>
-                    )}
-
-                    {!isMentor && session.status === 'REQUESTED' && (
-                      <button 
-                        onClick={() => void handleLearnerCancel(session.id)}
-                        disabled={cancelMutation.isPending}
-                        className="text-error bg-error/10 hover:bg-error/20 px-4 py-2 rounded-lg text-sm font-bold transition-colors border border-transparent hover:border-error/20 shrink-0 disabled:opacity-50"
-                      >
-                        Cancel request
-                      </button>
-                    )}
-
-                    {!isMentor && session.status === 'ACCEPTED' && (
-                      <>
-                        <button className="bg-surface-container-high hover:bg-surface-container-highest text-on-surface px-4 py-2 rounded-lg text-sm font-bold shadow-sm transition-colors border border-outline-variant/10 shrink-0">
-                          Join Call
-                        </button>
-                        <button 
-                          onClick={() => void handleLearnerCancel(session.id)}
-                          disabled={cancelMutation.isPending}
-                          className="text-on-surface-variant hover:text-error hover:bg-error/10 p-2 rounded-lg transition-colors border border-transparent"
-                          title="Cancel Session"
-                        >
-                          <span className="material-symbols-outlined text-[20px]">cancel</span>
-                        </button>
-                      </>
-                    )}
-
-                    {isMentor && session.status === 'ACCEPTED' && (
-                      <button 
-                        onClick={() => handleMentorSessionAction(session.id, 'complete')}
-                        className="bg-emerald-600 text-white px-4 py-2 rounded-lg text-sm font-bold transition-colors shrink-0"
-                      >
-                        Mark Complete
-                      </button>
-                    )}
-
-                    {!isMentor && session.status === 'COMPLETED' && (
-                      <button 
-                        onClick={() => setReviewModalData({ isOpen: true, mentorId: session.mentorId, sessionId: session.id })}
-                        className="bg-primary/10 hover:bg-primary/20 text-primary px-4 py-2 rounded-lg text-sm font-bold transition-colors border border-primary/20 shrink-0"
-                      >
-                        Leave Review
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </div>
-            );
-          })
+        {/* Pagination */}
+        {data?.totalElements > 10 && (
+          <div className="flex justify-center items-center gap-4 pt-8">
+            <button
+              onClick={() => setPage(p => Math.max(0, p - 1))}
+              disabled={page === 0}
+              className="w-12 h-12 surface-card flex items-center justify-center text-on-surface disabled:opacity-30"
+            >
+              <ChevronLeft size={20} />
+            </button>
+            <span className="text-sm font-bold text-on-surface-variant uppercase tracking-widest">
+              Protocol {page + 1} / {Math.ceil(data.totalElements / 10)}
+            </span>
+            <button
+              onClick={() => setPage(p => p + 1)}
+              disabled={page >= Math.ceil(data.totalElements / 10) - 1}
+              className="w-12 h-12 surface-card flex items-center justify-center text-on-surface disabled:opacity-30"
+            >
+              <ChevronRight size={20} />
+            </button>
+          </div>
         )}
       </div>
 
-      <ReviewModal 
-        isOpen={reviewModalData.isOpen} 
-        onClose={() => setReviewModalData(prev => ({ ...prev, isOpen: false }))} 
-        mentorId={reviewModalData.mentorId} 
+      <ReviewModal
+        isOpen={reviewModalData.isOpen}
+        onClose={() => setReviewModalData(prev => ({ ...prev, isOpen: false }))}
+        mentorId={reviewModalData.mentorId}
         sessionId={reviewModalData.sessionId}
         onSuccess={() => queryClient.invalidateQueries({ queryKey: ['sessions'] })}
       />
-
     </PageLayout>
   );
 };
+
+export default MySessionsPage;
 
 export default MySessionsPage;

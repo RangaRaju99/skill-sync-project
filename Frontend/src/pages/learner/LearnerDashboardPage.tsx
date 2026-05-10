@@ -2,6 +2,17 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSelector } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
+import { 
+  Calendar, 
+  Users, 
+  Search, 
+  Star, 
+  ExternalLink, 
+  TrendingUp, 
+  Award, 
+  BookOpen,
+  ArrowRight
+} from 'lucide-react';
 import api from '../../services/axios';
 import type { RootState } from '../../store';
 import PageLayout from '../../components/layout/PageLayout';
@@ -32,7 +43,6 @@ const LearnerDashboardPage = () => {
     }
   });
 
-
   const { data: mentors, isLoading: loadingMentors } = useQuery({
     queryKey: ['mentors', 'recommended'],
     queryFn: async () => {
@@ -48,7 +58,6 @@ const LearnerDashboardPage = () => {
         const res = await api.get('/api/groups/my');
         return res.data;
       } catch (e: any) {
-        if (e.response?.status === 404) return [];
         return [];
       }
     }
@@ -70,38 +79,22 @@ const LearnerDashboardPage = () => {
     queryKey: ['skills', 'all', 'apply'],
     queryFn: async () => {
       const size = 200;
-      const pagesToFetch = 10;
-      const collected: any[] = [];
-
-      for (let page = 0; page < pagesToFetch; page += 1) {
-        const res = await api.get(`/api/skills?page=${page}&size=${size}`, { _skipErrorRedirect: true } as any);
-        const content = Array.isArray(res.data?.content) ? res.data.content : [];
-        if (content.length === 0) break;
-        collected.push(...content);
-        if (res.data?.last !== false) break;
-      }
-
-      const uniqueById = new Map(collected.map((skill: any) => [skill.id, skill]));
-      return Array.from(uniqueById.values());
+      const res = await api.get(`/api/skills?page=0&size=${size}`, { _skipErrorRedirect: true } as any);
+      return res.data?.content || [];
     },
   });
 
   const applyMutation = useMutation({
     mutationFn: async () => {
-      return api.post('/api/mentors/apply', {
-        bio: applyData.bio,
-        experienceYears: applyData.experienceYears,
-        hourlyRate: applyData.hourlyRate,
-        skillIds: applyData.skillIds,
-      });
+      return api.post('/api/mentors/apply', applyData);
     },
     onSuccess: () => {
-      showToast({ message: 'Mentor application submitted successfully.', type: 'success' });
+      showToast({ message: 'Authorization request submitted.', type: 'success' });
       setShowApplyForm(false);
       queryClient.invalidateQueries({ queryKey: ['mentor', 'my', 'learner-dashboard'] });
     },
     onError: (error: any) => {
-      const message = error?.response?.data?.message || 'Failed to submit mentor application.';
+      const message = error?.response?.data?.message || 'Submission failed.';
       showToast({ message, type: 'error' });
     },
   });
@@ -118,17 +111,6 @@ const LearnerDashboardPage = () => {
     return parts.length > 1 ? `${parts[0][0]}${parts[1][0]}`.toUpperCase() : parts[0][0].toUpperCase();
   };
 
-  const getAvatarColor = (name?: string) => {
-    const colors = ['bg-blue-500', 'bg-emerald-500', 'bg-violet-500', 'bg-amber-500', 'bg-rose-500'];
-    const idx = name ? name.charCodeAt(0) % colors.length : 0;
-    return colors[idx];
-  };
-
-  const formatDateTime = (iso?: string) => {
-    if (!iso) return '';
-    return formatDateTimeIST(iso);
-  };
-
   const getSessionMentorName = (session: any) => session.mentorName || 'Mentor';
   const getSessionDateTime = (session: any) => session.startTime || session.sessionDate;
 
@@ -143,160 +125,284 @@ const LearnerDashboardPage = () => {
 
   const submitMentorApplication = () => {
     if (applyData.bio.trim().length < 50) {
-      showToast({ message: 'Bio must be at least 50 characters for mentor application.', type: 'error' });
+      showToast({ message: 'Description insufficient (min 50 chars).', type: 'error' });
       return;
     }
-
     if (applyData.skillIds.length === 0) {
-      showToast({ message: 'Select at least one skill to apply as mentor.', type: 'error' });
+      showToast({ message: 'Select specialization areas.', type: 'error' });
       return;
     }
-
     applyMutation.mutate();
   };
 
   const rightPanel = (
-    <>
-      <div className="bg-surface-container-lowest p-6 rounded-2xl shadow-sm border border-outline-variant/15">
-        <h3 className="font-bold text-lg text-on-surface mb-2">Apply As Mentor</h3>
+    <div className="space-y-6 animate-in" style={{ animationDelay: '0.2s' }}>
+      <div className="surface-card p-6">
+        <h3 className="text-lg font-bold text-on-surface mb-2 flex items-center gap-2">
+          <Award size={20} className="text-primary" />
+          Become a Mentor
+        </h3>
         {mentorApplied ? (
-          <div className={`rounded-xl border p-4 ${
-            mentorStatus === 'APPROVED' ? 'border-green-300 bg-green-50' :
-            mentorStatus === 'REJECTED' ? 'border-red-300 bg-red-50' :
-            'border-amber-300 bg-amber-50'
+          <div className={`p-4 rounded-xl border ${
+            mentorStatus === 'APPROVED' ? 'bg-emerald-500/5 border-emerald-500/20' : 'bg-primary/5 border-primary/20'
           }`}>
-            <p className="text-sm font-semibold text-on-surface">
-              Application Status: <span className={`font-bold ${
-                mentorStatus === 'APPROVED' ? 'text-green-600' :
-                mentorStatus === 'REJECTED' ? 'text-red-600' :
-                'text-amber-600'
-              }`}>{mentorStatus || 'PENDING'}</span>
+            <p className="text-sm font-bold text-on-surface flex items-center justify-between">
+              Status 
+              <span className={`px-2 py-0.5 rounded text-[10px] uppercase tracking-wider ${
+                mentorStatus === 'APPROVED' ? 'bg-emerald-500 text-white' : 'bg-primary text-white'
+              }`}>
+                {mentorStatus || 'PENDING'}
+              </span>
             </p>
-            <p className="text-xs text-on-surface-variant mt-2">
-              {mentorStatus === 'APPROVED' ? 'Congratulations! You are now a mentor. Log out and back in to access your mentor dashboard.' :
-               mentorStatus === 'REJECTED' ? 'Your application was not approved. You may contact support for more details.' :
-               'Your application is under review by an admin. You will be notified once it is approved.'}
+            <p className="text-xs text-on-surface-variant mt-3 leading-relaxed">
+              {mentorStatus === 'APPROVED' ? 'Authorization successful. Re-authenticate to access mentor protocols.' : 'Request is being processed by administration.'}
             </p>
           </div>
         ) : (
           <>
-            <p className="text-sm text-on-surface-variant mb-4">
-              {canReapply
-                ? 'Your mentor role was demoted/rejected. You can submit a fresh mentor application now.'
-                : 'Share your expertise and start mentoring learners.'}
+            <p className="text-sm text-on-surface-variant mb-6 leading-relaxed">
+              Share your protocols and scale your impact within the network.
             </p>
             <button
               onClick={() => setShowApplyForm(true)}
-              className="w-full gradient-btn text-white py-2.5 rounded-xl font-bold"
+              className="btn-primary w-full"
             >
-              {canReapply ? 'Re-apply as Mentor' : 'Start Mentor Application'}
+              Initialize Application
             </button>
           </>
         )}
       </div>
 
-      <div className="bg-surface-container-lowest p-6 rounded-2xl shadow-sm border border-outline-variant/15">
-        <h3 className="font-bold text-lg text-on-surface mb-4">Practice Links</h3>
-        <div className="space-y-2 text-sm font-semibold">
-          <a href="https://leetcode.com" target="_blank" rel="noreferrer" className="block text-primary hover:underline">LeetCode</a>
-          <a href="https://www.hackerrank.com" target="_blank" rel="noreferrer" className="block text-primary hover:underline">HackerRank</a>
-          <a href="https://www.geeksforgeeks.org" target="_blank" rel="noreferrer" className="block text-primary hover:underline">GeeksforGeeks</a>
-          <a href="https://www.codechef.com" target="_blank" rel="noreferrer" className="block text-primary hover:underline">CodeChef</a>
+      <div className="surface-card p-6">
+        <h3 className="text-lg font-bold text-on-surface mb-4 flex items-center gap-2">
+          <TrendingUp size={20} className="text-primary" />
+          Network Resources
+        </h3>
+        <div className="space-y-2">
+          {['LeetCode', 'HackerRank', 'GeeksforGeeks', 'CodeChef'].map((link) => (
+            <a key={link} href={`https://${link.toLowerCase()}.com`} target="_blank" rel="noreferrer" className="flex items-center justify-between p-2 rounded-lg hover:bg-white/5 text-sm font-semibold text-on-surface-variant hover:text-primary transition-all">
+              {link}
+              <ExternalLink size={14} />
+            </a>
+          ))}
         </div>
       </div>
 
-      <div className="bg-surface-container-lowest p-6 rounded-2xl shadow-sm border border-outline-variant/15">
-        <h3 className="font-bold text-lg text-on-surface mb-4">My Groups</h3>
+      <div className="surface-card p-6">
+        <h3 className="text-lg font-bold text-on-surface mb-4 flex items-center gap-2">
+          <Users size={20} className="text-primary" />
+          Active Syncs
+        </h3>
         {groups.length === 0 ? (
-          <div className="flex flex-col items-center py-6 text-center">
-            <span className="material-symbols-outlined text-4xl text-outline-variant mb-2">group_add</span>
-            <p className="text-sm font-semibold text-on-surface-variant mb-4">No active groups yet</p>
-            <Link to="/groups" className="text-primary border border-primary hover:bg-primary/5 font-bold px-6 py-2 rounded-xl transition-all text-sm">
-              Find a Group
-            </Link>
+          <div className="text-center py-6">
+            <p className="text-xs font-bold text-on-surface-variant uppercase tracking-widest mb-4 opacity-50">No Active Syncs</p>
+            <Link to="/groups" className="text-xs font-bold text-primary hover:underline">Establish Connection</Link>
           </div>
         ) : (
           <div className="space-y-3">
-            {groups.map((g: any, i: number) => (
-              <div key={i} className="flex justify-between items-center text-sm font-semibold p-2 rounded-lg hover:bg-surface-container-low transition-colors">
-                <span>{g.name}</span>
-                <span className="text-on-surface-variant text-xs">{g.memberCount || 1} members</span>
+            {groups.slice(0, 4).map((g: any, i: number) => (
+              <div key={i} className="flex justify-between items-center p-2 rounded-lg hover:bg-white/5 transition-colors group cursor-pointer" onClick={() => navigate(`/groups/${g.id}`)}>
+                <span className="text-sm font-semibold text-on-surface group-hover:text-primary transition-colors">{g.name}</span>
+                <ArrowRight size={14} className="text-on-surface-variant opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0" />
               </div>
             ))}
           </div>
         )}
       </div>
-
-
-    </>
+    </div>
   );
 
   return (
     <PageLayout rightPanel={rightPanel}>
+      <div className="space-y-12 animate-in">
+        {/* Header Section */}
+        <section className="relative">
+          <h1 className="text-4xl lg:text-5xl font-display font-bold text-on-surface tracking-tight mb-2">
+            Welcome, <span className="text-primary">{user?.firstName}</span>
+          </h1>
+          <p className="text-lg text-on-surface-variant font-medium max-w-2xl">
+            System operational. All synchronization protocols are active and ready for execution.
+          </p>
+        </section>
+
+        {/* Upcoming Sessions */}
+        <section>
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-2xl font-bold text-on-surface flex items-center gap-3">
+              <Calendar size={24} className="text-primary" />
+              Scheduled Syncs
+            </h2>
+            {upSessions?.content?.length > 0 && (
+              <Link to="/sessions" className="text-sm font-bold text-primary hover:underline flex items-center gap-1">
+                View All <ArrowRight size={14} />
+              </Link>
+            )}
+          </div>
+
+          <div className="space-y-4">
+            {loadingUp ? (
+              Array(2).fill(0).map((_, i) => <div key={i} className="h-24 surface-card animate-pulse" />)
+            ) : upSessions?.content?.length > 0 ? (
+              upSessions.content.map((session: any) => (
+                <div key={session.id} className="surface-card p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 group hover:border-primary/30">
+                  <div className="flex items-center gap-5">
+                    <div className="w-12 h-12 rounded-xl bg-primary/20 text-primary flex items-center justify-center font-bold shadow-inner border border-primary/20">
+                      {getInitials(getSessionMentorName(session))}
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-lg text-on-surface group-hover:text-primary transition-colors">{getSessionMentorName(session)}</h4>
+                      <p className="text-sm font-medium text-on-surface-variant">{session.topic || 'General Protocol Sync'}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-8">
+                    <div className="text-right hidden md:block">
+                      <p className="text-sm font-bold text-on-surface">{formatDateTimeIST(getSessionDateTime(session))}</p>
+                      <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mt-1">Scheduled Time</p>
+                    </div>
+                    <span className="px-3 py-1 bg-primary text-white text-[10px] font-bold uppercase tracking-widest rounded-lg shadow-[0_0_15px_rgba(139,92,246,0.3)]">
+                      {session.status}
+                    </span>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="surface-card p-12 text-center flex flex-col items-center">
+                <Calendar className="text-on-surface-variant/20 mb-4" size={48} />
+                <p className="text-lg font-bold text-on-surface-variant mb-6">No scheduled synchronizations</p>
+                <button onClick={() => navigate('/mentors')} className="btn-primary px-8">Establish Sync</button>
+              </div>
+            )}
+          </div>
+        </section>
+
+        {/* Recommended Mentors */}
+        <section>
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-2xl font-bold text-on-surface flex items-center gap-3">
+              <Search size={24} className="text-primary" />
+              Available Mentors
+            </h2>
+            <Link to="/mentors" className="text-sm font-bold text-primary hover:underline flex items-center gap-1">
+              Explore All <ArrowRight size={14} />
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {loadingMentors ? (
+              Array(2).fill(0).map((_, i) => <div key={i} className="h-64 surface-card animate-pulse" />)
+            ) : mentors?.content?.map((mnt: any) => (
+              <div key={mnt.id} className="surface-card p-8 flex flex-col hover:-translate-y-1 group">
+                <div className="flex items-start gap-5 mb-6">
+                  <div className="relative">
+                    <div className="w-16 h-16 rounded-2xl bg-primary/20 text-primary flex items-center justify-center font-bold text-xl shadow-inner border border-primary/20 group-hover:scale-105 transition-transform">
+                      {getInitials(`${mnt.firstName} ${mnt.lastName}`)}
+                    </div>
+                    <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 rounded-full border-2 border-surface shadow-sm"></div>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex justify-between items-start">
+                      <h3 className="text-xl font-bold text-on-surface leading-tight truncate">{mnt.firstName} {mnt.lastName}</h3>
+                      <div className="flex items-center gap-1 bg-primary/10 px-2 py-1 rounded text-[10px] font-bold text-primary">
+                        <Star size={12} fill="currentColor" />
+                        {Number(mnt.avgRating || 0).toFixed(1)}
+                      </div>
+                    </div>
+                    <p className="text-sm font-medium text-on-surface-variant mt-2 line-clamp-2 leading-relaxed">{mnt.headline}</p>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap gap-2 mb-8">
+                  {(mnt.skills || []).slice(0, 3).map((skill: any, i: number) => (
+                    <span key={i} className="px-2.5 py-1 bg-surface-container-low text-[10px] font-bold text-on-surface-variant uppercase tracking-wider rounded-lg border border-outline">
+                      {typeof skill === 'string' ? skill : (skill.name || 'Protocol')}
+                    </span>
+                  ))}
+                  {mnt.skills?.length > 3 && (
+                    <span className="px-2.5 py-1 bg-surface-container-low text-[10px] font-bold text-on-surface-variant rounded-lg">+{mnt.skills.length - 3}</span>
+                  )}
+                </div>
+
+                <div className="mt-auto pt-6 border-t border-white/5 flex items-center justify-between">
+                  <div>
+                    <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-1 opacity-60">Rate</p>
+                    <p className="text-2xl font-bold text-primary">₹{mnt.hourlyRate}<span className="text-sm font-semibold text-on-surface-variant">/hr</span></p>
+                  </div>
+                  <button
+                    onClick={() => navigate(`/mentors/${mnt.id}`)}
+                    className="h-12 px-8 bg-surface-container-high hover:bg-primary hover:text-white text-on-surface font-bold rounded-xl transition-all shadow-inner border border-outline hover:border-primary"
+                  >
+                    Sync Request
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      </div>
+
+      {/* Mentor Application Modal */}
       {showApplyForm && !mentorApplied && (
-        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl bg-surface-container-lowest border border-outline-variant/20 shadow-xl p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-2xl font-extrabold text-on-surface">Mentor Application</h2>
-              <button onClick={() => setShowApplyForm(false)} className="text-on-surface-variant hover:text-on-surface">
-                <span className="material-symbols-outlined">close</span>
+        <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-md flex items-center justify-center p-4 animate-in">
+          <div className="w-full max-w-2xl surface-card p-8 relative overflow-hidden">
+            <div className="absolute top-0 right-0 p-4">
+              <button onClick={() => setShowApplyForm(false)} className="w-10 h-10 rounded-full hover:bg-white/5 flex items-center justify-center text-on-surface-variant transition-colors">
+                <ArrowRight className="rotate-180" size={24} />
               </button>
             </div>
 
-            <div className="space-y-4">
+            <h2 className="text-3xl font-display font-bold text-on-surface mb-2">Mentor Access Protocol</h2>
+            <p className="text-on-surface-variant mb-10 font-medium">Configure your specialization parameters for network approval.</p>
+
+            <div className="space-y-8">
               <div>
-                <label className="block text-sm font-bold text-on-surface mb-1">Bio (minimum 50 characters)</label>
+                <label className="block text-[11px] font-bold text-on-surface-variant uppercase tracking-widest mb-3">Professional Bio</label>
                 <textarea
                   value={applyData.bio}
                   onChange={(e) => setApplyData((prev) => ({ ...prev, bio: e.target.value }))}
-                  rows={5}
-                  className="w-full rounded-xl border border-outline-variant/30 bg-surface px-4 py-3 text-sm text-on-surface outline-none focus:ring-2 focus:ring-primary/40"
+                  placeholder="Detail your professional journey and areas of specialization..."
+                  rows={4}
+                  className="w-full bg-surface-container-low border border-outline rounded-xl p-4 text-on-surface font-medium outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all resize-none"
                 />
-                <p className={`mt-1 text-xs font-semibold ${applyData.bio.trim().length >= 50 ? 'text-emerald-600' : 'text-error'}`}>
-                  {applyData.bio.trim().length}/50 characters minimum
-                </p>
+                <div className="flex justify-between mt-2">
+                  <span className={`text-[10px] font-bold uppercase tracking-widest ${applyData.bio.trim().length >= 50 ? 'text-emerald-500' : 'text-on-surface-variant/40'}`}>
+                    {applyData.bio.trim().length}/50 Min Chars
+                  </span>
+                </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div>
-                  <label className="block text-sm font-bold text-on-surface mb-1">Experience (years)</label>
+                  <label className="block text-[11px] font-bold text-on-surface-variant uppercase tracking-widest mb-3">Exp (Cycles)</label>
                   <input
                     type="number"
-                    min={0}
-                    max={50}
                     value={applyData.experienceYears}
                     onChange={(e) => setApplyData((prev) => ({ ...prev, experienceYears: Number(e.target.value) }))}
-                    className="w-full rounded-xl border border-outline-variant/30 bg-surface px-4 py-3 text-sm text-on-surface outline-none focus:ring-2 focus:ring-primary/40"
+                    className="w-full h-12 bg-surface-container-low border border-outline rounded-xl px-4 text-on-surface font-bold outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-bold text-on-surface mb-1">Hourly Rate (₹ per hour)</label>
+                  <label className="block text-[11px] font-bold text-on-surface-variant uppercase tracking-widest mb-3">Hourly Rate (₹)</label>
                   <input
                     type="number"
-                    min={5}
-                    max={500}
                     value={applyData.hourlyRate}
                     onChange={(e) => setApplyData((prev) => ({ ...prev, hourlyRate: Number(e.target.value) }))}
-                    className="w-full rounded-xl border border-outline-variant/30 bg-surface px-4 py-3 text-sm text-on-surface outline-none focus:ring-2 focus:ring-primary/40"
+                    className="w-full h-12 bg-surface-container-low border border-outline rounded-xl px-4 text-on-surface font-bold outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-on-surface mb-2">Select Skills (max 10)</label>
-                <div className="max-h-56 overflow-y-auto rounded-xl border border-outline-variant/30 p-3">
+                <label className="block text-[11px] font-bold text-on-surface-variant uppercase tracking-widest mb-3">Specializations (Max 10)</label>
+                <div className="max-h-48 overflow-y-auto pr-2 scrollbar-hide">
                   <div className="flex flex-wrap gap-2">
                     {skills.map((skill: any) => {
                       const selected = applyData.skillIds.includes(skill.id);
                       return (
                         <button
                           key={skill.id}
-                          type="button"
                           onClick={() => toggleSkill(skill.id)}
-                          className={`px-3 py-1.5 rounded-full text-xs font-bold border transition-colors ${
-                            selected
-                              ? 'bg-primary text-white border-primary'
-                              : 'bg-surface-container-low text-on-surface-variant border-outline-variant/30 hover:border-primary/40'
+                          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all border ${
+                            selected ? 'bg-primary border-primary text-white shadow-lg shadow-primary/20' : 'bg-surface-container-low border-outline text-on-surface-variant hover:text-on-surface'
                           }`}
                         >
                           {skill.name}
@@ -307,159 +413,29 @@ const LearnerDashboardPage = () => {
                 </div>
               </div>
 
-              <div className="flex gap-3 pt-2">
+              <div className="flex gap-4 pt-4">
                 <button
                   onClick={submitMentorApplication}
                   disabled={applyMutation.isPending}
-                  className="flex-1 gradient-btn text-white py-2.5 rounded-xl font-bold disabled:opacity-50"
+                  className="btn-primary flex-1 h-14 text-lg"
                 >
-                  {applyMutation.isPending ? 'Submitting...' : 'Submit Application'}
+                  {applyMutation.isPending ? 'Processing...' : 'Authorize Submission'}
                 </button>
                 <button
                   onClick={() => setShowApplyForm(false)}
-                  className="flex-1 bg-surface-container text-on-surface py-2.5 rounded-xl font-bold"
+                  className="flex-1 h-14 bg-surface-container hover:bg-surface-container-high text-on-surface font-bold rounded-2xl transition-all border border-outline"
                 >
-                  Cancel
+                  Terminate
                 </button>
               </div>
             </div>
           </div>
         </div>
       )}
-
-      {/* Header Section */}
-      <section className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
-        <div>
-          <h1 className="text-3xl font-extrabold text-on-surface tracking-tight">Welcome back, {user?.firstName}!</h1>
-          <p className="text-on-surface-variant font-medium mt-1">You're making great progress. Keep it up.</p>
-        </div>
-
-      </section>
-
-      {/* Upcoming Sessions Section */}
-      <section>
-        <div className="flex justify-between items-end mb-4">
-          <h2 className="text-xl font-bold text-on-surface">Upcoming Sessions</h2>
-          {upSessions?.content?.length > 0 && <Link to="/sessions" className="text-sm font-bold text-primary hover:underline">View Schedule</Link>}
-        </div>
-        
-        <div className="space-y-3">
-          {loadingUp ? (
-            Array(3).fill(0).map((_, i) => (
-              <div key={i} className="h-20 rounded-xl bg-surface-container-low animate-pulse"></div>
-            ))
-          ) : upSessions?.content?.length > 0 ? (
-            upSessions.content.map((session: any) => (
-              <div key={session.id} className="bg-surface-container-lowest rounded-xl p-4 flex flex-col md:flex-row md:items-center gap-4 shadow-sm border border-outline-variant/10 hover:shadow-md transition-shadow">
-                <div className="flex items-center gap-4 flex-1">
-                  <div className={`w-10 h-10 rounded-full text-white flex items-center justify-center font-bold shadow-sm shrink-0 ${getAvatarColor(getSessionMentorName(session))}`}>
-                    {getInitials(getSessionMentorName(session))}
-                  </div>
-                  <div>
-                    <h4 className="font-bold text-on-surface">{getSessionMentorName(session)}</h4>
-                    <p className="text-xs font-semibold text-on-surface-variant">{session.topic || 'Mentorship Session'}</p>
-                  </div>
-                </div>
-                <div className="flex items-center justify-between md:justify-end gap-6 w-full md:w-auto">
-                  <p className="text-sm font-semibold text-on-surface-variant text-right">{formatDateTime(getSessionDateTime(session))}</p>
-                  <span className="bg-primary-container/20 text-primary-container px-3 py-1 rounded-md text-xs font-bold uppercase tracking-wider">
-                    {session.status}
-                  </span>
-                </div>
-              </div>
-            ))
-          ) : (
-            <div className="bg-surface-container-lowest rounded-xl p-8 flex flex-col items-center text-center shadow-sm border border-outline-variant/10">
-              <span className="material-symbols-outlined text-4xl text-outline-variant mb-2">calendar_today</span>
-              <p className="text-sm font-semibold text-on-surface-variant mb-4">No upcoming sessions</p>
-              <button onClick={() => navigate('/mentors')} className="gradient-btn text-white px-6 py-2.5 rounded-xl font-bold hover:shadow-lg transition-all text-sm">
-                Find a Mentor
-              </button>
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* Recommended Mentors Section */}
-      <section>
-        <div className="flex justify-between items-end mb-4">
-          <h2 className="text-xl font-bold text-on-surface">Recommended Mentors</h2>
-          <div className="flex gap-2 text-on-surface-variant">
-            <button className="hover:text-primary transition-colors"><span className="material-symbols-outlined">arrow_back</span></button>
-            <button className="hover:text-primary transition-colors"><span className="material-symbols-outlined">arrow_forward</span></button>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {loadingMentors ? (
-            Array(2).fill(0).map((_, i) => (
-              <div key={i} className="h-48 rounded-xl bg-surface-container-low animate-pulse"></div>
-            ))
-          ) : mentors?.content?.map((mnt: any) => {
-            const avgRating = Number(mnt.avgRating ?? mnt.rating ?? 0);
-            const sessionsHeld = Number(mnt.totalSessions ?? 0);
-            const isNewMentor = sessionsHeld === 0;
-
-            return (
-              <div key={mnt.id} className="bg-surface-container-lowest p-6 rounded-xl shadow-sm border border-transparent hover:border-primary/20 hover:-translate-y-1 transition-all duration-300 flex flex-col">
-              <div className="flex items-start gap-4 mb-4">
-                <div className="relative">
-                  <div className={`w-14 h-14 rounded-xl text-white flex items-center justify-center font-bold text-lg shadow-sm ${getAvatarColor(mnt.firstName)}`}>
-                    {getInitials(`${mnt.firstName} ${mnt.lastName}`)}
-                  </div>
-                  <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-green-500 rounded-full border-2 border-white"></div>
-                </div>
-                <div className="flex-1">
-                  <div className="flex justify-between items-start">
-                    <h3 className="font-bold text-on-surface leading-tight">{mnt.firstName} {mnt.lastName}</h3>
-                    <div className="flex items-center gap-1 bg-secondary-container/30 px-2 py-0.5 rounded text-xs font-bold text-on-secondary-container">
-                      <span className="material-symbols-outlined text-[14px]">star</span>
-                      {isNewMentor ? 'NEW' : avgRating.toFixed(1)}
-                    </div>
-                  </div>
-                  <p className="text-xs font-medium text-on-surface-variant mt-1 line-clamp-2">{mnt.headline}</p>
-                </div>
-              </div>
-              
-              <div className="flex flex-wrap gap-1.5 mb-6">
-                {(mnt.skills || []).slice(0, 3).map((skill: any, i: number) => (
-                  <span key={i} className="bg-surface-container-low text-on-surface-variant text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider">
-                    {typeof skill === 'string' ? skill : (skill.name || `Skill #${skill.id}`)}
-                  </span>
-                ))}
-                {(mnt.skills?.length > 3) && (
-                  <span className="bg-surface-container-low text-on-surface-variant text-[10px] font-bold px-2 py-1 rounded">+{mnt.skills.length - 3}</span>
-                )}
-              </div>
-
-              <div className="flex justify-between items-end mt-auto pt-4 border-t border-outline-variant/10">
-                <div>
-                  <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-0.5">Starting at</p>
-                  <p className="text-lg font-black text-primary">₹{mnt.hourlyRate}/<span className="text-sm font-semibold text-on-surface-variant">hr</span></p>
-                </div>
-                <button 
-                  onClick={() => navigate(`/mentors/${mnt.id}`)}
-                  className="bg-surface-container-high hover:bg-primary hover:text-white px-5 py-2 rounded-lg text-sm font-bold transition-all duration-300"
-                >
-                  Book Session
-                </button>
-              </div>
-            </div>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* Mobile FAB */}
-      <button 
-        onClick={() => navigate('/mentors')}
-        className="lg:hidden fixed bottom-6 right-6 w-14 h-14 bg-primary text-white rounded-full shadow-2xl flex items-center justify-center hover:scale-105 active:scale-95 transition-transform z-50"
-      >
-        <span className="material-symbols-outlined text-2xl">search</span>
-      </button>
-
     </PageLayout>
   );
 };
+
+export default LearnerDashboardPage;
 
 export default LearnerDashboardPage;

@@ -110,7 +110,7 @@ const MentorDashboardPage = () => {
       {/* Recent Reviews */}
       <div className="bg-surface-container-lowest p-6 rounded-2xl shadow-sm border border-outline-variant/15">
         <h3 className="font-bold text-lg text-on-surface mb-4">Recent Reviews</h3>
-        
+
         {recentReviews.length > 0 ? (
           <div className="space-y-4">
             {recentReviews.map((review: any) => (
@@ -130,7 +130,7 @@ const MentorDashboardPage = () => {
               </div>
             ))}
             {mentorId && (
-              <button 
+              <button
                 onClick={() => navigate(`/mentors/${mentorId}`)}
                 className="w-full text-center text-sm font-bold text-primary hover:underline block pt-2"
               >
@@ -248,13 +248,13 @@ const MentorDashboardPage = () => {
                     </div>
                   ) : (
                     <>
-                      <button 
+                      <button
                         onClick={() => setRejectingId(req.id)}
                         className="bg-surface-container hover:bg-surface-container-high text-on-surface px-5 py-2 rounded-lg text-sm font-bold shadow-sm transition-colors border border-outline-variant/10"
                       >
                         Reject
                       </button>
-                      <button 
+                      <button
                         onClick={() => acceptMutation.mutate(req.id)}
                         disabled={acceptMutation.isPending}
                         className="gradient-btn text-white px-5 py-2 rounded-lg text-sm font-bold shadow-sm hover:shadow-md transition-all active:scale-95 disabled:opacity-50"
@@ -300,7 +300,7 @@ const MentorDashboardPage = () => {
                   <button className="bg-surface-container hover:bg-surface-container-high text-on-surface px-5 py-2.5 rounded-lg text-sm font-bold shadow-sm transition-colors border border-outline-variant/10 flex items-center gap-2">
                     <span className="material-symbols-outlined text-[18px]">videocam</span> Join Call
                   </button>
-                  <button 
+                  <button
                     onClick={() => completeMutation.mutate(session.id)}
                     disabled={completeMutation.isPending}
                     className="text-emerald-600 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-4 py-2.5 rounded-lg text-sm font-bold transition-colors disabled:opacity-50 whitespace-nowrap"

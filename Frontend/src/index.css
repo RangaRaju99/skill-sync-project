@@ -107,7 +107,7 @@ html,
 }
 
 /* ─── Custom Theme Overrides ─── */
-.bg-surface-container-lowest, 
+.bg-surface-container-lowest,
 .bg-white,
 .mock-card {
   background: var(--card-bg, var(--color-surface-container-lowest)) !important;
@@ -118,11 +118,20 @@ html,
   border-radius: var(--radius) !important;
 }
 
-button, input, select, .rounded-xl, .rounded-lg, .rounded-2xl {
+button,
+input,
+select,
+.rounded-xl,
+.rounded-lg,
+.rounded-2xl {
   border-radius: var(--radius) !important;
 }
 
-h1, h2, h3, h4, .font-display {
+h1,
+h2,
+h3,
+h4,
+.font-display {
   font-family: var(--font-sans) !important;
 }
 

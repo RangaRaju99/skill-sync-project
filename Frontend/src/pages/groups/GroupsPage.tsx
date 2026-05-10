@@ -67,38 +67,35 @@ const GroupsPage = () => {
 
   return (
     <PageLayout>
-      <div className="space-y-6">
-        <div className="bg-surface-container-lowest border border-outline-variant/10 rounded-2xl p-6 shadow-sm">
-          <h1 className="text-3xl font-extrabold text-on-surface tracking-tight">Learning Groups</h1>
-          <p className="text-on-surface-variant mt-2">
+      <div className="space-y-8 animate-in">
+        <div className="surface-card p-8">
+          <h1 className="text-4xl font-bold text-on-surface tracking-tight">Learning Groups</h1>
+          <p className="text-on-surface-variant mt-2 font-medium">
             Explore communities, join discussions, and collaborate with peers in real-time.
           </p>
         </div>
 
-        <div className="bg-surface-container-lowest border border-outline-variant/10 rounded-xl p-1.5 inline-flex gap-1 shadow-sm overflow-x-auto max-w-full scrollbar-hide">
-          <div className="flex gap-1">
-            {['explore', 'mygroups'].map((tab) => (
-              <button
-                key={tab}
-                onClick={() => {
-                  setActiveTab(tab as typeof activeTab);
-                  setPage(0);
-                }}
-                className={`whitespace-nowrap px-5 py-2.5 rounded-lg text-sm font-bold transition-all duration-300 capitalize ${
-                  activeTab === tab
-                    ? 'bg-primary text-white shadow-md scale-[1.02]'
-                    : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface'
+        <div className="bg-surface-container-low p-1.5 inline-flex gap-1 rounded-2xl border border-outline shadow-inner">
+          {['explore', 'mygroups'].map((tab) => (
+            <button
+              key={tab}
+              onClick={() => {
+                setActiveTab(tab as typeof activeTab);
+                setPage(0);
+              }}
+              className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 capitalize ${activeTab === tab
+                  ? 'bg-primary text-white shadow-lg shadow-primary/20 scale-[1.02]'
+                  : 'text-on-surface-variant hover:text-on-surface'
                 }`}
-              >
-                {tab === 'explore' ? 'Explore Groups' : 'Joined Groups'}
-              </button>
-            ))}
-          </div>
+            >
+              {tab === 'explore' ? 'Explore Groups' : 'Joined Groups'}
+            </button>
+          ))}
         </div>
 
         {activeTab === 'explore' && (
-          <div className="space-y-4">
-            <div className="bg-surface-container-lowest border border-outline-variant/10 rounded-2xl p-4 shadow-sm flex flex-col lg:flex-row items-stretch gap-3">
+          <div className="space-y-6">
+            <div className="surface-card p-4 flex flex-col lg:flex-row items-stretch gap-4">
               <input
                 type="text"
                 placeholder="Search groups..."
@@ -107,12 +104,12 @@ const GroupsPage = () => {
                   setSearch(event.target.value);
                   setPage(0);
                 }}
-                className="flex-1 h-10 bg-surface-container px-3 rounded-lg text-sm font-semibold text-on-surface outline-none focus:ring-1 focus:ring-primary border border-transparent"
+                className="flex-1 h-12 bg-surface-container-low px-4 rounded-xl text-sm font-semibold text-on-surface outline-none focus:ring-2 focus:ring-primary/20 border border-outline focus:border-primary transition-all"
               />
               {role === 'ROLE_ADMIN' && (
                 <button
                   onClick={() => navigate('/admin/groups')}
-                  className="h-10 px-5 bg-primary text-on-primary rounded-lg font-bold hover:bg-primary-dark transition-colors"
+                  className="btn-primary h-12 px-8"
                 >
                   Manage Groups
                 </button>
@@ -122,7 +119,7 @@ const GroupsPage = () => {
             {exploreLoading ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {Array.from({ length: 3 }).map((_, index) => (
-                  <div key={index} className="h-44 bg-surface-container-lowest rounded-2xl border border-outline-variant/10 animate-pulse" />
+                  <div key={index} className="h-44 surface-card animate-pulse" />
                 ))}
               </div>
             ) : exploreData?.content && exploreData.content.length > 0 ? (
@@ -133,63 +130,65 @@ const GroupsPage = () => {
                   return (
                     <div
                       key={group.id}
-                      className="bg-surface-container-lowest rounded-2xl p-6 shadow-sm border border-outline-variant/10 hover:shadow-md hover:border-outline-variant/25 transition"
+                      className="surface-card p-6 flex flex-col"
                     >
-                      <h3 className="font-bold text-on-surface mb-2 text-lg">{group.name}</h3>
-                      <p className="text-sm text-on-surface-variant mb-4 line-clamp-2">{group.description}</p>
-                      <div className="flex items-center justify-between mb-4">
-                        <span className="text-xs bg-surface-container text-on-surface-variant px-2 py-1 rounded font-semibold">
+                      <h3 className="font-bold text-on-surface mb-2 text-lg tracking-tight">{group.name}</h3>
+                      <p className="text-sm text-on-surface-variant mb-6 line-clamp-2 leading-relaxed">{group.description}</p>
+                      <div className="flex items-center justify-between mb-6">
+                        <span className="text-[10px] bg-primary/10 text-primary px-2.5 py-1 rounded-lg font-bold uppercase tracking-wider border border-primary/10">
                           {group.category}
                         </span>
-                        <span className="text-xs text-on-surface-variant font-semibold">
+                        <span className="text-xs text-on-surface-variant font-bold">
                           {group.memberCount} members
                         </span>
                       </div>
 
-                      {group.isJoined || role === 'ROLE_ADMIN' ? (
-                        <button
-                          onClick={() => navigate(`/groups/${group.id}`)}
-                          className="w-full h-10 bg-primary text-on-primary rounded-lg font-bold hover:bg-primary-dark transition-colors"
-                        >
-                          {role === 'ROLE_ADMIN' ? 'Open Chat' : 'Open Group'}
-                        </button>
-                      ) : (
-                        <button
-                          onClick={() => joinGroupMutation.mutate(group.id)}
-                          disabled={isJoining}
-                          className="w-full h-10 bg-surface-container-high text-on-surface rounded-lg font-bold hover:bg-surface-container-highest transition-colors disabled:opacity-50"
-                        >
-                          {isJoining ? 'Joining...' : 'Join Group'}
-                        </button>
-                      )}
+                      <div className="mt-auto">
+                        {group.isJoined || role === 'ROLE_ADMIN' ? (
+                          <button
+                            onClick={() => navigate(`/groups/${group.id}`)}
+                            className="btn-primary w-full h-11"
+                          >
+                            {role === 'ROLE_ADMIN' ? 'Manage' : 'Open Group'}
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => joinGroupMutation.mutate(group.id)}
+                            disabled={isJoining}
+                            className="w-full h-11 bg-surface-container-high text-on-surface rounded-xl font-bold hover:bg-surface-container-highest transition-all disabled:opacity-50"
+                          >
+                            {isJoining ? 'Joining...' : 'Join Group'}
+                          </button>
+                        )}
+                      </div>
                     </div>
                   );
                 })}
               </div>
             ) : (
-              <div className="bg-surface-container-lowest rounded-2xl p-10 text-center border border-outline-variant/10 shadow-sm">
-                <p className="text-on-surface-variant font-semibold">No groups found</p>
+              <div className="surface-card p-16 text-center">
+                <p className="text-on-surface-variant font-bold text-lg">No groups found</p>
               </div>
             )}
 
             {exploreData && exploreData.totalElements > 10 && (
-              <div className="flex justify-center gap-2 pt-4">
+              <div className="flex justify-center items-center gap-4 pt-6">
                 <button
                   onClick={() => setPage(Math.max(0, page - 1))}
                   disabled={page === 0}
-                  className="px-4 py-2 rounded-lg text-sm font-bold bg-surface-container hover:bg-surface-container-high text-on-surface disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-10 h-10 surface-card flex items-center justify-center text-on-surface disabled:opacity-30"
                 >
-                  Previous
+                  <span className="material-symbols-outlined">chevron_left</span>
                 </button>
-                <span className="px-4 py-2 text-sm font-semibold text-on-surface-variant">
-                  Page {page + 1} of {Math.ceil(exploreData.totalElements / 10)}
+                <span className="text-sm font-bold text-on-surface-variant">
+                  {page + 1} / {Math.ceil(exploreData.totalElements / 10)}
                 </span>
                 <button
                   onClick={() => setPage(page + 1)}
                   disabled={page >= Math.ceil(exploreData.totalElements / 10) - 1}
-                  className="px-4 py-2 rounded-lg text-sm font-bold bg-surface-container hover:bg-surface-container-high text-on-surface disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-10 h-10 surface-card flex items-center justify-center text-on-surface disabled:opacity-30"
                 >
-                  Next
+                  <span className="material-symbols-outlined">chevron_right</span>
                 </button>
               </div>
             )}
@@ -197,11 +196,11 @@ const GroupsPage = () => {
         )}
 
         {activeTab === 'mygroups' && (
-          <div className="space-y-4">
+          <div className="space-y-6">
             {myGroupsLoading ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {Array.from({ length: 3 }).map((_, index) => (
-                  <div key={index} className="h-44 bg-surface-container-lowest rounded-2xl border border-outline-variant/10 animate-pulse" />
+                  <div key={index} className="h-44 surface-card animate-pulse" />
                 ))}
               </div>
             ) : myGroupsData?.content && myGroupsData.content.length > 0 ? (
@@ -209,27 +208,27 @@ const GroupsPage = () => {
                 {myGroupsData.content.map((group: any) => (
                   <div
                     key={group.id}
-                    className="bg-surface-container-lowest rounded-2xl p-6 shadow-sm border border-outline-variant/10 hover:shadow-md hover:border-outline-variant/25 transition"
+                    className="surface-card p-6 flex flex-col"
                   >
-                    <h3 className="font-bold text-on-surface mb-2 text-lg">{group.name}</h3>
-                    <p className="text-sm text-on-surface-variant mb-4 line-clamp-2">{group.description}</p>
-                    <div className="flex items-center justify-between mb-4">
-                      <span className="text-xs bg-surface-container text-on-surface-variant px-2 py-1 rounded font-semibold">
+                    <h3 className="font-bold text-on-surface mb-2 text-lg tracking-tight">{group.name}</h3>
+                    <p className="text-sm text-on-surface-variant mb-6 line-clamp-2 leading-relaxed">{group.description}</p>
+                    <div className="flex items-center justify-between mb-6">
+                      <span className="text-[10px] bg-emerald-500/10 text-emerald-500 px-2.5 py-1 rounded-lg font-bold uppercase tracking-wider border border-emerald-500/10">
                         {group.category}
                       </span>
-                      <span className="text-xs text-on-surface-variant font-semibold">{group.memberCount} members</span>
+                      <span className="text-xs text-on-surface-variant font-bold">{group.memberCount} members</span>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="mt-auto flex gap-3">
                       <button
                         onClick={() => navigate(`/groups/${group.id}`)}
-                        className="flex-1 h-10 bg-primary text-on-primary rounded-lg font-bold hover:bg-primary-dark transition-colors text-sm"
+                        className="btn-primary flex-1 h-11"
                       >
                         View
                       </button>
                       <button
                         onClick={() => void handleLeaveGroup(group.id, group.name)}
                         disabled={leaveGroupMutation.isPending}
-                        className="flex-1 h-10 bg-error text-white rounded-lg font-bold hover:opacity-90 transition text-sm disabled:opacity-50"
+                        className="px-4 h-11 bg-error/10 text-error rounded-xl font-bold hover:bg-error hover:text-white transition-all disabled:opacity-50"
                       >
                         Leave
                       </button>
@@ -238,8 +237,8 @@ const GroupsPage = () => {
                 ))}
               </div>
             ) : (
-              <div className="bg-surface-container-lowest rounded-2xl p-10 text-center border border-outline-variant/10 shadow-sm">
-                <p className="text-on-surface-variant font-semibold">You have not joined any groups yet</p>
+              <div className="surface-card p-16 text-center">
+                <p className="text-on-surface-variant font-bold text-lg">You have not joined any groups yet</p>
               </div>
             )}
           </div>
@@ -248,5 +247,7 @@ const GroupsPage = () => {
     </PageLayout>
   );
 };
+
+export default GroupsPage;
 
 export default GroupsPage;
