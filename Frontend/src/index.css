@@ -1,69 +1,69 @@
 /* ─── Google Fonts ─── */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
 
 @import "tailwindcss";
 
 /* ─── Tailwind v4 Theme Configuration ─── */
 @theme {
-  /* Colors */
-  --color-primary: #004ac6;
-  --color-primary-container: #2563eb;
+  /* Colors - Amethyst Night Palette */
+  --color-primary: #8b5cf6;
+  --color-primary-container: #a78bfa;
   --color-on-primary: #ffffff;
-  --color-surface: #f7f9fb;
+  --color-surface: #faf9ff;
   --color-surface-container-lowest: #ffffff;
-  --color-surface-container-low: #f2f4f6;
-  --color-surface-container: #eceef0;
-  --color-surface-container-high: #e6e8ea;
-  --color-surface-container-highest: #e0e3e5;
-  --color-on-surface: #191c1e;
-  --color-on-surface-variant: #434655;
-  --color-secondary-container: #acbfff;
-  --color-on-secondary-container: #394c84;
-  --color-outline: #737686;
-  --color-outline-variant: #c3c6d7;
-  --color-secondary: #495c95;
-  --color-error: #ba1a1a;
+  --color-surface-container-low: #f5f3ff;
+  --color-surface-container: #ede9fe;
+  --color-surface-container-high: #ddd6fe;
+  --color-surface-container-highest: #c4b5fd;
+  --color-on-surface: #1e1b4b;
+  --color-on-surface-variant: #4c1d95;
+  --color-secondary-container: #ddd6fe;
+  --color-on-secondary-container: #2e1065;
+  --color-outline: #7c3aed;
+  --color-outline-variant: #c4b5fd;
+  --color-secondary: #7c3aed;
+  --color-error: #ef4444;
 
-  /* Font Family */
-  --font-sans: 'Inter', sans-serif;
+  /* Font Family - Modern Outfit Font */
+  --font-sans: 'Outfit', sans-serif;
 
-  /* Border Radius */
-  --radius: 0.125rem;
-  --radius-lg: 0.25rem;
-  --radius-xl: 0.5rem;
-  --radius-full: 0.75rem;
+  /* Border Radius - Softer, more organic feel */
+  --radius: 0.6rem;
+  --radius-lg: 0.85rem;
+  --radius-xl: 1.25rem;
+  --radius-full: 2rem;
 }
 
 :root {
-  --gradient-btn-start: #004ac6;
-  --gradient-btn-end: #2563eb;
-  --app-bg-glow-a: rgba(37, 99, 235, 0.14);
-  --app-bg-glow-b: rgba(0, 167, 183, 0.1);
+  --gradient-btn-start: #8b5cf6;
+  --gradient-btn-end: #d8b4fe;
+  --app-bg-glow-a: rgba(139, 92, 246, 0.12);
+  --app-bg-glow-b: rgba(216, 180, 254, 0.08);
 }
 
 html.theme-dark {
-  --color-primary: #8bacff;
-  --color-primary-container: #5f86ff;
-  --color-on-primary: #071225;
-  --color-surface: #0a101b;
-  --color-surface-container-lowest: #111a2a;
-  --color-surface-container-low: #162235;
-  --color-surface-container: #1b2940;
-  --color-surface-container-high: #22334f;
-  --color-surface-container-highest: #2a3e5f;
-  --color-on-surface: #e6edf7;
-  --color-on-surface-variant: #aebbd0;
-  --color-secondary-container: #2b3f6f;
-  --color-on-secondary-container: #d9e4ff;
-  --color-outline: #6e7f9d;
-  --color-outline-variant: #354969;
-  --color-secondary: #95acff;
-  --color-error: #ff7a7a;
+  --color-primary: #c4b5fd;
+  --color-primary-container: #7c3aed;
+  --color-on-primary: #1e1b4b;
+  --color-surface: #0a0514;
+  --color-surface-container-lowest: #0f0a1f;
+  --color-surface-container-low: #150e2a;
+  --color-surface-container: #1b1235;
+  --color-surface-container-high: #251a45;
+  --color-surface-container-highest: #2d1f50;
+  --color-on-surface: #f5f3ff;
+  --color-on-surface-variant: #d8b4fe;
+  --color-secondary-container: #2e1065;
+  --color-on-secondary-container: #ede9fe;
+  --color-outline: #a78bfa;
+  --color-outline-variant: #4c1d95;
+  --color-secondary: #c4b5fd;
+  --color-error: #f87171;
 
-  --gradient-btn-start: #5f86ff;
-  --gradient-btn-end: #2bc2d5;
-  --app-bg-glow-a: rgba(83, 117, 255, 0.28);
-  --app-bg-glow-b: rgba(44, 194, 213, 0.18);
+  --gradient-btn-start: #7c3aed;
+  --gradient-btn-end: #a855f7;
+  --app-bg-glow-a: rgba(124, 58, 237, 0.22);
+  --app-bg-glow-b: rgba(168, 85, 247, 0.15);
 }
 
 /* ─── Base Styles ─── */
