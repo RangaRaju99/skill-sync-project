@@ -2,21 +2,21 @@ import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import type { AppTheme, ThemeHistory } from '../../types/theme';
 
 const DEFAULT_THEME: AppTheme = {
-  id: 'skillsync-oled',
-  name: 'OLED Stealth',
-  mode: 'dark',
+  id: 'skillsync-amethyst',
+  name: 'Amethyst Night',
+  mode: 'light',
   colors: {
-    primary: '#00f2ff',
-    secondary: '#ffffff',
-    accent: '#0066ff',
-    background: '#000000',
-    surface: '#050505',
-    text: '#ffffff',
-    textSecondary: '#a0a0a0',
-    border: '#111111',
-    success: '#00ffa3',
-    warning: '#ffcc00',
-    error: '#ff003c',
+    primary: '#8b5cf6',
+    secondary: '#7c3aed',
+    accent: '#a78bfa',
+    background: '#faf9ff',
+    surface: '#ffffff',
+    text: '#1e1b4b',
+    textSecondary: '#4c1d95',
+    border: '#c4b5fd',
+    success: '#22c55e',
+    warning: '#eab308',
+    error: '#ef4444',
   },
   typography: {
     fontFamily: "'Outfit', sans-serif",
@@ -24,15 +24,15 @@ const DEFAULT_THEME: AppTheme = {
     baseFontSize: 16,
   },
   components: {
-    buttonRadius: '0.25rem',
-    cardRadius: '0.5rem',
-    cardShadow: '0 0 20px rgba(0, 242, 255, 0.05)',
-    inputRadius: '0.25rem',
-    glassmorphism: false,
-    animationSpeed: 0.8,
+    buttonRadius: '0.6rem',
+    cardRadius: '0.85rem',
+    cardShadow: '0 10px 15px -3px rgba(139, 92, 246, 0.1), 0 4px 6px -2px rgba(139, 92, 246, 0.05)',
+    inputRadius: '0.5rem',
+    glassmorphism: true,
+    animationSpeed: 1,
   },
   layout: {
-    density: 'compact',
+    density: 'comfortable',
     containerWidth: '1280px',
   },
 };
@@ -153,7 +153,7 @@ interface ThemeState extends ThemeHistory {
 const getInitialState = (): ThemeState => {
   const stored = localStorage.getItem('skillsync_custom_themes');
   const customThemes = stored ? JSON.parse(stored) : [];
-  
+
   const currentStored = localStorage.getItem('skillsync_current_theme');
   const present = currentStored ? JSON.parse(currentStored) : DEFAULT_THEME;
 
@@ -221,19 +221,19 @@ const themeSlice = createSlice({
     },
     setPresetTheme: (state, action: PayloadAction<'minimal' | 'neon' | 'hacker' | 'corporate' | 'auto'>) => {
       state.past.push({ ...state.present });
-      
+
       let nextTheme: AppTheme;
-      switch(action.payload) {
+      switch (action.payload) {
         case 'neon': nextTheme = NEON_THEME; break;
         case 'hacker': nextTheme = HACKER_THEME; break;
         case 'corporate': nextTheme = CORPORATE_THEME; break;
-        case 'auto': 
+        case 'auto':
           const isNight = new Date().getHours() >= 19 || new Date().getHours() < 7;
           nextTheme = isNight ? NEON_THEME : DEFAULT_THEME;
           break;
         default: nextTheme = DEFAULT_THEME;
       }
-      
+
       state.present = nextTheme;
       state.future = [];
       localStorage.setItem('skillsync_current_theme', JSON.stringify(state.present));
@@ -253,14 +253,14 @@ const themeSlice = createSlice({
   },
 });
 
-export const { 
-  updateTheme, 
-  updateColors, 
-  updateTypography, 
-  updateComponents, 
+export const {
+  updateTheme,
+  updateColors,
+  updateTypography,
+  updateComponents,
   updateLayout,
-  undo, 
-  redo, 
+  undo,
+  redo,
   setPresetTheme,
   resetTheme,
   importTheme
