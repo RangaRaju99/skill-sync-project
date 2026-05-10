@@ -1,7 +1,0 @@
-C:\Users\hp\projects\SkillSync\skill-sync-project\Backend\payment-service\src\test\java\com\skillsync\payment\event\PaymentCompletedEventSchemaTest.java
-C:\Users\hp\projects\SkillSync\skill-sync-project\Backend\payment-service\src\test\java\com\skillsync\payment\mapper\PaymentMapperTest.java
-C:\Users\hp\projects\SkillSync\skill-sync-project\Backend\payment-service\src\test\java\com\skillsync\payment\service\DlqReplayServiceTest.java
-C:\Users\hp\projects\SkillSync\skill-sync-project\Backend\payment-service\src\test\java\com\skillsync\payment\service\OutboxPublisherTest.java
-C:\Users\hp\projects\SkillSync\skill-sync-project\Backend\payment-service\src\test\java\com\skillsync\payment\service\PaymentSagaOrchestratorTest.java
-C:\Users\hp\projects\SkillSync\skill-sync-project\Backend\payment-service\src\test\java\com\skillsync\payment\service\PaymentServiceTest.java
-C:\Users\hp\projects\SkillSync\skill-sync-project\Backend\payment-service\src\test\java\com\skillsync\payment\service\SagaRecoverySchedulerTest.java

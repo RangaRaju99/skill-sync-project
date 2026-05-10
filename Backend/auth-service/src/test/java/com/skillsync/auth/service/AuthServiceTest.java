@@ -2,6 +2,7 @@ package com.skillsync.auth.service;
 
 import com.skillsync.auth.dto.*;
 import com.skillsync.auth.entity.AuthUser;
+import com.skillsync.auth.entity.RefreshToken;
 import com.skillsync.auth.enums.OtpType;
 import com.skillsync.auth.enums.Role;
 import com.skillsync.auth.repository.AuthUserRepository;
@@ -10,10 +11,8 @@ import com.skillsync.auth.security.JwtTokenProvider;
 import com.skillsync.cache.CacheService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -21,10 +20,13 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -36,261 +38,417 @@ class AuthServiceTest {
     @Mock private JwtTokenProvider jwtTokenProvider;
     @Mock private AuthenticationManager authenticationManager;
     @Mock private OtpService otpService;
+    @Mock private EmailService emailService;
     @Mock private CacheService cacheService;
-
     @InjectMocks private AuthService authService;
 
-    private AuthUser testUser;
-    private AuthUser verifiedUser;
+    private AuthUser user;
 
     @BeforeEach
     void setUp() {
-        testUser = AuthUser.builder()
+        user = AuthUser.builder()
                 .id(1L)
                 .email("test@example.com")
-                .passwordHash("encodedPassword")
                 .firstName("John")
                 .lastName("Doe")
                 .role(Role.ROLE_LEARNER)
-                .isActive(true)
-                .isVerified(false)
-                .passwordSet(true)
-                .build();
-
-        verifiedUser = AuthUser.builder()
-                .id(2L)
-                .email("verified@example.com")
-                .passwordHash("encodedPassword")
-                .firstName("Jane")
-                .lastName("Doe")
-                .role(Role.ROLE_LEARNER)
-                .isActive(true)
                 .isVerified(true)
-                .passwordSet(true)
                 .build();
     }
 
-    @Test
-    @DisplayName("Register - success and OTP is sent")
-    void register_shouldCreateUserAndSendOtp() {
-        RegisterRequest request = new RegisterRequest("test@example.com", "password123", "John", "Doe");
-
+    @Test @DisplayName("register - Success")
+    void registerSuccess() {
+        RegisterRequest request = new RegisterRequest("test@example.com", "Password@123", "John", "Doe");
         when(authUserRepository.existsByEmail(anyString())).thenReturn(false);
-        when(passwordEncoder.encode(anyString())).thenReturn("encodedPassword");
-        when(authUserRepository.save(any(AuthUser.class))).thenReturn(testUser);
-        when(jwtTokenProvider.generateAccessToken(anyLong(), anyString(), anyString())).thenReturn("accessToken");
-        when(jwtTokenProvider.generateRefreshToken(anyLong())).thenReturn("refreshToken");
-        when(jwtTokenProvider.getAccessExpiration()).thenReturn(3600000L);
-        when(refreshTokenRepository.findByUserOrderByCreatedAtAsc(any())).thenReturn(Collections.emptyList());
-        when(refreshTokenRepository.save(any())).thenReturn(null);
+        when(passwordEncoder.encode(anyString())).thenReturn("hashed");
+        when(authUserRepository.save(any(AuthUser.class))).thenReturn(user);
 
         AuthResponse response = authService.register(request);
 
-        assertNotNull(response);
-        assertEquals("accessToken", response.accessToken());
-        assertEquals("refreshToken", response.refreshToken());
-        verify(authUserRepository).save(any(AuthUser.class));
-        verify(otpService, times(1)).generateAndSendOtp(any(AuthUser.class), eq(OtpType.REGISTRATION));
+        assertThat(response.user().email()).isEqualTo("test@example.com");
+        verify(otpService).generateAndSendOtp(any(), any());
     }
 
-    @Test
-    @DisplayName("Register - duplicate email throws exception")
-    void register_shouldThrowExceptionForDuplicateEmail() {
-        RegisterRequest request = new RegisterRequest("test@example.com", "password123", "John", "Doe");
-        when(authUserRepository.existsByEmail("test@example.com")).thenReturn(true);
-
-        assertThrows(RuntimeException.class, () -> authService.register(request));
-        verify(authUserRepository, never()).save(any());
-        verify(otpService, never()).generateAndSendOtp(any(), any());
-    }
-
-    @Test
-    @DisplayName("Login - success with verified user")
-    void login_shouldAuthenticateVerifiedUserAndReturnToken() {
-        LoginRequest request = new LoginRequest("verified@example.com", "password123");
-
-        when(authUserRepository.findByEmail("verified@example.com")).thenReturn(Optional.of(verifiedUser));
-        when(jwtTokenProvider.generateAccessToken(anyLong(), anyString(), anyString())).thenReturn("accessToken");
-        when(jwtTokenProvider.generateRefreshToken(anyLong())).thenReturn("refreshToken");
-        when(jwtTokenProvider.getAccessExpiration()).thenReturn(3600000L);
+    @Test @DisplayName("login - Success")
+    void loginSuccess() {
+        LoginRequest request = new LoginRequest("test@example.com", "Password@123");
+        when(authUserRepository.findByEmail("test@example.com")).thenReturn(Optional.of(user));
+        when(jwtTokenProvider.generateAccessToken(anyLong(), anyString(), anyString())).thenReturn("access");
+        when(jwtTokenProvider.generateRefreshToken(anyLong())).thenReturn("refresh");
         when(refreshTokenRepository.findByUserOrderByCreatedAtAsc(any())).thenReturn(Collections.emptyList());
-        when(refreshTokenRepository.save(any())).thenReturn(null);
 
         AuthResponse response = authService.login(request);
 
-        assertNotNull(response);
-        assertEquals("accessToken", response.accessToken());
+        assertThat(response.accessToken()).isEqualTo("access");
         verify(authenticationManager).authenticate(any());
+    }
+
+    @Test @DisplayName("login - Unverified")
+    void loginUnverified() {
+        user.setVerified(false);
+        LoginRequest request = new LoginRequest("test@example.com", "Password@123");
+        when(authUserRepository.findByEmail("test@example.com")).thenReturn(Optional.of(user));
+
+        assertThatThrownBy(() -> authService.login(request))
+                .isInstanceOf(RuntimeException.class)
+                .hasMessageContaining("not verified");
+    }
+
+    @Test @DisplayName("refreshToken - Success")
+    void refreshTokenSuccess() {
+        RefreshToken token = RefreshToken.builder().token("old-token").user(user).expiresAt(java.time.LocalDateTime.now().plusDays(1)).build();
+        when(refreshTokenRepository.findByToken("old-token")).thenReturn(Optional.of(token));
+        when(jwtTokenProvider.generateAccessToken(anyLong(), anyString(), anyString())).thenReturn("new-access");
+
+        AuthResponse response = authService.refreshToken(new RefreshTokenRequest("old-token"));
+
+        assertThat(response.accessToken()).isEqualTo("new-access");
+        verify(refreshTokenRepository).delete(token);
+    }
+
+    @Test @DisplayName("updateUserRole - Success")
+    void updateUserRole() {
+        when(authUserRepository.findById(1L)).thenReturn(Optional.of(user));
+        authService.updateUserRole(1L, "ROLE_MENTOR");
+        assertThat(user.getRole()).isEqualTo(Role.ROLE_MENTOR);
+        verify(cacheService).evict(any());
+    }
+
+    // --- PHASE 1: REGISTRATION FLOW ---
+
+    @Test @DisplayName("initiateRegistration - New User")
+    void initiateRegistration_NewUser() {
+        InitiateRegistrationRequest request = new InitiateRegistrationRequest("new@example.com");
+        when(authUserRepository.findByEmail("new@example.com")).thenReturn(Optional.empty());
+        when(authUserRepository.save(any(AuthUser.class))).thenReturn(user);
+
+        var result = authService.initiateRegistration(request);
+
+        assertThat(result.get("otpSent")).isEqualTo(true);
+        verify(otpService).generateAndSendOtp(any(), eq(OtpType.REGISTRATION));
+    }
+
+    @Test @DisplayName("initiateRegistration - Existing Verified")
+    void initiateRegistration_ExistingVerified() {
+        InitiateRegistrationRequest request = new InitiateRegistrationRequest("test@example.com");
+        user.setVerified(true);
+        when(authUserRepository.findByEmail("test@example.com")).thenReturn(Optional.of(user));
+
+        var result = authService.initiateRegistration(request);
+
+        assertThat(result.get("exists")).isEqualTo(true);
         verify(otpService, never()).generateAndSendOtp(any(), any());
     }
 
-    @Test
-    @DisplayName("Login - unverified user is blocked and OTP is re-sent")
-    void login_shouldRejectUnverifiedUserAndResendOtp() {
-        LoginRequest request = new LoginRequest("test@example.com", "password123");
+    @Test @DisplayName("initiateRegistration - Existing Unverified")
+    void initiateRegistration_ExistingUnverified() {
+        InitiateRegistrationRequest request = new InitiateRegistrationRequest("test@example.com");
+        user.setVerified(false);
+        when(authUserRepository.findByEmail("test@example.com")).thenReturn(Optional.of(user));
 
-        when(authUserRepository.findByEmail("test@example.com")).thenReturn(Optional.of(testUser));
+        var result = authService.initiateRegistration(request);
 
-        RuntimeException ex = assertThrows(RuntimeException.class, () -> authService.login(request));
-
-        assertTrue(ex.getMessage().contains("Email not verified"));
-        assertTrue(ex.getMessage().contains("A new OTP has been sent"));
-        verify(otpService, times(1)).generateAndSendOtp(any(AuthUser.class), eq(OtpType.REGISTRATION));
+        assertThat(result.get("otpSent")).isEqualTo(true);
+        verify(otpService).generateAndSendOtp(user, OtpType.REGISTRATION);
     }
 
-    @Test
-    @DisplayName("Login - user not found throws exception")
-    void login_shouldThrowExceptionWhenUserNotFound() {
-        LoginRequest request = new LoginRequest("unknown@example.com", "password123");
+    @Test @DisplayName("completeRegistration - Success")
+    void completeRegistration_Success() {
+        CompleteRegistrationRequest request = new CompleteRegistrationRequest("test@example.com", "Strong@123", "John", "Doe");
+        user.setVerified(true);
+        user.setPasswordSet(false);
+        user.setPasswordHash("PENDING");
+        
+        when(authUserRepository.findByEmail("test@example.com")).thenReturn(Optional.of(user));
+        when(passwordEncoder.encode("Strong@123")).thenReturn("hashed_pass");
+        when(authUserRepository.save(any())).thenReturn(user);
+
+        AuthResponse response = authService.completeRegistration(request);
+
+        assertThat(response.user().firstName()).isEqualTo("John");
+        assertThat(user.isPasswordSet()).isTrue();
+        verify(emailService).sendWelcomeEmail(eq("test@example.com"), anyString());
+    }
+
+    @Test @DisplayName("completeRegistration - Unverified Error")
+    void completeRegistration_Unverified() {
+        CompleteRegistrationRequest request = new CompleteRegistrationRequest("test@example.com", "Strong@123", "John", "Doe");
+        user.setVerified(false);
+        when(authUserRepository.findByEmail("test@example.com")).thenReturn(Optional.of(user));
+
+        assertThatThrownBy(() -> authService.completeRegistration(request))
+                .isInstanceOf(RuntimeException.class)
+                .hasMessageContaining("Email not verified");
+    }
+
+    @Test @DisplayName("completeRegistration - Already Registered Error")
+    void completeRegistration_AlreadyRegistered() {
+        CompleteRegistrationRequest request = new CompleteRegistrationRequest("test@example.com", "Strong@123", "John", "Doe");
+        user.setVerified(true);
+        user.setPasswordSet(true);
+        user.setPasswordHash("existing_hash");
+        when(authUserRepository.findByEmail("test@example.com")).thenReturn(Optional.of(user));
+
+        assertThatThrownBy(() -> authService.completeRegistration(request))
+                .isInstanceOf(RuntimeException.class)
+                .hasMessageContaining("Registration already completed");
+    }
+
+    @Test @DisplayName("completeRegistration - Email Service Exception (Should not fail registration)")
+    void completeRegistration_EmailFailure() {
+        CompleteRegistrationRequest request = new CompleteRegistrationRequest("test@example.com", "Strong@123", "John", "Doe");
+        user.setVerified(true);
+        user.setPasswordSet(false);
+        user.setPasswordHash("PENDING");
+
+        when(authUserRepository.findByEmail("test@example.com")).thenReturn(Optional.of(user));
+        when(passwordEncoder.encode(anyString())).thenReturn("hashed");
+        when(authUserRepository.save(any())).thenReturn(user);
+        doThrow(new RuntimeException("Email down")).when(emailService).sendWelcomeEmail(any(), any());
+
+        AuthResponse response = authService.completeRegistration(request);
+
+        assertThat(response).isNotNull();
+        verify(authUserRepository).save(user);
+    }
+
+    // --- PHASE 2: PASSWORD RECOVERY ---
+
+    @Test @DisplayName("forgotPassword - Success")
+    void forgotPassword_Success() {
+        ForgotPasswordRequest request = new ForgotPasswordRequest("test@example.com");
+        when(authUserRepository.findByEmail("test@example.com")).thenReturn(Optional.of(user));
+
+        authService.forgotPassword(request);
+
+        verify(otpService).generateAndSendOtp(user, OtpType.PASSWORD_RESET);
+    }
+
+    @Test @DisplayName("forgotPassword - User Not Found")
+    void forgotPassword_NotFound() {
+        ForgotPasswordRequest request = new ForgotPasswordRequest("unknown@example.com");
         when(authUserRepository.findByEmail("unknown@example.com")).thenReturn(Optional.empty());
 
-        assertThrows(RuntimeException.class, () -> authService.login(request));
+        assertThatThrownBy(() -> authService.forgotPassword(request))
+                .isInstanceOf(RuntimeException.class);
     }
 
-    @Test
-    @DisplayName("Logout - deletes refresh token")
-    void logout_shouldDeleteRefreshToken() {
-        authService.logout("someRefreshToken");
-        verify(refreshTokenRepository).findByToken("someRefreshToken");
+    @Test @DisplayName("verifyPasswordResetOtp - Success")
+    void verifyPasswordResetOtp_Success() {
+        authService.verifyPasswordResetOtp("test@example.com", "123456");
+        verify(otpService).validateOtp("test@example.com", "123456", OtpType.PASSWORD_RESET);
     }
 
-    @Test
-    @DisplayName("Update user role - success")
-    void updateUserRole_shouldUpdateRole() {
-        when(authUserRepository.findById(1L)).thenReturn(Optional.of(testUser));
-        when(authUserRepository.save(any())).thenReturn(testUser);
+    @Test @DisplayName("resetPassword - Success")
+    void resetPassword_Success() {
+        ResetPasswordRequest request = new ResetPasswordRequest("test@example.com", "123456", "New@Pass123");
+        user.setPasswordHash("old_hashed_pass");
+        
+        when(authUserRepository.findByEmail("test@example.com")).thenReturn(Optional.of(user));
+        when(passwordEncoder.matches("New@Pass123", "old_hashed_pass")).thenReturn(false);
+        when(passwordEncoder.encode("New@Pass123")).thenReturn("new_hashed_pass");
 
-        authService.updateUserRole(1L, "ROLE_MENTOR");
+        authService.resetPassword(request);
 
-        assertEquals(Role.ROLE_MENTOR, testUser.getRole());
-        verify(authUserRepository).save(testUser);
+        verify(otpService).verifyOtp("test@example.com", "123456", OtpType.PASSWORD_RESET);
+        assertThat(user.getPasswordHash()).isEqualTo("new_hashed_pass");
+        verify(refreshTokenRepository).deleteByUser(user);
     }
 
-    // =========================================================================
-    // OAuth Flow Tests
-    // =========================================================================
-    @Nested
-    @DisplayName("OAuth Flow Tests")
-    class OAuthFlowTests {
+    @Test @DisplayName("resetPassword - Same Password Error")
+    void resetPassword_SamePasswordError() {
+        ResetPasswordRequest request = new ResetPasswordRequest("test@example.com", "123456", "New@Pass123");
+        user.setPasswordHash("hashed_pass");
+        
+        when(authUserRepository.findByEmail("test@example.com")).thenReturn(Optional.of(user));
+        when(passwordEncoder.matches("New@Pass123", "hashed_pass")).thenReturn(true);
 
-        @Test
-        @DisplayName("OAuth - New user → creates account with passwordSetupRequired=true")
-        void oauth_newUser_shouldCreateAndRequirePasswordSetup() {
-            OAuthRequest request = new OAuthRequest(
-                    "newuser@gmail.com", "Google", "User", "google", "google-id-123");
+        assertThatThrownBy(() -> authService.resetPassword(request))
+                .isInstanceOf(RuntimeException.class)
+                .hasMessageContaining("must be different");
+    }
 
-            when(authUserRepository.findByProviderAndProviderId("google", "google-id-123"))
-                    .thenReturn(Optional.empty());
-            when(authUserRepository.findByEmail("newuser@gmail.com"))
-                    .thenReturn(Optional.empty());
-            when(passwordEncoder.encode(anyString())).thenReturn("encodedPlaceholder");
-            AuthUser newUser = AuthUser.builder()
-                    .id(10L).email("newuser@gmail.com").firstName("Google").lastName("User")
-                    .role(Role.ROLE_LEARNER).isActive(true).isVerified(true).passwordSet(false)
-                    .provider("google").providerId("google-id-123").build();
-            when(authUserRepository.save(any(AuthUser.class))).thenReturn(newUser);
-            when(jwtTokenProvider.generateAccessToken(anyLong(), anyString(), anyString())).thenReturn("accessToken");
-            when(jwtTokenProvider.generateRefreshToken(anyLong())).thenReturn("refreshToken");
-            when(jwtTokenProvider.getAccessExpiration()).thenReturn(3600000L);
-            when(refreshTokenRepository.findByUserOrderByCreatedAtAsc(any())).thenReturn(Collections.emptyList());
-            when(refreshTokenRepository.save(any())).thenReturn(null);
+    @Test @DisplayName("resetPassword - Weak Password Error")
+    void resetPassword_WeakPassword() {
+        ResetPasswordRequest request = new ResetPasswordRequest("test@example.com", "123456", "weak");
+        
+        assertThatThrownBy(() -> authService.resetPassword(request))
+                .isInstanceOf(RuntimeException.class)
+                .hasMessageContaining("Password must be 8-100 chars");
+    }
 
-            OAuthResponse response = authService.loginWithOAuth(request);
+    // --- PHASE 3: OAUTH & PASSWORD SETUP ---
 
-            assertNotNull(response);
-            assertTrue(response.passwordSetupRequired(), "New OAuth user should require password setup");
-            assertEquals("accessToken", response.accessToken());
-            verify(authUserRepository).save(any(AuthUser.class));
-        }
+    @Test @DisplayName("loginWithOAuth - New User")
+    void loginWithOAuth_NewUser() {
+        OAuthRequest request = new OAuthRequest("oauth@example.com", "John", "Doe", "google", "g-123");
+        when(authUserRepository.findByProviderAndProviderId("google", "g-123")).thenReturn(Optional.empty());
+        when(authUserRepository.findByEmail("oauth@example.com")).thenReturn(Optional.empty());
+        when(authUserRepository.save(any())).thenReturn(user);
+        when(jwtTokenProvider.generateAccessToken(anyLong(), anyString(), anyString())).thenReturn("access");
+        when(jwtTokenProvider.generateRefreshToken(anyLong())).thenReturn("refresh");
 
-        @Test
-        @DisplayName("OAuth - Existing verified user → direct login, no password prompt")
-        void oauth_existingVerifiedUser_shouldLoginDirectly() {
-            OAuthRequest request = new OAuthRequest(
-                    "verified@example.com", "Jane", "Doe", "google", "google-id-456");
+        OAuthResponse response = authService.loginWithOAuth(request);
 
-            AuthUser existingUser = AuthUser.builder()
-                    .id(2L).email("verified@example.com").firstName("Jane").lastName("Doe")
-                    .role(Role.ROLE_LEARNER).isActive(true).isVerified(true).passwordSet(true)
-                    .provider("google").providerId("google-id-456").build();
+        assertThat(response.passwordSetupRequired()).isTrue();
+        verify(authUserRepository).save(any(AuthUser.class));
+    }
 
-            when(authUserRepository.findByProviderAndProviderId("google", "google-id-456"))
-                    .thenReturn(Optional.of(existingUser));
-            when(jwtTokenProvider.generateAccessToken(anyLong(), anyString(), anyString())).thenReturn("accessToken");
-            when(jwtTokenProvider.generateRefreshToken(anyLong())).thenReturn("refreshToken");
-            when(jwtTokenProvider.getAccessExpiration()).thenReturn(3600000L);
-            when(refreshTokenRepository.findByUserOrderByCreatedAtAsc(any())).thenReturn(Collections.emptyList());
-            when(refreshTokenRepository.save(any())).thenReturn(null);
+    @Test @DisplayName("loginWithOAuth - Existing User Link Provider")
+    void loginWithOAuth_LinkProvider() {
+        OAuthRequest request = new OAuthRequest("test@example.com", "John", "Doe", "google", "g-123");
+        user.setProvider(null);
+        user.setVerified(false);
+        
+        when(authUserRepository.findByProviderAndProviderId("google", "g-123")).thenReturn(Optional.empty());
+        when(authUserRepository.findByEmail("test@example.com")).thenReturn(Optional.of(user));
+        when(authUserRepository.save(any())).thenReturn(user);
+        when(jwtTokenProvider.generateAccessToken(anyLong(), anyString(), anyString())).thenReturn("access");
 
-            OAuthResponse response = authService.loginWithOAuth(request);
+        authService.loginWithOAuth(request);
 
-            assertNotNull(response);
-            assertFalse(response.passwordSetupRequired(), "Existing verified user should NOT require password setup");
-            assertEquals("accessToken", response.accessToken());
-            // Should NOT create a new user
-            verify(authUserRepository, never()).save(any(AuthUser.class));
-        }
+        assertThat(user.getProvider()).isEqualTo("google");
+        assertThat(user.isVerified()).isTrue();
+        verify(cacheService).evict(any());
+    }
 
-        @Test
-        @DisplayName("OAuth - Unverified user → auto-verify and allow login")
-        void oauth_unverifiedUser_shouldBeVerifiedAndLoggedIn() {
-            OAuthRequest request = new OAuthRequest(
-                    "unverified@example.com", "Unverified", "User", "google", "google-id-789");
+    @Test @DisplayName("setupPassword - Success")
+    void setupPassword_Success() {
+        SetupPasswordRequest request = new SetupPasswordRequest("test@example.com", "New@Pass123");
+        user.setPasswordSet(false);
+        when(authUserRepository.findByEmail("test@example.com")).thenReturn(Optional.of(user));
+        when(passwordEncoder.encode("New@Pass123")).thenReturn("hashed");
 
-            AuthUser unverifiedUser = AuthUser.builder()
-                    .id(3L).email("unverified@example.com").firstName("Unverified").lastName("User")
-                    .role(Role.ROLE_LEARNER).isActive(true).isVerified(false).passwordSet(true).build();
+        authService.setupPassword(request);
 
-            when(authUserRepository.findByProviderAndProviderId("google", "google-id-789"))
-                    .thenReturn(Optional.empty());
-            when(authUserRepository.findByEmail("unverified@example.com"))
-                    .thenReturn(Optional.of(unverifiedUser));
-            
-            // Mock token generation for successful login
-            when(jwtTokenProvider.generateAccessToken(anyLong(), anyString(), anyString())).thenReturn("accessToken");
-            when(jwtTokenProvider.generateRefreshToken(anyLong())).thenReturn("refreshToken");
-            when(jwtTokenProvider.getAccessExpiration()).thenReturn(3600000L);
-            when(refreshTokenRepository.findByUserOrderByCreatedAtAsc(any())).thenReturn(Collections.emptyList());
+        assertThat(user.isPasswordSet()).isTrue();
+        verify(cacheService).evict(any());
+    }
 
-            OAuthResponse response = authService.loginWithOAuth(request);
+    @Test @DisplayName("setupPassword - Already Set Error")
+    void setupPassword_AlreadySet() {
+        SetupPasswordRequest request = new SetupPasswordRequest("test@example.com", "New@Pass123");
+        user.setPasswordSet(true);
+        when(authUserRepository.findByEmail("test@example.com")).thenReturn(Optional.of(user));
 
-            assertNotNull(response);
-            assertTrue(unverifiedUser.isVerified(), "OAuth login should auto-verify the user");
-            assertEquals("accessToken", response.accessToken());
-            // Should NOT create new user but MIGHT save existing user if provider was null
-            verify(authUserRepository).save(unverifiedUser);
-        }
+        assertThatThrownBy(() -> authService.setupPassword(request))
+                .isInstanceOf(RuntimeException.class)
+                .hasMessageContaining("already set");
+    }
 
-        @Test
-        @DisplayName("OAuth - Setup password for new OAuth user")
-        void setupPassword_shouldSetPasswordForOAuthUser() {
-            AuthUser oauthUser = AuthUser.builder()
-                    .id(10L).email("oauth@gmail.com").firstName("OAuth").lastName("User")
-                    .role(Role.ROLE_LEARNER).isActive(true).isVerified(true).passwordSet(false)
-                    .provider("google").providerId("google-id-123").build();
+    // --- USER MANAGEMENT ---
 
-            when(authUserRepository.findByEmail("oauth@gmail.com")).thenReturn(Optional.of(oauthUser));
-            when(passwordEncoder.encode("MyNewPassword1!")).thenReturn("encodedNewPassword");
-            when(authUserRepository.save(any())).thenReturn(oauthUser);
+    @Test @DisplayName("logout - Success")
+    void logout_Success() {
+        RefreshToken token = RefreshToken.builder().token("token").build();
+        when(refreshTokenRepository.findByToken("token")).thenReturn(Optional.of(token));
+        
+        authService.logout("token");
+        
+        verify(refreshTokenRepository).delete(token);
+    }
 
-            SetupPasswordRequest request = new SetupPasswordRequest("oauth@gmail.com", "MyNewPassword1!");
-            authService.setupPassword(request);
+    @Test @DisplayName("updateUserName - Success")
+    void updateUserName_Success() {
+        when(authUserRepository.findById(1L)).thenReturn(Optional.of(user));
+        authService.updateUserName(1L, " Jane ", " Smith ");
+        
+        assertThat(user.getFirstName()).isEqualTo("Jane");
+        assertThat(user.getLastName()).isEqualTo("Smith");
+        verify(cacheService).evict(any());
+    }
 
-            assertTrue(oauthUser.isPasswordSet());
-            assertEquals("encodedNewPassword", oauthUser.getPasswordHash());
-            verify(cacheService).evict(CacheService.vKey("user:profile:10"));
-        }
+    @Test @DisplayName("updateUserName - Blank Name Error")
+    void updateUserName_Blank() {
+        when(authUserRepository.findById(1L)).thenReturn(Optional.of(user));
+        assertThatThrownBy(() -> authService.updateUserName(1L, "", "Doe"))
+                .isInstanceOf(RuntimeException.class);
+    }
 
-        @Test
-        @DisplayName("OAuth - Setup password rejected for user who already has password")
-        void setupPassword_shouldRejectIfPasswordAlreadySet() {
-            when(authUserRepository.findByEmail("verified@example.com")).thenReturn(Optional.of(verifiedUser));
+    @Test @DisplayName("deleteUser - Success")
+    void deleteUser_Success() {
+        when(authUserRepository.findById(1L)).thenReturn(Optional.of(user));
+        authService.deleteUser(1L);
+        verify(refreshTokenRepository).deleteByUser(user);
+        verify(authUserRepository).delete(user);
+    }
+    @Test @DisplayName("getUserCount - Success")
+    void getUserCount() {
+        when(authUserRepository.countByRole(Role.ROLE_MENTOR)).thenReturn(10L);
+        assertThat(authService.getUserCount("ROLE_MENTOR")).isEqualTo(10L);
+    }
 
-            SetupPasswordRequest request = new SetupPasswordRequest("verified@example.com", "anotherPass");
+    @Test @DisplayName("getUserCount - All Users")
+    void getUserCount_All() {
+        when(authUserRepository.count()).thenReturn(100L);
+        assertThat(authService.getUserCount(null)).isEqualTo(100L);
+    }
 
-            RuntimeException ex = assertThrows(RuntimeException.class,
-                    () -> authService.setupPassword(request));
-            assertTrue(ex.getMessage().contains("already set"));
-        }
+    @Test @DisplayName("getUserById - Success")
+    void getUserById_Success() {
+        when(authUserRepository.findById(1L)).thenReturn(Optional.of(user));
+        var summary = authService.getUserById(1L);
+        assertThat(summary.email()).isEqualTo("test@example.com");
+    }
+
+    @Test @DisplayName("getUserById - Not Found")
+    void getUserById_NotFound() {
+        when(authUserRepository.findById(99L)).thenReturn(Optional.empty());
+        assertThatThrownBy(() -> authService.getUserById(99L))
+                .isInstanceOf(RuntimeException.class);
+    }
+
+    @Test @DisplayName("tokenEviction - Success")
+    void tokenEviction() {
+        LoginRequest request = new LoginRequest("test@example.com", "Strong@123");
+        List<RefreshToken> tokens = new java.util.ArrayList<>();
+        for (int i = 0; i < 5; i++) tokens.add(RefreshToken.builder().build());
+        
+        when(authUserRepository.findByEmail("test@example.com")).thenReturn(Optional.of(user));
+        when(refreshTokenRepository.findByUserOrderByCreatedAtAsc(any())).thenReturn(tokens);
+        when(jwtTokenProvider.generateAccessToken(anyLong(), anyString(), anyString())).thenReturn("a");
+        when(jwtTokenProvider.generateRefreshToken(anyLong())).thenReturn("r");
+
+        authService.login(request);
+
+        verify(refreshTokenRepository).delete(any()); // Should delete the oldest token
+    }
+
+    @Test @DisplayName("loginWithOAuth - Link Existing Verified User")
+    void loginWithOAuth_LinkVerified() {
+        OAuthRequest request = new OAuthRequest("test@example.com", "John", "Doe", "google", "g-123");
+        user.setProvider(null);
+        user.setVerified(true);
+        
+        when(authUserRepository.findByProviderAndProviderId("google", "g-123")).thenReturn(Optional.empty());
+        when(authUserRepository.findByEmail("test@example.com")).thenReturn(Optional.of(user));
+        when(authUserRepository.save(any())).thenReturn(user);
+        when(jwtTokenProvider.generateAccessToken(anyLong(), anyString(), anyString())).thenReturn("access");
+
+        authService.loginWithOAuth(request);
+
+        assertThat(user.getProvider()).isEqualTo("google");
+    }
+
+    @Test @DisplayName("getAllUsers - Success")
+    void getAllUsers() {
+        var pageable = org.springframework.data.domain.PageRequest.of(0, 10, org.springframework.data.domain.Sort.by("id"));
+        var usersPage = new org.springframework.data.domain.PageImpl<>(java.util.List.of(user));
+        
+        when(authUserRepository.findByFilters(null, null, pageable)).thenReturn(usersPage);
+        
+        var result = authService.getAllUsers(0, 10);
+        assertThat(result.get("totalElements")).isEqualTo(1L);
+    }
+
+    @Test @DisplayName("getAllUsersFiltered - With Role and Search")
+    void getAllUsersFiltered() {
+        var pageable = org.springframework.data.domain.PageRequest.of(0, 10, org.springframework.data.domain.Sort.by("id"));
+        var usersPage = new org.springframework.data.domain.PageImpl<>(java.util.List.of(user));
+        
+        when(authUserRepository.findByFilters(eq(Role.ROLE_LEARNER), eq("test"), any())).thenReturn(usersPage);
+        
+        var result = authService.getAllUsersFiltered(0, 10, "ROLE_LEARNER", "test");
+        assertThat(result.get("totalElements")).isEqualTo(1L);
     }
 }

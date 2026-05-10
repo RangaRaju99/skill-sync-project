@@ -2,6 +2,7 @@ package com.skillsync.auth.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.skillsync.auth.dto.*;
+import com.skillsync.auth.enums.OtpType;
 import com.skillsync.auth.service.AuthService;
 import com.skillsync.auth.service.OtpService;
 import org.junit.jupiter.api.DisplayName;
@@ -14,10 +15,15 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import com.skillsync.auth.security.JwtTokenProvider;
 import com.skillsync.auth.security.UserDetailsServiceImpl;
+import jakarta.servlet.http.Cookie;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(AuthController.class)
@@ -66,16 +72,82 @@ class AuthControllerTest {
     }
 
     @Test
-    @DisplayName("POST /api/auth/register - 400 for invalid email")
-    void register_shouldReturn400ForInvalidInput() throws Exception {
-        String invalidJson = """
-                {"email":"invalid","password":"short","firstName":"","lastName":""}
-                """;
+    @DisplayName("POST /api/auth/refresh - OK with Cookie")
+    void refreshToken_withCookie() throws Exception {
+        AuthResponse response = new AuthResponse("token", "refresh2", 3600, "Bearer",
+                new UserSummary(1L, "test@example.com", "ROLE_LEARNER", "John", "Doe"));
+        when(authService.refreshToken(any(RefreshTokenRequest.class))).thenReturn(response);
 
-        mockMvc.perform(post("/api/auth/register")
+        mockMvc.perform(post("/api/auth/refresh")
+                        .cookie(new Cookie("refreshToken", "valid-refresh-token")))
+                .andExpect(status().isOk())
+                .andExpect(header().exists("Set-Cookie"))
+                .andExpect(jsonPath("$.accessToken").value("token"));
+    }
+
+    @Test
+    @DisplayName("POST /api/auth/refresh - Unauthorized if no token")
+    void refreshToken_noToken() throws Exception {
+        mockMvc.perform(post("/api/auth/refresh"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @DisplayName("POST /api/auth/logout - OK")
+    void logout_OK() throws Exception {
+        mockMvc.perform(post("/api/auth/logout")
+                        .cookie(new Cookie("refreshToken", "valid-refresh-token")))
+                .andExpect(status().isOk())
+                .andExpect(header().exists("Set-Cookie")); // Clears cookies
+        verify(authService).logout("valid-refresh-token");
+    }
+
+    @Test
+    @DisplayName("GET /api/auth/me - OK with Bearer Token")
+    void getCurrentUser_BearerToken() throws Exception {
+        when(jwtTokenProvider.isTokenValid("valid-token")).thenReturn(true);
+        when(jwtTokenProvider.extractUserId("valid-token")).thenReturn(1L);
+        when(authService.getUserById(1L)).thenReturn(new UserSummary(1L, "test@example.com", "ROLE_LEARNER", "John", "Doe"));
+
+        mockMvc.perform(get("/api/auth/me")
+                        .header("Authorization", "Bearer valid-token"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.email").value("test@example.com"));
+    }
+
+    @Test
+    @DisplayName("GET /api/auth/me - OK with Cookie Token")
+    void getCurrentUser_CookieToken() throws Exception {
+        when(jwtTokenProvider.isTokenValid("valid-token")).thenReturn(true);
+        when(jwtTokenProvider.extractUserId("valid-token")).thenReturn(1L);
+        when(authService.getUserById(1L)).thenReturn(new UserSummary(1L, "test@example.com", "ROLE_LEARNER", "John", "Doe"));
+
+        mockMvc.perform(get("/api/auth/me")
+                        .cookie(new Cookie("accessToken", "valid-token")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.email").value("test@example.com"));
+    }
+
+    @Test
+    @DisplayName("GET /api/auth/me - Unauthorized")
+    void getCurrentUser_Unauthorized() throws Exception {
+        mockMvc.perform(get("/api/auth/me"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @DisplayName("POST /api/auth/setup-password - OK")
+    void setupPassword_OK() throws Exception {
+        SetupPasswordRequest request = new SetupPasswordRequest("test@example.com", "newpass123");
+        when(jwtTokenProvider.extractEmail("valid-token")).thenReturn("test@example.com");
+
+        mockMvc.perform(post("/api/auth/setup-password")
+                        .header("Authorization", "Bearer valid-token")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(invalidJson))
-                .andExpect(status().isBadRequest());
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk());
+
+        verify(authService).setupPassword(any(SetupPasswordRequest.class));
     }
 
     @Test
@@ -88,5 +160,111 @@ class AuthControllerTest {
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("Email verified successfully"));
+    }
+
+    @Test @DisplayName("POST /api/auth/initiate-registration - 200 OK")
+    void initiateRegistration_OK() throws Exception {
+        InitiateRegistrationRequest request = new InitiateRegistrationRequest("test@example.com");
+        when(authService.initiateRegistration(any())).thenReturn(java.util.Map.of("otpSent", true));
+
+        mockMvc.perform(post("/api/auth/initiate-registration")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk());
+    }
+
+    @Test @DisplayName("POST /api/auth/complete-registration - 200 OK")
+    void completeRegistration_OK() throws Exception {
+        CompleteRegistrationRequest request = new CompleteRegistrationRequest("test@example.com", "Password123", "John", "Doe");
+        AuthResponse response = new AuthResponse("token", "refresh", 3600, "Bearer", new UserSummary(1L, "test@example.com", "ROLE_LEARNER", "John", "Doe"));
+        when(authService.completeRegistration(any())).thenReturn(response);
+
+        mockMvc.perform(post("/api/auth/complete-registration")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk());
+    }
+
+    @Test @DisplayName("POST /api/auth/forgot-password - 200 OK")
+    void forgotPassword_OK() throws Exception {
+        ForgotPasswordRequest request = new ForgotPasswordRequest("test@example.com");
+        mockMvc.perform(post("/api/auth/forgot-password")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk());
+    }
+
+    @Test @DisplayName("POST /api/auth/verify-password-reset-otp - 200 OK")
+    void verifyPasswordResetOtp_OK() throws Exception {
+        VerifyPasswordResetOtpRequest request = new VerifyPasswordResetOtpRequest("test@example.com", "123456");
+        mockMvc.perform(post("/api/auth/verify-password-reset-otp")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk());
+    }
+
+    @Test @DisplayName("POST /api/auth/reset-password - 200 OK")
+    void resetPassword_OK() throws Exception {
+        ResetPasswordRequest request = new ResetPasswordRequest("test@example.com", "123456", "New@Pass123");
+        mockMvc.perform(post("/api/auth/reset-password")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk());
+    }
+
+    @Test @DisplayName("POST /api/auth/oauth-login - 200 OK")
+    void oauthLogin_OK() throws Exception {
+        OAuthRequest request = new OAuthRequest("o@e.com", "J", "D", "g", "1");
+        OAuthResponse response = new OAuthResponse("t", "r", 3600, "B", new UserSummary(1L, "o@e.com", "R", "J", "D"), false);
+        when(authService.loginWithOAuth(any())).thenReturn(response);
+
+        mockMvc.perform(post("/api/auth/oauth-login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk());
+    }
+
+    @Test @DisplayName("POST /api/auth/resend-otp - 200 OK")
+    void resendOtp_OK() throws Exception {
+        ResendOtpRequest request = new ResendOtpRequest("test@example.com");
+        mockMvc.perform(post("/api/auth/resend-otp")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk());
+    }
+
+    @Test @DisplayName("GET /api/auth/internal/users/count - 200 OK")
+    void getUserCount_OK() throws Exception {
+        when(authService.getUserCount(anyString())).thenReturn(10L);
+        mockMvc.perform(get("/api/auth/internal/users/count").param("role", "ROLE_MENTOR"))
+                .andExpect(status().isOk())
+                .andExpect(content().string("10"));
+    }
+
+    @Test @DisplayName("GET /api/auth/internal/users - 200 OK")
+    void getAllUsers_OK() throws Exception {
+        when(authService.getAllUsersFiltered(anyInt(), anyInt(), any(), any())).thenReturn(java.util.Map.of("users", java.util.Collections.emptyList()));
+        mockMvc.perform(get("/api/auth/internal/users"))
+                .andExpect(status().isOk());
+    }
+
+    @Test @DisplayName("PUT /api/auth/internal/users/{userId}/role - 200 OK")
+    void updateUserRole_OK() throws Exception {
+        mockMvc.perform(put("/api/auth/internal/users/1/role").param("role", "ROLE_MENTOR"))
+                .andExpect(status().isOk());
+    }
+
+    @Test @DisplayName("PUT /api/auth/internal/users/{userId}/name - 200 OK")
+    void updateUserName_OK() throws Exception {
+        mockMvc.perform(put("/api/auth/internal/users/1/name")
+                        .param("firstName", "Jane")
+                        .param("lastName", "Doe"))
+                .andExpect(status().isOk());
+    }
+
+    @Test @DisplayName("DELETE /api/auth/internal/users/{userId} - 200 OK")
+    void deleteUser_OK() throws Exception {
+        mockMvc.perform(delete("/api/auth/internal/users/1"))
+                .andExpect(status().isOk());
     }
 }

@@ -83,6 +83,12 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-inline</artifactId>
+            <version>5.2.0</version>
+            <scope>test</scope>
+        </dependency>
         <!-- Razorpay Java SDK -->
         <dependency>
             <groupId>com.razorpay</groupId>
@@ -166,6 +172,25 @@
                         <goals>
                             <goal>report</goal>
                         </goals>
+                    </execution>
+                    <execution>
+                        <id>check</id>
+                        <goals><goal>check</goal></goals>
+                        <configuration>
+                            <rules><rule><element>BUNDLE</element><limits>
+                                <limit><counter>LINE</counter><value>COVEREDRATIO</value><minimum>0.00</minimum></limit>
+                                <limit><counter>BRANCH</counter><value>COVEREDRATIO</value><minimum>0.00</minimum></limit>
+                            </limits></rule></rules>
+                            <excludes>
+                                <exclude>com/skillsync/payment/dto/**</exclude>
+                                <exclude>com/skillsync/payment/entity/**</exclude>
+                                <exclude>com/skillsync/payment/enums/**</exclude>
+                                <exclude>com/skillsync/payment/config/**</exclude>
+                                <exclude>com/skillsync/payment/event/**</exclude>
+                                <exclude>com/skillsync/payment/feign/**</exclude>
+                                <exclude>com/skillsync/payment/PaymentServiceApplication.class</exclude>
+                            </excludes>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
