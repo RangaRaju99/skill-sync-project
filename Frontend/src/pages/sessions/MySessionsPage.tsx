@@ -115,8 +115,8 @@ const MySessionsPage = () => {
           <h1 className="text-4xl font-bold text-on-surface tracking-tight mb-3">My Sessions</h1>
           <p className="text-on-surface-variant font-medium leading-relaxed max-w-2xl opacity-80">
             {isMentor
-              ? 'Review learner bookings, manage incoming requests, and track your completed sessions in real-time. System operational.'
-              : 'Synchronize with your mentors, manage scheduled sessions, and review your learning progress. System operational.'}
+              ? 'Review learner bookings, manage incoming requests, and track your completed sessions in real-time.'
+              : 'Connect with your mentors, manage scheduled sessions, and review your learning progress.'}
           </p>
         </div>
 
@@ -139,12 +139,12 @@ const MySessionsPage = () => {
           {isLoading ? (
             Array(3).fill(0).map((_, i) => <div key={i} className="h-28 surface-card animate-pulse" />)
           ) : isError ? (
-            <div className="surface-card p-12 text-center text-error font-bold border-error/20">Protocol failure: Failed to load sessions.</div>
+            <div className="surface-card p-12 text-center text-error font-bold border-error/20">Failed to load sessions. Please try again.</div>
           ) : sessions.length === 0 ? (
             <div className="surface-card p-20 text-center flex flex-col items-center border-dashed">
               <Calendar className="text-on-surface-variant/10 mb-6" size={64} />
               <p className="text-xl font-bold text-on-surface mb-2">No records found</p>
-              <p className="text-on-surface-variant font-medium">System reports zero active sessions in this category.</p>
+              <p className="text-on-surface-variant font-medium">You have no sessions in this category yet.</p>
             </div>
           ) : (
             sessions.map((session: any) => {
@@ -178,7 +178,7 @@ const MySessionsPage = () => {
                   <div className="flex-1 md:px-8 w-full">
                     <div className="bg-surface-container-low px-5 py-3.5 rounded-2xl border border-outline/10 group-hover:border-primary/20 transition-all">
                       <p className="text-sm font-bold text-on-surface-variant group-hover:text-on-surface transition-colors line-clamp-1 opacity-80 group-hover:opacity-100">
-                        {session.topic || 'General Protocol Sync'}
+                        {session.topic || 'General Session'}
                       </p>
                     </div>
                   </div>
@@ -202,7 +202,7 @@ const MySessionsPage = () => {
                             onClick={() => handleMentorSessionAction(session.id, 'accept')}
                             className="btn-primary h-11 px-7 text-xs shadow-primary/10"
                           >
-                            Accept Sync
+                            Accept
                           </button>
                         </>
                       )}
@@ -211,7 +211,7 @@ const MySessionsPage = () => {
                         <button
                           onClick={() => void handleLearnerCancel(session.id)}
                           disabled={cancelMutation.isPending}
-                          className="h-11 px-5 bg-error/5 text-error rounded-xl text-xs font-bold hover:bg-error hover:text-white transition-all border border-error/10 disabled:opacity-50"
+                          className="h-11 px-5 btn-primary bg-error/5 text-error border-error/10 hover:bg-error hover:text-white rounded-xl text-xs font-bold transition-all disabled:opacity-50"
                         >
                           Cancel
                         </button>
@@ -239,7 +239,7 @@ const MySessionsPage = () => {
                           onClick={() => handleMentorSessionAction(session.id, 'complete')}
                           className="h-11 px-7 bg-emerald-500/5 text-emerald-500 rounded-xl text-xs font-bold hover:bg-emerald-500 hover:text-white transition-all border border-emerald-500/10"
                         >
-                          Complete Sync
+                          Mark Complete
                         </button>
                       )}
 

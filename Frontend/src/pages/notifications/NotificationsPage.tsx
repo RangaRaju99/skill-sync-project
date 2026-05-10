@@ -9,8 +9,7 @@ import {
   Info, 
   Users, 
   Trash2,
-  Check,
-  MoreVertical
+  Check
 } from 'lucide-react';
 import notificationService from '../../services/notificationService';
 import PageLayout from '../../components/layout/PageLayout';

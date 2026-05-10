@@ -140,7 +140,7 @@ const MentorAvailabilityPage = () => {
             <button
               onClick={() => addSlotMutation.mutate()}
               disabled={addSlotMutation.isPending}
-              className="w-full h-11 gradient-btn text-white font-bold rounded-lg shadow-sm hover:shadow-md transition-all active:scale-95 disabled:opacity-50"
+              className="w-full h-11 btn-primary shadow-sm active:scale-95 disabled:opacity-50"
             >
               Add Slot
             </button>
