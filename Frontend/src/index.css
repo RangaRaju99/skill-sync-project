@@ -1,5 +1,5 @@
 /* ─── Google Fonts ─── */
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Poppins:wght@300;400;600;700&family=Inter:wght@300;400;600;700&family=Space+Grotesk:wght@300;400;600;700&family=Manrope:wght@300;400;600;700&display=swap');
 
 @import "tailwindcss";
 
@@ -104,6 +104,26 @@ html,
 
 .gradient-btn {
   background: linear-gradient(135deg, var(--gradient-btn-start), var(--gradient-btn-end));
+}
+
+/* ─── Custom Theme Overrides ─── */
+.bg-surface-container-lowest, 
+.bg-white,
+.mock-card {
+  background: var(--card-bg, var(--color-surface-container-lowest)) !important;
+  backdrop-filter: var(--card-blur, none) !important;
+  -webkit-backdrop-filter: var(--card-blur, none) !important;
+  border-color: var(--card-border-color, var(--color-outline-variant)) !important;
+  box-shadow: var(--card-shadow, none) !important;
+  border-radius: var(--radius) !important;
+}
+
+button, input, select, .rounded-xl, .rounded-lg, .rounded-2xl {
+  border-radius: var(--radius) !important;
+}
+
+h1, h2, h3, h4, .font-display {
+  font-family: var(--font-sans) !important;
 }
 
 /* ─── Dark Theme Overrides For Legacy Utility Classes ─── */

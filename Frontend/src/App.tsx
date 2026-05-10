@@ -4,6 +4,8 @@ import { ActionConfirmProvider } from './components/ui/ActionConfirm';
 import AuthLoader from './components/layout/AuthLoader';
 import AppRoutes from './routes/AppRoutes';
 
+import ThemeSettingsPanel from './components/ui/ThemeSettingsPanel';
+
 function App() {
   return (
     <ToastProvider>
@@ -11,6 +13,7 @@ function App() {
         <BrowserRouter>
           <AuthLoader>
             <AppRoutes />
+            <ThemeSettingsPanel />
           </AuthLoader>
         </BrowserRouter>
       </ActionConfirmProvider>
