@@ -200,7 +200,7 @@ const LearnerDashboardPage = () => {
         ) : (
           <div className="space-y-2">
             {groups.slice(0, 4).map((g: any, i: number) => (
-              <div key={i} className="flex justify-between items-center p-3 rounded-xl hover:bg-white/[0.03] transition-all group cursor-pointer border border-transparent hover:border-outline/10" onClick={() => navigate(`/groups/${g.id}`)}>
+              <div key={i} className="flex justify-between items-center p-3 rounded-xl hover:bg-surface-container-low transition-all group cursor-pointer border border-transparent hover:border-outline/10" onClick={() => navigate(`/groups/${g.id}`)}>
                 <span className="text-sm font-bold text-on-surface group-hover:text-primary transition-colors">{g.name}</span>
                 <ArrowRight size={14} className="text-on-surface-variant opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0" />
               </div>
@@ -220,7 +220,7 @@ const LearnerDashboardPage = () => {
             Welcome back, <span className="text-primary">{user?.firstName}</span>
           </h1>
           <p className="text-lg text-on-surface-variant font-medium max-w-2xl leading-relaxed">
-            System status: <span className="text-emerald-500/80">Active</span>. All synchronization services are operational and ready.
+            System status: <span className="text-emerald-600 font-bold">Active</span>. All synchronization services are operational and ready.
           </p>
         </section>
 
@@ -402,7 +402,7 @@ const LearnerDashboardPage = () => {
                           key={skill.id}
                           onClick={() => toggleSkill(skill.id)}
                           className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all border ${
-                            selected ? 'bg-primary border-primary text-white shadow-lg shadow-primary/20' : 'bg-surface-container-high/50 border-outline/20 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest'
+                            selected ? 'bg-primary border-primary text-white shadow-lg shadow-primary/20' : 'bg-surface-container-high border-outline/30 text-on-surface hover:border-primary/50'
                           }`}
                         >
                           {skill.name}

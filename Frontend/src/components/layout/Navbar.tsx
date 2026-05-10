@@ -60,7 +60,7 @@ const Navbar = () => {
   const avatarClass = colors[colorIndex] || 'bg-primary';
 
   return (
-    <header className="h-16 w-full bg-surface-container-lowest/90 backdrop-blur-md border-b border-outline/10 flex items-center justify-between px-4 lg:px-10 z-30 sticky top-0 transition-all">
+    <header className="h-16 w-full bg-surface-container-lowest/80 backdrop-blur-md border-b border-outline/30 dark:border-outline/10 flex items-center justify-between px-4 lg:px-10 z-30 sticky top-0 transition-all">
       <div className="flex-1 flex items-center">
         <button
           onClick={handleToggle}
@@ -74,24 +74,24 @@ const Navbar = () => {
         </button>
       </div>
 
-      <div className="flex items-center space-x-6">
-        <ThemeToggleButton className="px-2.5 py-1.5" showLabel={false} />
+      <div className="flex items-center space-x-4 lg:space-x-6">
+        <ThemeToggleButton className="px-2 py-2" showLabel={false} />
 
-        <Link to="/notifications" className="relative p-2 rounded-xl flex hover:bg-surface-container text-on-surface-variant hover:text-on-surface transition-all duration-300">
+        <Link to="/notifications" className="relative p-2.5 rounded-xl flex hover:bg-surface-container text-on-surface-variant hover:text-on-surface transition-all duration-300">
           <span className="material-symbols-outlined text-[24px]">notifications</span>
           {unreadCount > 0 && (
-            <span className="absolute top-1 right-1 min-w-[16px] h-[16px] bg-primary text-white text-[9px] font-bold rounded-full flex items-center justify-center px-1 shadow-lg">
+            <span className="absolute top-2 right-2 min-w-[16px] h-[16px] bg-primary text-on-primary text-[9px] font-black rounded-full flex items-center justify-center px-1 shadow-lg shadow-primary/20">
               {unreadCount > 9 ? '9+' : unreadCount}
             </span>
           )}
         </Link>
 
-        <Link to="/profile" className="flex items-center pl-6 border-l border-outline/20 hover:opacity-80 transition-opacity">
-          <div className="hidden md:flex flex-col items-end mr-3">
-            <span className="text-sm font-bold text-on-surface leading-tight">{user?.firstName} {user?.lastName}</span>
-            <span className="text-[10px] text-on-surface-variant font-black uppercase tracking-wider opacity-60">Account</span>
+        <Link to="/profile" className="flex items-center pl-6 border-l border-outline/30 dark:border-l-outline/10 hover:opacity-80 transition-opacity">
+          <div className="hidden sm:flex flex-col items-end mr-3">
+            <span className="text-sm font-bold text-on-surface leading-tight tracking-tight">{user?.firstName} {user?.lastName}</span>
+            <span className="text-[10px] text-on-surface-variant font-black uppercase tracking-widest opacity-60">Account</span>
           </div>
-          <div className={`w-9 h-9 rounded-xl ${avatarClass} text-white flex items-center justify-center font-bold shadow-lg shadow-black/20 shrink-0`}>
+          <div className={`w-9 h-9 rounded-xl ${avatarClass} text-white flex items-center justify-center font-bold shadow-md shadow-black/10 shrink-0 border border-white/20`}>
             {initials}
           </div>
         </Link>

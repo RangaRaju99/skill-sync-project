@@ -65,8 +65,8 @@ const Sidebar = ({ role }: SidebarProps) => {
           to={item.path}
           onClick={() => setIsMobileMenuOpen(false)}
           className={`flex items-center px-4 py-3.5 rounded-xl transition-all duration-300 relative overflow-hidden ${isActive
-            ? 'text-primary'
-            : 'text-on-surface-variant/70 hover:text-on-surface hover:bg-white/5'
+            ? 'text-primary font-bold'
+            : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low'
             }`}
         >
           {isActive && (
@@ -78,7 +78,7 @@ const Sidebar = ({ role }: SidebarProps) => {
             />
           )}
 
-          <span className={`material-symbols-outlined text-2xl transition-all duration-300 ${isActive ? 'scale-110' : 'group-hover/navitem:scale-110'
+          <span className={`material-symbols-outlined text-2xl transition-all duration-300 ${isActive ? 'scale-110' : 'group-hover/navitem:scale-110 opacity-70 group-hover/navitem:opacity-100'
             }`}>
             {item.icon}
           </span>
@@ -89,7 +89,7 @@ const Sidebar = ({ role }: SidebarProps) => {
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -10 }}
-                className="ml-4 text-xs font-black uppercase tracking-[0.2em] whitespace-nowrap"
+                className="ml-4 text-[11px] font-black uppercase tracking-[0.15em] whitespace-nowrap"
               >
                 {item.name}
               </motion.span>
@@ -99,7 +99,7 @@ const Sidebar = ({ role }: SidebarProps) => {
           {isActive && (
             <motion.div
               layoutId="active-indicator"
-              className="absolute left-0 w-1 h-6 bg-primary rounded-r-full shadow-[0_0_10px_rgba(139,92,246,0.5)]"
+              className="absolute left-0 w-1 h-6 bg-primary rounded-r-full shadow-[0_0_12px_rgba(var(--color-primary),0.4)]"
               transition={{ type: 'spring', damping: 25, stiffness: 300 }}
             />
           )}
@@ -129,7 +129,7 @@ const Sidebar = ({ role }: SidebarProps) => {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setIsMobileMenuOpen(false)}
-            className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[45] lg:hidden"
+            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[45] lg:hidden"
           />
         )}
       </AnimatePresence>
@@ -143,13 +143,13 @@ const Sidebar = ({ role }: SidebarProps) => {
             : 0
         }}
         transition={{ type: 'spring', damping: 28, stiffness: 220 }}
-        className={`fixed left-0 top-0 h-screen bg-surface-container-lowest border-r border-outline/10 flex flex-col justify-between z-[50] shadow-2xl overflow-hidden ${isMobileMenuOpen ? 'flex' : 'hidden lg:flex'
+        className={`fixed left-0 top-0 h-screen bg-surface-container-lowest border-r border-outline/30 flex flex-col justify-between z-[50] shadow-sm overflow-hidden dark:border-outline/10 ${isMobileMenuOpen ? 'flex' : 'hidden lg:flex'
           }`}
       >
         <div className="flex flex-col flex-1 overflow-y-auto w-full scrollbar-hide">
           <div className="flex items-center justify-between px-6 h-24 shrink-0">
             <div className="flex items-center">
-              <div className="w-10 h-10 flex items-center justify-center bg-primary/10 rounded-xl border border-primary/20 shadow-sm overflow-hidden">
+              <div className="w-10 h-10 flex items-center justify-center bg-surface-container rounded-xl border border-outline/20 shadow-sm overflow-hidden">
                 <img src={logo} alt="S" className="w-6 h-6 object-contain" onError={(e: any) => { e.target.src = 'https://via.placeholder.com/24'; }} />
               </div>
               <AnimatePresence>
@@ -161,7 +161,7 @@ const Sidebar = ({ role }: SidebarProps) => {
                     className="ml-4 flex flex-col"
                   >
                     <span className="text-xl font-display font-bold text-on-surface tracking-tighter uppercase italic leading-none">SkillSync<span className="text-primary">.</span></span>
-                    <span className="text-[9px] font-black text-on-surface-variant uppercase tracking-[0.2em] mt-1.5 opacity-80">{role.replace('ROLE_', '')}</span>
+                    <span className="text-[9px] font-black text-on-surface-variant uppercase tracking-[0.2em] mt-1.5 opacity-60">{role.replace('ROLE_', '')}</span>
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -175,21 +175,21 @@ const Sidebar = ({ role }: SidebarProps) => {
             </button>
           </div>
 
-          <nav className="flex-1 w-full px-4 py-8 space-y-2">
+          <nav className="flex-1 w-full px-4 py-8 space-y-1">
             {activeNav.map((item) => (
               <NavItem key={item.name} item={item} />
             ))}
           </nav>
         </div>
 
-        <div className="w-full shrink-0 p-4 border-t border-outline/10 space-y-2 bg-surface-container-lowest/80 backdrop-blur-md">
+        <div className="w-full shrink-0 p-4 border-t border-outline/30 space-y-1 bg-surface-container-lowest dark:border-outline/10">
           {role === 'ROLE_LEARNER' && (
             <button
               onClick={() => {
                 navigate('/mentors');
                 setIsMobileMenuOpen(false);
               }}
-              className={`w-full flex items-center justify-center rounded-xl bg-primary text-white shadow-lg shadow-primary/10 hover:bg-primary-dark transition-all duration-300 group overflow-hidden ${isSidebarCollapsed ? 'h-12' : 'py-3'
+              className={`w-full flex items-center justify-center rounded-xl bg-primary text-on-primary shadow-lg shadow-primary/10 hover:bg-primary-dark transition-all duration-300 group overflow-hidden ${isSidebarCollapsed ? 'h-12' : 'py-3.5 mb-2'
                 }`}
             >
               <span className="material-symbols-outlined text-xl">person_search</span>
@@ -206,12 +206,12 @@ const Sidebar = ({ role }: SidebarProps) => {
               handleLogout();
               setIsMobileMenuOpen(false);
             }}
-            className={`w-full flex items-center justify-center lg:justify-start px-4 h-12 rounded-xl text-error/80 hover:text-error hover:bg-error/5 transition-all duration-300 group ${isSidebarCollapsed ? 'justify-center px-0' : ''
+            className={`w-full flex items-center justify-center lg:justify-start px-4 h-12 rounded-xl text-error hover:bg-error/5 transition-all duration-300 group ${isSidebarCollapsed ? 'justify-center px-0' : ''
               }`}
           >
-            <span className="material-symbols-outlined text-2xl group-hover:scale-110 transition-transform">logout</span>
+            <span className="material-symbols-outlined text-2xl group-hover:scale-110 transition-transform opacity-70 group-hover:opacity-100">logout</span>
             {!isSidebarCollapsed && (
-              <span className="ml-4 text-[10px] font-black uppercase tracking-[0.2em]">Logout</span>
+              <span className="ml-4 text-[10px] font-black uppercase tracking-[0.2em] opacity-70 group-hover:opacity-100">Logout</span>
             )}
           </button>
         </div>

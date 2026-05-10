@@ -122,8 +122,8 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
       rootStyle.setProperty('--card-shadow', `0 0 10px ${settings.primaryColor}33`);
       rootStyle.setProperty('--card-blur', '4px');
     } else if (settings.cardStyle === 'elevated') {
-      rootStyle.setProperty('--card-bg', theme === 'dark' ? '#1e1e2e' : '#ffffff');
-      rootStyle.setProperty('--card-shadow', '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)');
+      rootStyle.setProperty('--card-bg', theme === 'dark' ? 'var(--surface-container-low)' : '#ffffff');
+      rootStyle.setProperty('--card-shadow', '0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.02)');
       rootStyle.setProperty('--card-blur', 'none');
     } else {
       rootStyle.setProperty('--card-bg', ''); // Fallback to default

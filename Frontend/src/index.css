@@ -38,24 +38,25 @@
 
 @layer base {
   :root {
-    --primary: #8b5cf6;
-    --primary-dark: #7c3aed;
+    /* Premium SaaS Light Palette */
+    --primary: #6366f1; /* Indigo 500 */
+    --primary-dark: #4f46e5; /* Indigo 600 */
     --on-primary: #ffffff;
-    --secondary: #0ea5e9;
+    --secondary: #f59e0b; /* Amber 500 */
     --on-secondary: #ffffff;
     
-    --surface: #f8fafc;
-    --on-surface: #0f172a;
-    --on-surface-variant: #64748b;
+    --surface: #fafafa; /* Very light neutral gray */
+    --on-surface: #111827; /* Gray 900 - High contrast */
+    --on-surface-variant: #4b5563; /* Gray 600 - Secondary text */
     
     --surface-container-lowest: #ffffff;
-    --surface-container-low: #f1f5f9;
-    --surface-container: #e2e8f0;
-    --surface-container-high: #cbd5e1;
-    --surface-container-highest: #94a3b8;
+    --surface-container-low: #f3f4f6; /* Gray 100 */
+    --surface-container: #e5e7eb; /* Gray 200 */
+    --surface-container-high: #d1d5db; /* Gray 300 */
+    --surface-container-highest: #9ca3af; /* Gray 400 */
     
-    --outline: #94a3b8;
-    --outline-variant: #e2e8f0;
+    --outline: #d1d5db; /* Gray 300 - more defined borders for light mode */
+    --outline-variant: #f3f4f6; /* Gray 100 */
     
     --error: #ef4444;
     --on-error: #ffffff;
@@ -64,6 +65,12 @@
   }
 
   .theme-dark {
+    --primary: #8b5cf6;
+    --primary-dark: #7c3aed;
+    --on-primary: #ffffff;
+    --secondary: #0ea5e9;
+    --on-secondary: #ffffff;
+
     --surface: #0f111a;
     --on-surface: #f8fafc;
     --on-surface-variant: #94a3b8;
@@ -85,10 +92,16 @@
   body {
     @apply bg-surface text-on-surface font-sans selection:bg-primary/30 selection:text-white antialiased;
     background-image: 
+      radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.015) 0px, transparent 50%),
+      radial-gradient(at 100% 100%, rgba(245, 158, 11, 0.015) 0px, transparent 50%);
+    background-attachment: fixed;
+    transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1), color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .theme-dark body {
+    background-image: 
       radial-gradient(at 0% 0%, rgba(139, 92, 246, 0.03) 0px, transparent 50%),
       radial-gradient(at 100% 100%, rgba(14, 165, 233, 0.03) 0px, transparent 50%);
-    background-attachment: fixed;
-    transition: background-color 0.3s ease, color 0.3s ease;
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -98,7 +111,11 @@
 
 @layer components {
   .surface-card {
-    @apply bg-surface-container-lowest border border-outline/10 rounded-2xl shadow-sm hover:border-primary/20 transition-all duration-300;
+    @apply bg-surface-container-lowest border border-outline/40 rounded-2xl shadow-sm hover:border-primary/20 transition-all duration-300;
+  }
+
+  .theme-dark .surface-card {
+    @apply border-outline/10 shadow-none;
   }
 
   .btn-primary {
@@ -110,7 +127,7 @@
   }
 
   .nav-item {
-    @apply flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 text-on-surface-variant hover:text-on-surface hover:bg-primary/5;
+    @apply flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low;
   }
   .nav-item-active {
     @apply bg-primary/10 text-primary border border-primary/20;

@@ -156,7 +156,7 @@ const NotificationsPage = () => {
                 <div
                   key={notification.id}
                   className={`group relative surface-card p-5 flex items-start gap-5 transition-all duration-300 ${
-                    !notification.isRead ? 'border-primary/20 bg-primary/[0.02]' : 'opacity-70 hover:opacity-100'
+                    !notification.isRead ? 'border-primary/20 bg-primary/5' : 'opacity-70 hover:opacity-100'
                   }`}
                 >
                   <div className={`mt-1 w-10 h-10 rounded-xl bg-surface-container-high flex items-center justify-center border border-outline/5 transition-transform group-hover:scale-105 ${color}`}>
