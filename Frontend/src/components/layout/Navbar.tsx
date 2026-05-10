@@ -30,7 +30,7 @@ const Navbar = () => {
       try {
         const response = await api.get('/api/notifications/unread/count', { _skipErrorRedirect: true } as any);
         return response.data;
-      } catch {
+      } catch (e) {
         return { count: 0 };
       }
     },

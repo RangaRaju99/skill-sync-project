@@ -11,76 +11,49 @@ if (isProd && configuredUrl && configuredUrl.includes('35.153.59.2')) {
     configuredUrl = 'https://api.skillsync.mraks.dev';
 }
 
-// CRITICAL: If configuredUrl points to the frontend domain (skillsync.rangaraju.dev, Vercel),
+// CRITICAL: If configuredUrl points to the frontend domain (skillsync.mraks.dev, Vercel),
 // redirect to the actual API domain (api.skillsync.mraks.dev, EC2). This handles
 // misconfigured VITE_API_URL in Vercel deployment settings.
-if (isProd && configuredUrl && new URL(configuredUrl).hostname === 'skillsync.rangaraju.dev') {
+if (isProd && configuredUrl && new URL(configuredUrl).hostname === 'skillsync.mraks.dev') {
     console.warn('[CORS FIX] Detected misconfigured API URL pointing to frontend domain. Redirecting to API Gateway...');
     configuredUrl = 'https://api.skillsync.mraks.dev';
 }
 
 export const API_BASE_URL = configuredUrl || (isProd ? 'https://api.skillsync.mraks.dev' : 'http://localhost:8080');
 
-const parseJsonSafely = (value: unknown) => {
-  if (typeof value !== 'string') return value;
-
-  const trimmed = value.trim();
-  if (!trimmed) return value;
-
-  if (!(trimmed.startsWith('{') || trimmed.startsWith('['))) {
-    return value;
-  }
-
-  try {
-    return JSON.parse(trimmed);
-  } catch {
-    return value;
-  }
-};
-
-const redirectTo = (path: string) => {
-  if (typeof window === 'undefined') return;
-
-  if (typeof process !== 'undefined' && process.env.NODE_ENV === 'test') {
-    window.history.replaceState({}, '', path);
-    return;
-  }
-
-  window.location.assign(path);
-};
-
 const api = axios.create({
   baseURL: API_BASE_URL,
   withCredentials: true,
   headers: { 'Content-Type': 'application/json' },
-  adapter: ['fetch', 'xhr', 'http'],
 });
 
-// REQUEST INTERCEPTOR — we no longer manually attach the token.
-// The browser will automatically send the HttpOnly 'accessToken' cookie.
+// REQUEST INTERCEPTOR — Manually attach the Bearer token from Redux state.
+// This is required for cross-domain functionality (skillsync.rangaraju.dev) 
+// where HttpOnly cookies from api.skillsync.mraks.dev are not accessible.
 api.interceptors.request.use((config) => {
+  const token = store.getState().auth.accessToken;
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
   return config;
 });
 
 // RESPONSE INTERCEPTOR — handle 401 with silent token refresh + retry
 let isRefreshing = false;
-let failedQueue: Array<{ resolve: () => void; reject: (err: any) => void }> = [];
+let failedQueue: Array<{ resolve: (token: string) => void; reject: (err: any) => void }> = [];
 
 const isInvalidSessionStatus = (status?: number): boolean => status === 401 || status === 403;
 
-const processQueue = (error: any) => {
+const processQueue = (error: any, token: string | null = null) => {
   failedQueue.forEach(({ resolve, reject }) => {
     if (error) reject(error);
-    else resolve();
+    else resolve(token!);
   });
   failedQueue = [];
 };
 
 api.interceptors.response.use(
-  (response) => {
-    response.data = parseJsonSafely(response.data);
-    return response;
-  },
+  (response) => response,
   async (error) => {
     const originalRequest = error.config || {};
     const requestUrl = originalRequest.url || '';
@@ -97,11 +70,11 @@ api.interceptors.response.use(
       originalRequest._retry = true;
 
       if (isRefreshing) {
-        return new Promise<void>((resolve, reject) => {
+        return new Promise<string>((resolve, reject) => {
           failedQueue.push({ resolve, reject });
-        }).then(() => {
+        }).then((token) => {
           if (originalRequest.headers) {
-            delete originalRequest.headers.Authorization;
+            originalRequest.headers.Authorization = `Bearer ${token}`;
           }
           return api(originalRequest);
         });
@@ -122,57 +95,33 @@ api.interceptors.response.use(
         );
 
         const refreshed = refreshResponse?.data;
-        if (refreshed?.user) {
+        if (refreshed?.accessToken) {
           store.dispatch(
             setCredentials({
-              user: refreshed.user,
-              accessToken: refreshed.accessToken || '',
+              user: refreshed.user || store.getState().auth.user,
+              accessToken: refreshed.accessToken,
               refreshToken: refreshed.refreshToken || currentRefreshToken || '',
             }),
           );
-        }
 
-        // Refresh was successful. Tokens are cookie-based, so queued requests
-        // should be replayed without forcing an Authorization header.
-        processQueue(null);
-        
-        // Re-run original request without altering authorization header
-        if (originalRequest.headers) {
-          delete originalRequest.headers.Authorization;
+          const newToken = refreshed.accessToken;
+          processQueue(null, newToken);
+          
+          if (originalRequest.headers) {
+            originalRequest.headers.Authorization = `Bearer ${newToken}`;
+          }
+          return api(originalRequest);
         }
-        return api(originalRequest);
+        
+        throw new Error('No access token returned');
       } catch (refreshError) {
         processQueue(refreshError);
         const refreshStatus = (refreshError as any)?.response?.status;
 
         // Only force logout when the refresh token is definitely invalid/expired.
         if (isInvalidSessionStatus(refreshStatus)) {
-          try {
-            // Multi-tab or timing races can briefly fail refresh while a valid cookie session still exists.
-            const meResponse = await api.get('/api/auth/me', {
-              _skipErrorRedirect: true,
-              _skipAuthRedirect: true,
-            } as any);
-
-            if (meResponse?.data) {
-              const currentRefreshToken = store.getState().auth.refreshToken;
-              store.dispatch(setCredentials({
-                user: meResponse.data,
-                accessToken: store.getState().auth.accessToken || '',
-                refreshToken: currentRefreshToken || '',
-              }));
-
-              if (originalRequest.headers) {
-                delete originalRequest.headers.Authorization;
-              }
-              return api(originalRequest);
-            }
-          } catch {
-            // Fall through to forced logout only when sanity check also fails.
-          }
-
           store.dispatch(logout());
-          redirectTo('/login?reason=session_expired');
+          window.location.href = '/login?reason=session_expired';
         }
 
         return Promise.reject(refreshError);
@@ -183,12 +132,12 @@ api.interceptors.response.use(
 
     // 403 — role forbidden
     if (error.response?.status === 403) {
-      redirectTo('/unauthorized');
+      window.location.href = '/unauthorized';
     }
 
     // 500 — server error fallback message (skip if caller opted out)
     if (error.response?.status >= 500 && error.response?.status !== 503 && !originalRequest._skipErrorRedirect) {
-      redirectTo('/500');
+      window.location.href = '/500';
     }
 
     // 429 / 503 — exponential backoff retry (max 3 times)

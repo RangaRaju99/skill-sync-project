@@ -135,7 +135,7 @@ const ThemeStudio: React.FC = () => {
                         <>
                           <div className="picker-overlay" onClick={() => setShowColorPicker(null)}></div>
                           <div className="picker-popover" onClick={e => e.stopPropagation()}>
-                            <HexColorPicker color={theme.colors.primary} onChange={(c) => handleColorChange('primary', c)} />
+                            <HexColorPicker color={theme.colors.primary} onChange={(c: string) => handleColorChange('primary', c)} />
                           </div>
                         </>
                       )}
@@ -149,7 +149,7 @@ const ThemeStudio: React.FC = () => {
                         <>
                           <div className="picker-overlay" onClick={() => setShowColorPicker(null)}></div>
                           <div className="picker-popover" onClick={e => e.stopPropagation()}>
-                            <HexColorPicker color={theme.colors.secondary} onChange={(c) => handleColorChange('secondary', c)} />
+                            <HexColorPicker color={theme.colors.secondary} onChange={(c: string) => handleColorChange('secondary', c)} />
                           </div>
                         </>
                       )}
@@ -165,7 +165,7 @@ const ThemeStudio: React.FC = () => {
                         <>
                           <div className="picker-overlay" onClick={() => setShowColorPicker(null)}></div>
                           <div className="picker-popover" onClick={e => e.stopPropagation()}>
-                            <HexColorPicker color={theme.colors.background} onChange={(c) => handleColorChange('background', c)} />
+                            <HexColorPicker color={theme.colors.background} onChange={(c: string) => handleColorChange('background', c)} />
                           </div>
                         </>
                       )}
@@ -179,7 +179,7 @@ const ThemeStudio: React.FC = () => {
                         <>
                           <div className="picker-overlay" onClick={() => setShowColorPicker(null)}></div>
                           <div className="picker-popover" onClick={e => e.stopPropagation()}>
-                            <HexColorPicker color={theme.colors.surface} onChange={(c) => handleColorChange('surface', c)} />
+                            <HexColorPicker color={theme.colors.surface} onChange={(c: string) => handleColorChange('surface', c)} />
                           </div>
                         </>
                       )}

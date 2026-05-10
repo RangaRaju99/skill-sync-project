@@ -51,7 +51,7 @@ export const useThemeEngine = () => {
     }
 
     // --- Layout ---
-    const densityMap = {
+    const densityMap: Record<string, { padding: string; gap: string }> = {
       compact: { padding: '8px', gap: '12px' },
       comfortable: { padding: '16px', gap: '24px' },
       spacious: { padding: '32px', gap: '48px' },

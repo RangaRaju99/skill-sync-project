@@ -7,21 +7,6 @@ import { useActionConfirm } from '../../components/ui/ActionConfirm';
 
 const PAGE_SIZE = 20;
 
-type AdminUser = {
-  id: number;
-  email: string;
-  firstName?: string;
-  lastName?: string;
-  role: string;
-};
-
-type AdminUsersPage = {
-  content: AdminUser[];
-  totalElements?: number;
-  totalPages?: number;
-  number?: number;
-};
-
 const UsersCenterPage = () => {
   const queryClient = useQueryClient();
   const { showToast } = useToast();
@@ -31,6 +16,7 @@ const UsersCenterPage = () => {
   const [roleFilter, setRoleFilter] = useState('');
   const [searchText, setSearchText] = useState('');
   const [searchInput, setSearchInput] = useState('');
+  const [isDebouncing, setIsDebouncing] = useState(false);
   const debounceTimerRef = useRef<number | null>(null);
   const firstDebounceRunRef = useRef(true);
 
@@ -48,7 +34,7 @@ const UsersCenterPage = () => {
       if (roleFilter) params.append('role', roleFilter);
       if (searchText) params.append('search', searchText);
       const { data } = await api.get(`/api/admin/users?${params.toString()}`, { signal });
-      return data as AdminUsersPage;
+      return data;
     },
   });
 
@@ -62,8 +48,10 @@ const UsersCenterPage = () => {
       window.clearTimeout(debounceTimerRef.current);
     }
 
+    setIsDebouncing(true);
     debounceTimerRef.current = window.setTimeout(() => {
       applySearchValue(searchInput);
+      setIsDebouncing(false);
     }, 500);
 
     return () => {
@@ -97,7 +85,7 @@ const UsersCenterPage = () => {
     onError: () => showToast({ message: 'Failed to update role', type: 'error' }),
   });
 
-  const users = [...(usersData?.content || [])].sort((a, b) => {
+  const users = [...(usersData?.content || [])].sort((a: any, b: any) => {
     const aId = Number(a?.id || 0);
     const bId = Number(b?.id || 0);
     return aId - bId;
@@ -111,6 +99,7 @@ const UsersCenterPage = () => {
       window.clearTimeout(debounceTimerRef.current);
       debounceTimerRef.current = null;
     }
+    setIsDebouncing(false);
     applySearchValue(searchInput);
   };
 
@@ -121,7 +110,6 @@ const UsersCenterPage = () => {
     }
   };
 
-  const isDebouncing = searchInput.trim() !== searchText;
   const isSearching = isDebouncing || isFetching;
 
   const handleDeleteUser = async (id: number, email: string) => {
@@ -236,7 +224,7 @@ const UsersCenterPage = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {users.map((user) => (
+                  {users.map((user: any) => (
                     <tr key={user.id} className="border-b border-outline-variant/5 hover:bg-surface-container-low/50 transition-colors">
                       <td className="py-3 px-5 text-sm font-bold text-on-surface">#{user.id}</td>
                       <td className="py-3 px-5 text-sm font-semibold text-on-surface">{user.email}</td>

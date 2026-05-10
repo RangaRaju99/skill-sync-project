@@ -8,7 +8,7 @@ import api from '../../services/axios';
 import { useToast } from '../../components/ui/Toast';
 import { setCredentials } from '../../store/slices/authSlice';
 import logo from '../../assets/skillsync-logo.png';
-import type { AuthResponse, OAuthResponse, UserSummary } from '../../types';
+import type { AuthResponse, OAuthResponse } from '../../types';
 
 type RegisterFormValues = {
   email: string;
@@ -23,92 +23,6 @@ type RegistrationInitResponse = {
 };
 
 const initialOtp = () => Array(6).fill('') as string[];
-
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-  typeof value === 'object' && value !== null;
-
-const toUserSummary = (value: unknown): UserSummary | null => {
-  if (!isRecord(value)) {
-    return null;
-  }
-
-  const id = Number(value.id);
-  if (!Number.isFinite(id)) {
-    return null;
-  }
-
-  const email = value.email;
-  const role = value.role;
-  const firstName = value.firstName;
-  const lastName = value.lastName;
-
-  if (
-    typeof email !== 'string' ||
-    typeof role !== 'string' ||
-    typeof firstName !== 'string' ||
-    typeof lastName !== 'string'
-  ) {
-    return null;
-  }
-
-  return {
-    id,
-    email,
-    role,
-    firstName,
-    lastName,
-  };
-};
-
-const parseJsonSafely = (value: unknown) => {
-  if (typeof value !== 'string') return value;
-
-  const trimmed = value.trim();
-  if (!trimmed) return value;
-
-  if (!(trimmed.startsWith('{') || trimmed.startsWith('['))) {
-    return value;
-  }
-
-  try {
-    return JSON.parse(trimmed);
-  } catch {
-    return value;
-  }
-};
-
-const normalizeAuthPayload = (payload: unknown): OAuthResponse | AuthResponse | { user?: UserSummary; accessToken?: string; refreshToken?: string; passwordSetupRequired?: boolean } => {
-  const parsed = parseJsonSafely(payload);
-  const parsedRecord = isRecord(parsed) ? parsed : {};
-  const candidate = parseJsonSafely(parsedRecord.data);
-  const normalized = isRecord(candidate) ? candidate : parsedRecord;
-
-  const nestedUser = toUserSummary(parseJsonSafely(normalized.user));
-  if (nestedUser) {
-    return {
-      user: nestedUser,
-      accessToken: typeof normalized.accessToken === 'string' ? normalized.accessToken : '',
-      refreshToken: typeof normalized.refreshToken === 'string' ? normalized.refreshToken : '',
-      passwordSetupRequired: normalized.passwordSetupRequired === true,
-    };
-  }
-
-  const directUser = toUserSummary(normalized);
-  if (directUser) {
-    return {
-      user: directUser,
-      accessToken: typeof normalized.accessToken === 'string' ? normalized.accessToken : '',
-      refreshToken: typeof normalized.refreshToken === 'string' ? normalized.refreshToken : '',
-      passwordSetupRequired: normalized.passwordSetupRequired === true,
-    };
-  }
-
-  return {
-    accessToken: typeof normalized.accessToken === 'string' ? normalized.accessToken : '',
-    refreshToken: typeof normalized.refreshToken === 'string' ? normalized.refreshToken : '',
-    passwordSetupRequired: normalized.passwordSetupRequired === true,
-  };
-};
 
 const RegisterPage = () => {
   const [step, setStep] = useState<'verify' | 'profile'>('verify');
@@ -130,10 +44,9 @@ const RegisterPage = () => {
       return response.data as RegistrationInitResponse;
     },
     onSuccess: (data, variables) => {
-      const normalized = parseJsonSafely(data) as RegistrationInitResponse;
       const normalizedEmail = variables.email.trim();
       setRegisteredEmail(normalizedEmail);
-      if (normalized?.exists) {
+      if (data.exists) {
         setUserExists(true);
         setOtpSent(false);
         setIsEmailVerified(false);
@@ -144,7 +57,7 @@ const RegisterPage = () => {
         setOtpSent(true);
         setIsEmailVerified(false);
         setOtp(initialOtp());
-        showToast({ message: normalized?.message || 'OTP sent to your email.' });
+        showToast({ message: data.message || 'OTP sent to your email.' });
       }
     },
     onError: () => showToast({ message: 'Failed to initiate registration.', type: 'error' })
@@ -155,13 +68,7 @@ const RegisterPage = () => {
       const response = await api.post('/api/auth/verify-otp', data);
       return response.data;
     },
-    onSuccess: (data) => {
-      const normalized = parseJsonSafely(data) as { success?: boolean };
-      if (normalized && typeof normalized === 'object' && normalized.success === false) {
-        showToast({ message: 'Invalid OTP.', type: 'error' });
-        return;
-      }
-
+    onSuccess: () => {
       setIsEmailVerified(true);
       showToast({ message: 'Email verified successfully!', type: 'success' });
       setStep('profile');
@@ -175,13 +82,11 @@ const RegisterPage = () => {
       return response.data as AuthResponse;
     },
     onSuccess: (data) => {
-      const normalized = normalizeAuthPayload(data);
-
-      if (normalized?.user) {
+      if (data?.user) {
         dispatch(setCredentials({
-          user: normalized.user,
-          accessToken: normalized.accessToken || '',
-          refreshToken: normalized.refreshToken || '',
+          user: data.user,
+          accessToken: data.accessToken || '',
+          refreshToken: data.refreshToken || '',
         }));
         showToast({ message: 'Registration complete! Welcome to SkillSync.', type: 'success' });
         navigate('/dashboard', { replace: true });
@@ -209,20 +114,13 @@ const RegisterPage = () => {
       return response.data as OAuthResponse;
     },
     onSuccess: (data, variables) => {
-      const normalized = normalizeAuthPayload(data) as any;
-      if (normalized?.passwordSetupRequired) {
+      if (data.passwordSetupRequired) {
         navigate('/setup-password', { state: { email: variables.email } });
       } else {
-        const authenticatedUser = normalized?.user;
-
-        if (!authenticatedUser) {
-          throw new Error('Invalid OAuth response payload');
-        }
-
         dispatch(setCredentials({
-          user: authenticatedUser,
-          accessToken: normalized.accessToken || '',
-          refreshToken: normalized.refreshToken || '',
+          user: data.user,
+          accessToken: data.accessToken || '',
+          refreshToken: data.refreshToken || '',
         }));
         navigate('/dashboard', { replace: true });
       }
@@ -339,9 +237,8 @@ const RegisterPage = () => {
             {!userExists && (
               <div className="space-y-4">
                 <div>
-                  <label htmlFor="register-email" className="text-sm font-semibold text-on-surface-variant block mb-1">Email</label>
+                  <label className="text-sm font-semibold text-on-surface-variant block mb-1">Email</label>
                   <input
-                    id="register-email"
                     type="email"
                     {...register('email', { required: 'Email is required' })}
                     disabled={otpSent || isEmailVerified}
@@ -367,7 +264,6 @@ const RegisterPage = () => {
                           key={i}
                           id={`otp-${i}`}
                           type="text"
-                          aria-label={`OTP digit ${i + 1}`}
                           value={digit}
                           onChange={(e) => handleOtpChange(i, e.target.value)}
                           onKeyDown={(e) => handleOtpKeyDown(i, e)}
@@ -445,24 +341,23 @@ const RegisterPage = () => {
             <form onSubmit={handleSubmit(onSubmitProfile)} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label htmlFor="register-first-name" className="text-sm font-semibold text-on-surface-variant block mb-1">First Name</label>
-                  <input id="register-first-name" {...register('firstName', { required: 'Required' })}
+                  <label className="text-sm font-semibold text-on-surface-variant block mb-1">First Name</label>
+                  <input {...register('firstName', { required: 'Required' })}
                     className="w-full h-12 px-4 bg-surface-container-low border rounded-xl outline-none focus:ring-1 focus:ring-primary" />
                   {errors.firstName && <p className="text-xs text-error mt-1">{errors.firstName.message}</p>}
                 </div>
                 <div>
-                  <label htmlFor="register-last-name" className="text-sm font-semibold text-on-surface-variant block mb-1">Last Name</label>
-                  <input id="register-last-name" {...register('lastName', { required: 'Required' })}
+                  <label className="text-sm font-semibold text-on-surface-variant block mb-1">Last Name</label>
+                  <input {...register('lastName', { required: 'Required' })}
                     className="w-full h-12 px-4 bg-surface-container-low border rounded-xl outline-none focus:ring-1 focus:ring-primary" />
                   {errors.lastName && <p className="text-xs text-error mt-1">{errors.lastName.message}</p>}
                 </div>
               </div>
 
               <div>
-                <label htmlFor="register-password" className="text-sm font-semibold text-on-surface-variant block mb-1">Create Password</label>
+                <label className="text-sm font-semibold text-on-surface-variant block mb-1">Create Password</label>
                 <div className="relative">
                   <input
-                    id="register-password"
                     type={showPassword ? 'text' : 'password'}
                     {...register('password', { required: 'Required' })}
                     className="w-full h-12 pl-4 pr-12 bg-surface-container-low border rounded-xl outline-none focus:ring-1 focus:ring-primary"

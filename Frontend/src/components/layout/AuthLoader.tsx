@@ -5,17 +5,6 @@ import { useLocation } from 'react-router-dom';
 import api from '../../services/axios';
 import type { RootState } from '../../store';
 import type { ReactNode } from 'react';
-import type { AxiosRequestConfig } from 'axios';
-
-type InternalRequestOptions = AxiosRequestConfig & {
-  _skipErrorRedirect: boolean;
-  _skipAuthRedirect: boolean;
-};
-
-const internalRequestOptions: InternalRequestOptions = {
-  _skipErrorRedirect: true,
-  _skipAuthRedirect: true,
-};
 
 export const AuthLoader = ({ children }: { children: ReactNode }) => {
   const dispatch = useDispatch();
@@ -50,7 +39,10 @@ export const AuthLoader = ({ children }: { children: ReactNode }) => {
       // If user isn't loaded yet, try to fetch identity using cookies
       if (!user) {
         const loadCurrentUser = async () => {
-          const { data } = await api.get('/api/auth/me', internalRequestOptions);
+          const { data } = await api.get('/api/auth/me', {
+            _skipErrorRedirect: true,
+            _skipAuthRedirect: true,
+          } as any);
 
           if (mounted && data) {
             dispatch(setCredentials({
@@ -65,10 +57,7 @@ export const AuthLoader = ({ children }: { children: ReactNode }) => {
           // Use /api/auth/me which extracts user from JWT cookie and returns UserSummary with role
           await loadCurrentUser();
         } catch (error) {
-          const status =
-            typeof error === 'object' && error !== null && 'response' in error
-              ? (error as { response?: { status?: number } }).response?.status
-              : undefined;
+          const status = (error as any)?.response?.status;
 
           if (status === 401) {
             try {
@@ -76,7 +65,10 @@ export const AuthLoader = ({ children }: { children: ReactNode }) => {
               await api.post(
                 '/api/auth/refresh',
                 undefined,
-                internalRequestOptions,
+                {
+                  _skipErrorRedirect: true,
+                  _skipAuthRedirect: true,
+                } as any,
               );
               await loadCurrentUser();
             } catch {

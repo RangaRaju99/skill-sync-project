@@ -15,7 +15,6 @@ import ServerErrorPage from '../pages/error/ServerErrorPage';
 
 import LandingPage from '../pages/LandingPage.tsx';
 import PptLandingPage from '../pages/PptLandingPage.tsx';
-import LearnDocsPage from '../pages/docs/LearnDocsPage';
 
 import LearnerDashboardPage from '../pages/learner/LearnerDashboardPage';
 import MentorDashboardPage from '../pages/mentor/MentorDashboardPage';
@@ -46,7 +45,6 @@ const AppRoutes = () => {
     <Routes>
       <Route path="/" element={<LandingPage />} />
       <Route path="/ppt" element={<PptLandingPage />} />
-      <Route path="/learn" element={<LearnDocsPage />} />
       <Route path="/feppt" element={<Navigate to="/skillsync_study_guide.html" replace />} />
 
       <Route element={<AuthLayout />}>

@@ -102,8 +102,7 @@ class MentorService {
 
   async getTopMentors(limit: number = 5): Promise<MentorData[]> {
     const res = await api.get(`/api/mentors/search?sort=avgRating,desc&size=${limit}`);
-    const content = res?.data?.content;
-    return Array.isArray(content) ? content : [];
+    return res.data.content || [];
   }
 }
 
