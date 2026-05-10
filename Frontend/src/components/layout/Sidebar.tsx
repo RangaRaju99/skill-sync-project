@@ -55,7 +55,7 @@ const Sidebar = ({ role }: SidebarProps) => {
     }
   };
 
-  const NavItem = ({ item, isBottom = false }: { item: any, isBottom?: boolean }) => {
+  const NavItem = ({ item }: { item: any }) => {
     const isActive = location.pathname === item.path;
     const [isHovered, setIsHovered] = useState(false);
 
@@ -211,7 +211,7 @@ const Sidebar = ({ role }: SidebarProps) => {
           </button>
         )}
 
-        <NavItem item={{ name: 'Help Center', icon: 'help', path: '/help' }} isBottom />
+        <NavItem item={{ name: 'Help Center', icon: 'help', path: '/help' }} />
         
         <button 
           onClick={() => {
@@ -229,6 +229,7 @@ const Sidebar = ({ role }: SidebarProps) => {
         </button>
       </div>
     </motion.aside>
+    </>
   );
 };
 

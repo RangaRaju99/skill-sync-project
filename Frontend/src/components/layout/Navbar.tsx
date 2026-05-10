@@ -5,8 +5,9 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import api from '../../services/axios';
 import notificationService from '../../services/notificationService';
 import type { RootState } from '../../store';
-import { Settings, Menu } from 'lucide-react';
+import { Menu } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
+import ThemeToggleButton from '../ui/ThemeToggleButton';
 
 const Navbar = () => {
   const user = useSelector((state: RootState) => state.auth.user);
