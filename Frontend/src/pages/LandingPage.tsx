@@ -138,9 +138,8 @@ const LandingPage = () => {
   const finaleRef = useRevealOnScroll();
 
   return (
-    <div className="ppt-page technical-grid" id="top">
-      <div className="absolute top-4 left-4 technical-label text-on-surface/40">SYS-REF: SkillSync_v8.0.3</div>
-      <div className="absolute top-4 right-4 technical-label text-on-surface/40">LOC: 12.77N / 77.59E</div>
+    <div className="ppt-page" id="top">
+      <div className="ppt-grid-overlay" aria-hidden="true" />
       <div className="ppt-aura aura-one" aria-hidden="true" />
       <div className="ppt-aura aura-two" aria-hidden="true" />
       <div className="ppt-aura aura-three" aria-hidden="true" />
@@ -164,8 +163,10 @@ const LandingPage = () => {
 
       <main className="ppt-main">
         {/* ── Hero 1: Brand showcase with logo, orbs ── */}
-        <section className="hero-card blueprint-border bg-surface shadow-none">
-          <div className="technical-label p-2 border-b border-outline mb-4">CORE_PLATFORM_IDENTITY</div>
+        <section className="hero-card">
+          <div className="hero-aura hero-aura-one" aria-hidden="true" />
+          <div className="hero-aura hero-aura-two" aria-hidden="true" />
+          <div className="hero-aura hero-aura-three" aria-hidden="true" />
           <div className="brand-stage" aria-hidden="true">
             <div className="gravity-orb orb-a" />
             <div className="gravity-orb orb-b" />
@@ -173,13 +174,13 @@ const LandingPage = () => {
             <img src={logo} alt="" className="hero-logo" />
           </div>
           <h2 className="hero-brand-title">SkillSync</h2>
-          <p className="hero-tagline uppercase font-mono tracking-tighter">Peer To Peer Learning Platform</p>
-          <div className="hero-cta-row mt-8">
-            <Link className="gradient-btn px-8 py-3" to="/dashboard">
-              [ ENTER_APP ]
+          <p className="hero-tagline">Peer To Peer Learning Platform</p>
+          <div className="hero-cta-row">
+            <Link className="landing-btn landing-btn-solid" to="/dashboard">
+              Get Started
             </Link>
-            <a className="landing-btn-ghost font-bold border-b-2 border-outline pb-1 ml-4" href="#platform-story">
-              VIEW_SYSTEM_MAP
+            <a className="landing-btn landing-btn-ghost" href="#platform-story">
+              Why SkillSync
             </a>
           </div>
         </section>
@@ -201,10 +202,10 @@ const LandingPage = () => {
 
             <div className="ppt-metrics">
               {metrics.map((metric, i) => (
-                <article key={metric.label} className="ppt-metric-card blueprint-border stagger-child !rounded-none" style={{ transitionDelay: `${i * 120}ms` }}>
-                  <p className="technical-label text-primary">{metric.label}</p>
-                  <h3 className="font-black text-4xl">{metric.value}</h3>
-                  <small className="font-mono text-[10px] mt-2 block">{metric.helper}</small>
+                <article key={metric.label} className="ppt-metric-card stagger-child" style={{ transitionDelay: `${i * 120}ms` }}>
+                  <p>{metric.label}</p>
+                  <h3>{metric.value}</h3>
+                  <small>{metric.helper}</small>
                 </article>
               ))}
             </div>
