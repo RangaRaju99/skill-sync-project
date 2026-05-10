@@ -110,65 +110,64 @@ const LoginPage = () => {
 
   return (
     <div className="flex flex-col items-center">
-      <div className="flex items-center gap-3 mb-4 group transition-all">
+      <div className="flex items-center gap-3 mb-4 transition-all">
         <img 
           src={logo} 
           alt="SkillSync Logo" 
-          className="w-12 h-12 object-contain hover:scale-110 transition duration-500" 
+          className="w-10 h-10 object-contain grayscale" 
           onError={(e: any) => { e.target.src = 'https://via.placeholder.com/48?text=S'; }} 
         />
-        <h1 className="text-4xl font-black tracking-tighter text-on-surface">SkillSync</h1>
+        <h1 className="text-3xl font-black tracking-tighter text-on-surface uppercase font-mono">SkillSync</h1>
       </div>
-      <p className="text-sm text-on-surface-variant font-medium mb-8 text-center px-4 max-w-xs">Connecting ambition with expertise, one sync at a time.</p>
+      <p className="technical-label text-on-surface-variant mb-8 text-center px-4 max-w-xs">[ SYSTEM_ACCESS_PORTAL_v1.0 ]</p>
 
-      <div className="w-full bg-surface-container-lowest p-8 md:p-10 rounded-xl shadow-sm border border-outline-variant/15 transition-all">
-        <h2 className="text-xl font-bold text-on-surface mb-6">Welcome back</h2>
+      <div className="w-full bg-surface p-8 md:p-10 blueprint-border shadow-none">
+        <div className="flex justify-between items-center mb-8 border-b border-outline-variant pb-2">
+          <h2 className="text-xs font-bold text-on-surface uppercase font-mono">LOGIN_SEQUENCE</h2>
+          <span className="text-[10px] text-green-500 font-bold font-mono">● ONLINE</span>
+        </div>
         
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <div>
-            <label className="text-sm font-semibold text-on-surface-variant block mb-1">Email</label>
+            <label className="technical-label block mb-2">USER_EMAIL_ADDRESS</label>
             <input 
               type="email" 
               {...register('email', { required: 'Email is required' })} 
-              className="w-full h-12 px-4 bg-surface-container-low border border-outline-variant/30 rounded-xl focus:ring-1 focus:ring-primary focus:border-primary outline-none transition-all duration-200" 
+              className="w-full h-11 px-4 bg-surface border border-outline focus:bg-primary/5 focus:border-primary outline-none transition-all duration-200 font-mono text-sm" 
               placeholder="name@example.com"
             />
-            {errors.email && <p className="text-xs text-error mt-1">{errors.email.message as string}</p>}
+            {errors.email && <p className="text-[10px] text-error mt-1 font-bold font-mono">! ERR: {errors.email.message as string}</p>}
           </div>
 
           <div>
-            <div className="flex justify-between items-center mb-1">
-              <label className="text-sm font-semibold text-on-surface-variant">Password</label>
-              <Link to="/forgot-password" className="text-sm font-bold text-primary hover:underline">Forgot password?</Link>
+            <div className="flex justify-between items-center mb-2">
+              <label className="technical-label">ACCESS_PASSWORD</label>
             </div>
             <input 
               type="password" 
               {...register('password', { required: 'Password is required' })} 
-              className="w-full h-12 px-4 bg-surface-container-low border border-outline-variant/30 rounded-xl focus:ring-1 focus:ring-primary focus:border-primary outline-none transition-all duration-200" 
+              className="w-full h-11 px-4 bg-surface border border-outline focus:bg-primary/5 focus:border-primary outline-none transition-all duration-200 font-mono text-sm" 
               placeholder="••••••••"
             />
-            {errors.password && <p className="text-xs text-error mt-1">{errors.password.message as string}</p>}
+            {errors.password && <p className="text-[10px] text-error mt-1 font-bold font-mono">! ERR: {errors.password.message as string}</p>}
+            <div className="mt-2 text-right">
+              <Link to="/forgot-password" virtual-link="true" className="text-[10px] font-bold text-on-surface-variant hover:text-primary uppercase font-mono underline underline-offset-4">Reset_Password</Link>
+            </div>
           </div>
-
-          {loginMutation.isError && <p className="text-xs text-error mt-2">Error connecting to server. Please try again.</p>}
 
           <button 
             type="submit" 
             disabled={loginMutation.isPending} 
-            className="mt-6 flex items-center justify-center w-full h-12 gradient-btn text-white font-bold rounded-xl shadow-md hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all duration-500 disabled:opacity-70 disabled:scale-100"
+            className="mt-4 flex items-center justify-center w-full h-12 gradient-btn text-white disabled:opacity-50"
           >
             {loginMutation.isPending ? (
-              <span className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></span>
+              <span className="font-mono text-xs animate-pulse">EXECUTING...</span>
             ) : (
-              <>
-                Sign In 
-                <svg className="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3"/>
-                </svg>
-              </>
+              <span className="font-mono">INITIALIZE_SYNC [ENTER]</span>
             )}
           </button>
         </form>
+
 
         <div className="mt-6 flex items-center justify-center space-x-4">
           <div className="flex-1 h-px bg-outline-variant/30"></div>
