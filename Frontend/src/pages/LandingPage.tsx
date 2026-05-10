@@ -257,34 +257,6 @@ const LandingPage = () => {
           </div>
         </section>
 
-        {/* ── Live Platform Activity - NEW DIFFERENTIATOR ── */}
-        <section className="ppt-section reveal-section">
-          <div className="ppt-section-head">
-            <p>Community Pulse</p>
-            <h2>Real-time learning across the platform.</h2>
-          </div>
-          <div className="flex flex-wrap gap-4 justify-center mt-8">
-            {[
-              { user: 'Rahul S.', action: 'booked a session', topic: 'Node.js Architecture', time: '2m ago' },
-              { user: 'Priya K.', action: 'completed a review', topic: 'UI/UX Design', time: '5m ago' },
-              { user: 'System', action: 'matched 12 learners', topic: 'Python Bootcamp', time: '12m ago' },
-              { user: 'Arjun V.', action: 'earned a badge', topic: 'Top Contributor', time: '20m ago' },
-            ].map((activity, i) => (
-              <div key={i} className="bg-white/5 backdrop-blur-md border border-white/10 p-4 rounded-2xl flex items-center gap-4 min-w-[280px] shadow-xl">
-                <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">
-                  {activity.user[0]}
-                </div>
-                <div>
-                  <p className="text-sm font-bold text-white">{activity.user} <span className="font-normal text-white/60">{activity.action}</span></p>
-                  <p className="text-xs text-primary font-semibold">{activity.topic}</p>
-                </div>
-                <span className="ml-auto text-[10px] text-white/40 font-bold uppercase">{activity.time}</span>
-              </div>
-            ))}
-          </div>
-        </section>
-
-
         {/* ── Final CTA ── */}
         <section className="ppt-final-cta reveal-section" ref={finaleRef}>
           <p className="final-kicker">Ready To Scale Learning?</p>
