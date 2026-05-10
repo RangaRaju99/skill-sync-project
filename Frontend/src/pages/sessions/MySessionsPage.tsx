@@ -4,12 +4,8 @@ import { useSelector } from 'react-redux';
 import { 
   Calendar, 
   Clock, 
-  CheckCircle2, 
   XCircle, 
-  AlertCircle,
-  MessageSquare,
   Video,
-  MoreVertical,
   ChevronLeft,
   ChevronRight
 } from 'lucide-react';
@@ -296,7 +292,5 @@ const MySessionsPage = () => {
     </PageLayout>
   );
 };
-
-export default MySessionsPage;
 
 export default MySessionsPage;

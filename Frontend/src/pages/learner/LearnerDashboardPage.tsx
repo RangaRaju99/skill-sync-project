@@ -10,7 +10,6 @@ import {
   ExternalLink, 
   TrendingUp, 
   Award, 
-  BookOpen,
   ArrowRight
 } from 'lucide-react';
 import api from '../../services/axios';
@@ -435,7 +434,5 @@ const LearnerDashboardPage = () => {
     </PageLayout>
   );
 };
-
-export default LearnerDashboardPage;
 
 export default LearnerDashboardPage;

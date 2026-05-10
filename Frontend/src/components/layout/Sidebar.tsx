@@ -221,5 +221,3 @@ const Sidebar = ({ role }: SidebarProps) => {
 };
 
 export default Sidebar;
-
-export default Sidebar;

@@ -249,5 +249,3 @@ const GroupsPage = () => {
 };
 
 export default GroupsPage;
-
-export default GroupsPage;
