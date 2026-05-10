@@ -23,6 +23,10 @@ type ThemeContextValue = {
   settings: CustomThemeSettings;
   updateSettings: (newSettings: Partial<CustomThemeSettings>) => void;
   resetToDefault: () => void;
+  isSidebarCollapsed: boolean;
+  toggleSidebar: () => void;
+  isMobileMenuOpen: boolean;
+  setIsMobileMenuOpen: (open: boolean) => void;
 };
 
 const THEME_STORAGE_KEY = 'skillsync.theme';
@@ -54,6 +58,7 @@ const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
 export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   const [theme, setTheme] = useState<ThemeMode>(getInitialTheme);
   const [settings, setSettings] = useState<CustomThemeSettings>(getInitialSettings);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Apply Theme Mode (Dark/Light)
   useEffect(() => {
@@ -140,8 +145,15 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
       settings,
       updateSettings: (newSettings) => setSettings(prev => ({ ...prev, ...newSettings })),
       resetToDefault: () => setSettings(DEFAULT_SETTINGS),
+      isSidebarCollapsed: settings.sidebarStyle === 'compact',
+      toggleSidebar: () => setSettings(prev => ({ 
+        ...prev, 
+        sidebarStyle: prev.sidebarStyle === 'compact' ? 'expanded' : 'compact' 
+      })),
+      isMobileMenuOpen,
+      setIsMobileMenuOpen,
     }),
-    [theme, settings],
+    [theme, settings, isMobileMenuOpen],
   );
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;

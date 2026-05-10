@@ -5,11 +5,21 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import api from '../../services/axios';
 import notificationService from '../../services/notificationService';
 import type { RootState } from '../../store';
-import ThemeToggleButton from '../ui/ThemeToggleButton';
+import { Settings, Menu } from 'lucide-react';
+import { useTheme } from '../../context/ThemeContext';
 
 const Navbar = () => {
   const user = useSelector((state: RootState) => state.auth.user);
   const queryClient = useQueryClient();
+  const { toggleSidebar, isSidebarCollapsed, setIsMobileMenuOpen } = useTheme();
+
+  const handleToggle = () => {
+    if (window.innerWidth < 1024) {
+      setIsMobileMenuOpen(true);
+    } else {
+      toggleSidebar();
+    }
+  };
 
   useEffect(() => {
     if (!user?.id) {
@@ -51,6 +61,16 @@ const Navbar = () => {
   return (
     <header className="h-16 w-full glass-nav bg-surface-container-lowest/80 border-b border-outline-variant/10 flex items-center justify-between px-4 lg:px-8 z-30 sticky top-0 transition-all">
       <div className="flex-1 flex items-center">
+        <button
+          onClick={handleToggle}
+          className="p-2 mr-4 rounded-xl hover:bg-surface-container text-on-surface-variant hover:text-primary transition-all duration-300 group"
+          aria-label="Toggle Sidebar"
+        >
+          <Menu 
+            size={24} 
+            className={`transition-transform duration-500 ${isSidebarCollapsed ? '' : 'rotate-180'}`} 
+          />
+        </button>
       </div>
 
       <div className="flex items-center space-x-4">

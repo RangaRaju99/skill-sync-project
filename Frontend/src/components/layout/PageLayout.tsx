@@ -3,6 +3,7 @@ import { useSelector } from 'react-redux';
 import type { RootState } from '../../store';
 import Sidebar from './Sidebar';
 import Navbar from './Navbar';
+import { useTheme } from '../../context/ThemeContext';
 
 interface PageLayoutProps {
   children: ReactNode;
@@ -12,12 +13,15 @@ interface PageLayoutProps {
 const PageLayout = ({ children, rightPanel }: PageLayoutProps) => {
   const role = useSelector((state: RootState) => state.auth.role);
   const activeRole = role || 'ROLE_LEARNER';
+  const { isSidebarCollapsed } = useTheme();
 
   return (
     <div className="flex h-screen bg-surface font-sans text-on-surface overflow-hidden">
       <Sidebar role={activeRole} />
       
-      <div className="flex-1 flex flex-col min-w-0 ml-20 lg:ml-64 transition-all duration-300">
+      <div className={`flex-1 flex flex-col min-w-0 transition-all duration-500 ease-in-out ${
+        isSidebarCollapsed ? 'ml-20' : 'ml-20 lg:ml-64'
+      }`}>
         <Navbar />
         
         <main className="flex-1 overflow-x-hidden overflow-y-auto w-full p-4 md:p-6 lg:p-8 2xl:p-10 scroll-smooth">
