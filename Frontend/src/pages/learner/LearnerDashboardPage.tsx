@@ -7,6 +7,7 @@ import type { RootState } from '../../store';
 import PageLayout from '../../components/layout/PageLayout';
 import { useToast } from '../../components/ui/Toast';
 import { formatDateTimeIST } from '../../utils/dateTime';
+import GoalTracker from '../../components/dashboard/GoalTracker';
 
 const LearnerDashboardPage = () => {
   const user = useSelector((state: RootState) => state.auth.user);
@@ -205,8 +206,9 @@ const LearnerDashboardPage = () => {
         </div>
       </div>
 
+      <GoalTracker />
+
       <div className="bg-surface-container-lowest p-6 rounded-2xl shadow-sm border border-outline-variant/15">
-        <h3 className="font-bold text-lg text-on-surface mb-4">My Groups</h3>
         {groups.length === 0 ? (
           <div className="flex flex-col items-center py-6 text-center">
             <span className="material-symbols-outlined text-4xl text-outline-variant mb-2">group_add</span>
@@ -327,13 +329,29 @@ const LearnerDashboardPage = () => {
         </div>
       )}
 
-      {/* Header Section */}
       <section className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
         <div>
           <h1 className="text-3xl font-extrabold text-on-surface tracking-tight">Welcome back, {user?.firstName}!</h1>
           <p className="text-on-surface-variant font-medium mt-1">You're making great progress. Keep it up.</p>
         </div>
+      </section>
 
+      {/* Quick Insights Section - NEW DIFFERENTIATOR */}
+      <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {[
+          { label: 'Learning Hours', value: '12.5h', icon: 'schedule', color: 'text-primary' },
+          { label: 'Sessions', value: upSessions?.totalElements || 0, icon: 'diversity_3', color: 'text-emerald-500' },
+          { label: 'Skill Points', value: '840', icon: 'auto_awesome', color: 'text-amber-500' },
+          { label: 'Groups', value: groups.length, icon: 'group', color: 'text-violet-500' },
+        ].map((stat, i) => (
+          <div key={i} className="bg-surface-container-lowest p-4 rounded-2xl border border-outline-variant/10 shadow-sm">
+            <div className={`w-8 h-8 rounded-lg bg-surface-container-low flex items-center justify-center ${stat.color} mb-3`}>
+              <span className="material-symbols-outlined text-[20px]">{stat.icon}</span>
+            </div>
+            <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">{stat.label}</p>
+            <p className="text-xl font-black text-on-surface mt-0.5">{stat.value}</p>
+          </div>
+        ))}
       </section>
 
       {/* Upcoming Sessions Section */}

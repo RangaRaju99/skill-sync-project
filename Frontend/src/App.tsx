@@ -3,6 +3,7 @@ import { ToastProvider } from './components/ui/Toast';
 import { ActionConfirmProvider } from './components/ui/ActionConfirm';
 import AuthLoader from './components/layout/AuthLoader';
 import AppRoutes from './routes/AppRoutes';
+import AIAssistant from './components/ui/AIAssistant';
 
 function App() {
   return (
@@ -12,6 +13,7 @@ function App() {
           <AuthLoader>
             <AppRoutes />
           </AuthLoader>
+          <AIAssistant />
         </BrowserRouter>
       </ActionConfirmProvider>
     </ToastProvider>
