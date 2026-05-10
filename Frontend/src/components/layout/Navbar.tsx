@@ -89,7 +89,7 @@ const Navbar = () => {
         <Link to="/profile" className="flex items-center pl-6 border-l border-outline/20 hover:opacity-80 transition-opacity">
           <div className="hidden md:flex flex-col items-end mr-3">
             <span className="text-sm font-bold text-on-surface leading-tight">{user?.firstName} {user?.lastName}</span>
-            <span className="text-[10px] text-on-surface-variant font-black uppercase tracking-wider opacity-60">Control Center</span>
+            <span className="text-[10px] text-on-surface-variant font-black uppercase tracking-wider opacity-60">Account</span>
           </div>
           <div className={`w-9 h-9 rounded-xl ${avatarClass} text-white flex items-center justify-center font-bold shadow-lg shadow-black/20 shrink-0`}>
             {initials}

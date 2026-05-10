@@ -118,12 +118,12 @@ const DiscoverMentorsPage = () => {
       <div className="mb-8 animate-in">
         <h1 className="text-4xl lg:text-5xl font-display font-bold text-on-surface tracking-tight mb-3">Discover Mentors</h1>
         <p className="text-lg text-on-surface-variant font-medium max-w-2xl leading-relaxed opacity-80">
-          Learn from industry experts and accelerate your career path. Access verified specialization protocols.
+          Learn from industry experts and accelerate your career path with 1-on-1 mentorship.
         </p>
         <div className="mt-6 flex items-center gap-2">
           <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
           <p className="text-[10px] font-black text-primary uppercase tracking-[0.2em] bg-primary/10 px-4 py-1.5 rounded-xl border border-primary/10">
-            {totalElements} active experts available
+            {totalElements} mentors available
           </p>
         </div>
       </div>
@@ -137,7 +137,7 @@ const DiscoverMentorsPage = () => {
             onChange={(e) => setDraftFilters(prev => ({ ...prev, skill: e.target.value }))}
             className="w-full h-12 bg-surface-container-low px-4 rounded-xl text-sm font-bold text-on-surface outline-none focus:ring-2 focus:ring-primary/20 border border-outline/30 focus:border-primary transition-all appearance-none cursor-pointer"
           >
-            <option value="">All Specializations</option>
+            <option value="">All Skills</option>
             {skills.map((s: any) => (
               <option key={typeof s === 'string' ? s : (s.id ?? s.name)} value={typeof s === 'string' ? s : s.name}>
                 {typeof s === 'string' ? s : s.name}
@@ -202,7 +202,7 @@ const DiscoverMentorsPage = () => {
         <div className="surface-card p-20 flex flex-col items-center justify-center text-center border-dashed animate-in">
           <span className="material-symbols-outlined text-6xl text-on-surface-variant/10 mb-6">person_search</span>
           <h3 className="text-2xl font-bold text-on-surface mb-2">No experts found</h3>
-          <p className="text-on-surface-variant font-medium mb-10 max-w-sm">The current search parameters yielded zero active specialization protocols.</p>
+          <p className="text-on-surface-variant font-medium mb-10 max-w-sm">No mentors match your current search criteria.</p>
           <button onClick={clearFilters} className="btn-secondary px-10 h-14">
             Reset Filters
           </button>
@@ -249,7 +249,7 @@ const DiscoverMentorsPage = () => {
                     <div className="flex flex-wrap gap-2 mb-10 mt-auto">
                       {(mentor.skills || []).slice(0, 3).map((skill: any, i: number) => (
                         <span key={i} className="px-3 py-1 bg-surface-container-low text-[10px] font-black text-on-surface-variant uppercase tracking-widest rounded-xl border border-outline/10">
-                          {typeof skill === 'string' ? skill : (skill.name || `Protocol`)}
+                          {typeof skill === 'string' ? skill : (skill.name || `Skill`)}
                         </span>
                       ))}
                       {(mentor.skills?.length > 3) && (
@@ -272,7 +272,7 @@ const DiscoverMentorsPage = () => {
                       onClick={() => navigate(`/mentors/${mentor.id}`)}
                       className="btn-primary w-full py-4 h-auto shadow-primary/10"
                     >
-                      Connect Protocol
+                      View Profile
                     </button>
                   </div>
                 </div>
@@ -287,7 +287,7 @@ const DiscoverMentorsPage = () => {
                 disabled={isLoading}
                 className="btn-secondary px-10 h-14"
               >
-                {isLoading ? 'Loading Protocols...' : 'Load More Experts'} 
+                {isLoading ? 'Loading...' : 'Load More'} 
               </button>
             </div>
           )}

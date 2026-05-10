@@ -154,13 +154,13 @@ const LearnerDashboardPage = () => {
               </span>
             </p>
             <p className="text-sm text-on-surface-variant mt-4 leading-relaxed font-medium">
-              {mentorStatus === 'APPROVED' ? 'Your authorization is active. Re-login to initialize mentor protocols.' : 'Administrative review in progress. No further action required.'}
+              {mentorStatus === 'APPROVED' ? 'Your application is active. Re-login to access mentor features.' : 'Application review in progress. We will notify you soon.'}
             </p>
           </div>
         ) : (
           <>
             <p className="text-sm text-on-surface-variant mb-6 leading-relaxed font-medium">
-              Initialize your mentorship protocols and share your specialization areas with the network.
+              Apply to be a mentor and share your expertise with the community.
             </p>
             <button
               onClick={() => setShowApplyForm(true)}
@@ -194,8 +194,8 @@ const LearnerDashboardPage = () => {
         </h3>
         {groups.length === 0 ? (
           <div className="text-center py-8">
-            <p className="text-[10px] font-black text-on-surface-variant/40 uppercase tracking-[0.2em] mb-4">No active syncs</p>
-            <Link to="/groups" className="text-xs font-bold text-primary hover:text-primary-dark transition-colors">Establishing connection...</Link>
+            <p className="text-[10px] font-black text-on-surface-variant/40 uppercase tracking-[0.2em] mb-4">No active groups</p>
+            <Link to="/groups" className="text-xs font-bold text-primary hover:text-primary-dark transition-colors">Join a group...</Link>
           </div>
         ) : (
           <div className="space-y-2">
@@ -220,7 +220,7 @@ const LearnerDashboardPage = () => {
             Welcome back, <span className="text-primary">{user?.firstName}</span>
           </h1>
           <p className="text-lg text-on-surface-variant font-medium max-w-2xl leading-relaxed">
-            System status: <span className="text-emerald-500/80">Operational</span>. All synchronization protocols are active and ready for execution.
+            System status: <span className="text-emerald-500/80">Active</span>. All synchronization services are operational and ready.
           </p>
         </section>
 
@@ -229,7 +229,7 @@ const LearnerDashboardPage = () => {
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-2xl font-bold text-on-surface flex items-center gap-3">
               <Calendar size={20} className="text-primary" />
-              Upcoming Syncs
+              Upcoming Sessions
             </h2>
             {upSessions?.content?.length > 0 && (
               <Link to="/sessions" className="text-xs font-black uppercase tracking-widest text-on-surface-variant hover:text-primary transition-colors flex items-center gap-2">
@@ -250,7 +250,7 @@ const LearnerDashboardPage = () => {
                     </div>
                     <div>
                       <h4 className="font-bold text-lg text-on-surface group-hover:text-primary transition-colors">{getSessionMentorName(session)}</h4>
-                      <p className="text-sm font-bold text-on-surface-variant mt-0.5">{session.topic || 'General Protocol Sync'}</p>
+                      <p className="text-sm font-bold text-on-surface-variant mt-0.5">{session.topic || 'General Session'}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-8">
@@ -269,7 +269,7 @@ const LearnerDashboardPage = () => {
                 <Calendar className="text-on-surface-variant/10 mb-6" size={56} />
                 <p className="text-xl font-bold text-on-surface mb-2">No active syncs found</p>
                 <p className="text-on-surface-variant font-medium mb-8 max-w-xs">Initialize a new mentor connection to start your learning journey.</p>
-                <button onClick={() => navigate('/mentors')} className="btn-primary px-10">Establish Connection</button>
+                <button onClick={() => navigate('/mentors')} className="btn-primary px-10">Find a Mentor</button>
               </div>
             )}
           </div>
@@ -350,8 +350,8 @@ const LearnerDashboardPage = () => {
               </button>
             </div>
 
-            <h2 className="text-3xl font-display font-bold text-on-surface mb-2">Mentor Access Protocol</h2>
-            <p className="text-on-surface-variant mb-10 font-bold opacity-60">Configure your specialization parameters for network approval.</p>
+            <h2 className="text-3xl font-display font-bold text-on-surface mb-2">Become a Mentor</h2>
+            <p className="text-on-surface-variant mb-10 font-bold opacity-60">Share your experience and skills to help others grow.</p>
 
             <div className="space-y-8">
               <div>
@@ -372,7 +372,7 @@ const LearnerDashboardPage = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div>
-                  <label className="block text-[11px] font-black text-on-surface-variant uppercase tracking-[0.2em] mb-4 opacity-50">Exp (Cycles)</label>
+                  <label className="block text-[11px] font-black text-on-surface-variant uppercase tracking-[0.2em] mb-4 opacity-50">Years of Experience</label>
                   <input
                     type="number"
                     value={applyData.experienceYears}
@@ -392,7 +392,7 @@ const LearnerDashboardPage = () => {
               </div>
 
               <div>
-                <label className="block text-[11px] font-black text-on-surface-variant uppercase tracking-[0.2em] mb-4 opacity-50">Specializations (Max 10)</label>
+                <label className="block text-[11px] font-black text-on-surface-variant uppercase tracking-[0.2em] mb-4 opacity-50">Areas of Expertise (Max 10)</label>
                 <div className="max-h-56 overflow-y-auto pr-3 scrollbar-hide">
                   <div className="flex flex-wrap gap-2.5">
                     {skills.map((skill: any) => {
@@ -419,7 +419,7 @@ const LearnerDashboardPage = () => {
                   disabled={applyMutation.isPending}
                   className="btn-primary flex-1 h-14 text-lg shadow-primary/20"
                 >
-                  {applyMutation.isPending ? 'Processing...' : 'Submit Request'}
+                  {applyMutation.isPending ? 'Submitting...' : 'Apply Now'}
                 </button>
                 <button
                   onClick={() => setShowApplyForm(false)}

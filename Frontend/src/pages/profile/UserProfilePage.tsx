@@ -119,7 +119,7 @@ const UserProfilePage = () => {
         <div className="surface-card p-8 border-primary/10">
           <h1 className="text-4xl font-bold text-on-surface tracking-tight mb-3">My Profile</h1>
           <p className="text-lg text-on-surface-variant font-medium max-w-2xl opacity-80 leading-relaxed">
-            Manage your professional identity, bio, and connection credentials. Keep your profile updated for better network matching.
+            Manage your professional identity, bio, and account details. Keep your profile updated for better mentor matches.
           </p>
         </div>
 
@@ -143,7 +143,7 @@ const UserProfilePage = () => {
                 <p className="text-sm font-medium text-on-surface-variant opacity-60 mt-1">{profile?.email}</p>
                 <div className="mt-4">
                   <span className="inline-block bg-primary/10 text-primary px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest border border-primary/10">
-                    {(role || 'ROLE_LEARNER').replace('ROLE_', '')} Protocol
+                    {(role || 'ROLE_LEARNER').replace('ROLE_', '')}
                   </span>
                 </div>
               </div>
@@ -182,12 +182,12 @@ const UserProfilePage = () => {
                     disabled={!isEditing}
                     rows={4}
                     className="w-full bg-surface-container-low p-4 rounded-xl text-sm font-medium text-on-surface outline-none focus:ring-2 focus:ring-primary/20 border border-outline/30 focus:border-primary transition-all disabled:opacity-40 resize-none leading-relaxed"
-                    placeholder="Describe your expertise and experience sync goals..."
+                    placeholder="Describe your expertise and skills..."
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <label className="block text-[10px] font-black text-on-surface-variant/40 uppercase tracking-[0.2em] px-1">Contact Protocol</label>
+                  <label className="block text-[10px] font-black text-on-surface-variant/40 uppercase tracking-[0.2em] px-1">Phone Number</label>
                   <input
                     type="tel"
                     value={formData.phone}
@@ -199,7 +199,7 @@ const UserProfilePage = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="block text-[10px] font-black text-on-surface-variant/40 uppercase tracking-[0.2em] px-1">Station Location</label>
+                  <label className="block text-[10px] font-black text-on-surface-variant/40 uppercase tracking-[0.2em] px-1">Location</label>
                   <input
                     type="text"
                     value={formData.location}
@@ -217,7 +217,7 @@ const UserProfilePage = () => {
                       onClick={() => setIsEditing(true)}
                       className="btn-primary w-full h-14"
                     >
-                      Unlock Editing
+                      Edit Profile
                     </button>
                   ) : (
                     <div className="flex gap-4">
@@ -227,14 +227,14 @@ const UserProfilePage = () => {
                         disabled={updateProfileMutation.isPending || !canSaveEdits}
                         className="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white h-14 rounded-xl font-bold shadow-lg shadow-emerald-500/20 transition-all disabled:opacity-50"
                       >
-                        Commit Changes
+                        Save Changes
                       </button>
                       <button
                         type="button"
                         onClick={() => setIsEditing(false)}
                         className="flex-1 btn-secondary h-14"
                       >
-                        Abort
+                        Cancel
                       </button>
                     </div>
                   )}
@@ -247,10 +247,10 @@ const UserProfilePage = () => {
         {/* Account Settings */}
         <div className="surface-card p-8 border-outline/5">
           <div className="flex items-center justify-between mb-8">
-            <h2 className="text-xl font-bold text-on-surface">Account Parameters</h2>
+            <h2 className="text-xl font-bold text-on-surface">Account Details</h2>
             {profile?.profileCompletePct !== undefined && (
               <div className="flex items-center gap-3">
-                <span className="text-[10px] font-black text-on-surface-variant/40 uppercase tracking-widest">Integrity: {profile.profileCompletePct}%</span>
+                <span className="text-[10px] font-black text-on-surface-variant/40 uppercase tracking-widest">Completion: {profile.profileCompletePct}%</span>
                 <div className="w-24 h-1.5 bg-surface-container rounded-full overflow-hidden">
                   <div 
                     className="h-full bg-primary transition-all duration-1000" 
@@ -267,8 +267,8 @@ const UserProfilePage = () => {
           >
             <div className="flex items-center justify-between">
               <div>
-                <p className="font-bold text-on-surface group-hover:text-primary transition-colors">Access Credentials</p>
-                <p className="text-xs font-medium text-on-surface-variant opacity-60 mt-1">Update your authorization password regularly for security.</p>
+                <p className="font-bold text-on-surface group-hover:text-primary transition-colors">Security Settings</p>
+                <p className="text-xs font-medium text-on-surface-variant opacity-60 mt-1">Update your password regularly to keep your account secure.</p>
               </div>
               <span className="material-symbols-outlined text-on-surface-variant group-hover:translate-x-1 transition-transform">chevron_right</span>
             </div>

@@ -111,7 +111,7 @@ const MentorDashboardPage = () => {
       <div className="surface-card p-6 border-outline/5">
         <h3 className="font-bold text-lg text-on-surface mb-6 flex items-center gap-2">
           <span className="material-symbols-outlined text-primary">reviews</span>
-          Network Feedback
+          Recent Reviews
         </h3>
 
         {recentReviews.length > 0 ? (
@@ -137,7 +137,7 @@ const MentorDashboardPage = () => {
                 onClick={() => navigate(`/mentors/${mentorId}`)}
                 className="w-full text-center text-[10px] font-black text-primary uppercase tracking-[0.2em] hover:text-primary-dark transition-colors pt-4"
               >
-                View Profile Archive
+                View Profile Reviews
               </button>
             )}
           </div>
@@ -157,7 +157,7 @@ const MentorDashboardPage = () => {
             Availability
           </h3>
           <p className="text-sm text-on-surface-variant font-medium mb-6 leading-relaxed opacity-80">
-            Configure your professional availability protocols from the dedicated manager.
+            Manage your weekly availability from the dedicated page.
           </p>
           <button
             onClick={() => navigate('/mentor/availability')}
@@ -174,13 +174,13 @@ const MentorDashboardPage = () => {
           Group Hub
         </h3>
         <p className="text-sm text-on-surface-variant font-medium mb-6 leading-relaxed opacity-80">
-          Monitor community discussions and moderate specialization channels.
+          Browse groups and join community discussions.
         </p>
         <button
           onClick={() => navigate('/groups')}
           className="btn-secondary w-full"
         >
-          Open Hub
+          Open Group Hub
         </button>
       </div>
     </div>
@@ -192,7 +192,7 @@ const MentorDashboardPage = () => {
         <div>
           <h1 className="text-4xl lg:text-5xl font-display font-bold text-on-surface tracking-tight mb-3">Mentor Dashboard</h1>
           <p className="text-lg text-on-surface-variant font-medium max-w-2xl opacity-80">
-            System status: <span className="text-emerald-500/80">Active</span>. Manage connection requests and session logs.
+            Welcome back. Manage your session requests and track your schedule.
           </p>
         </div>
         {mentorId && (
@@ -206,7 +206,7 @@ const MentorDashboardPage = () => {
       {/* Stats Row */}
       <section className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-10 animate-in" style={{ animationDelay: '0.1s' }}>
         <div className="surface-card p-8 flex flex-col items-center justify-center text-center border-outline/5">
-          <span className="text-[10px] font-black text-on-surface-variant/40 uppercase tracking-[0.2em] mb-4">Total Syncs</span>
+          <span className="text-[10px] font-black text-on-surface-variant/40 uppercase tracking-[0.2em] mb-4">Total Sessions</span>
           <span className="text-4xl font-bold text-on-surface">{totalSessionsCount}</span>
         </div>
         <div className="surface-card p-8 flex flex-col items-center justify-center text-center border-outline/5">
@@ -259,7 +259,7 @@ const MentorDashboardPage = () => {
                 <div className="flex items-center gap-3 self-end md:self-auto">
                   {rejectingId === req.id ? (
                     <div className="flex items-center gap-4 bg-error/5 p-2 px-4 rounded-xl border border-error/10">
-                      <span className="text-[10px] font-black text-error uppercase tracking-widest">Confirm Rejection?</span>
+                      <span className="text-[10px] font-black text-error uppercase tracking-widest">Reject this request?</span>
                       <div className="flex gap-2">
                         <button onClick={() => rejectMutation.mutate(req.id)} disabled={rejectMutation.isPending} className="px-4 py-1.5 bg-error text-white text-[10px] font-black uppercase rounded-lg hover:bg-error/90 transition-all">Yes</button>
                         <button onClick={() => setRejectingId(null)} className="px-3 py-1.5 text-[10px] font-black text-on-surface-variant uppercase hover:text-on-surface transition-all">No</button>
@@ -278,7 +278,7 @@ const MentorDashboardPage = () => {
                         disabled={acceptMutation.isPending}
                         className="btn-primary h-11 px-8 text-xs shadow-primary/10"
                       >
-                        Accept Sync
+                        Accept Request
                       </button>
                     </>
                   )}
@@ -288,8 +288,8 @@ const MentorDashboardPage = () => {
           ) : (
             <div className="surface-card p-16 text-center flex flex-col items-center border-dashed border-emerald-500/20 bg-emerald-500/[0.02]">
               <span className="material-symbols-outlined text-5xl text-emerald-500/20 mb-6">verified_user</span>
-              <p className="text-xl font-bold text-on-surface mb-2">Protocol Clear</p>
-              <p className="text-on-surface-variant font-medium max-w-xs opacity-60">No pending synchronization requests require your attention right now.</p>
+              <p className="text-xl font-bold text-on-surface mb-2">No pending requests</p>
+              <p className="text-on-surface-variant font-medium max-w-xs opacity-60">You have no pending session requests at the moment.</p>
             </div>
           )}
         </div>
@@ -324,14 +324,14 @@ const MentorDashboardPage = () => {
                     disabled={completeMutation.isPending}
                     className="h-11 px-6 bg-emerald-500/5 text-emerald-500 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-emerald-500 hover:text-white transition-all border border-emerald-500/10"
                   >
-                    Complete
+                    Mark Complete
                   </button>
                 </div>
               </div>
             ))
           ) : (
             <div className="px-2">
-              <p className="text-sm font-bold text-on-surface-variant/40 uppercase tracking-widest">Zero scheduled syncs in log</p>
+              <p className="text-sm font-bold text-on-surface-variant/40 uppercase tracking-widest">No upcoming sessions</p>
             </div>
           )}
         </div>

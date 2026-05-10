@@ -19,7 +19,7 @@ const Sidebar = ({ role }: SidebarProps) => {
 
   const learnerNav = [
     { name: 'Dashboard', icon: 'grid_view', path: '/learner' },
-    { name: 'Mentor Search', icon: 'person_search', path: '/mentors' },
+    { name: 'Find Mentors', icon: 'person_search', path: '/mentors' },
     { name: 'My Sessions', icon: 'event_upcoming', path: '/sessions' },
     { name: 'Groups', icon: 'groups', path: '/groups' },
   ];
@@ -194,7 +194,7 @@ const Sidebar = ({ role }: SidebarProps) => {
             >
               <span className="material-symbols-outlined text-xl">person_search</span>
               {!isSidebarCollapsed && (
-                <span className="ml-3 text-[10px] font-black uppercase tracking-[0.2em]">Explore Mentors</span>
+                <span className="ml-3 text-[10px] font-black uppercase tracking-[0.2em]">Find Mentors</span>
               )}
             </button>
           )}

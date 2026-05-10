@@ -176,16 +176,16 @@ const SettingsPage = () => {
         <div className="surface-card p-8 border-primary/10">
           <h1 className="text-4xl font-bold text-on-surface tracking-tight mb-3">Settings</h1>
           <p className="text-lg text-on-surface-variant font-medium opacity-80">
-            Secure your professional profile and manage authorization protocols.
+            Secure your professional profile and manage your security settings.
           </p>
         </div>
 
         <div className="surface-card p-10 border-outline/5 mt-8">
           <div className="flex items-center gap-6 mb-10 overflow-x-auto pb-4 no-scrollbar">
             {[
-              { id: 'email', label: '1. Identity verification', icon: 'person' },
-              { id: 'otp', label: '2. Code Authorization', icon: 'key' },
-              { id: 'password', label: '3. Security Update', icon: 'shield_lock' }
+              { id: 'email', label: '1. Verify Email', icon: 'person' },
+              { id: 'otp', label: '2. Enter OTP', icon: 'key' },
+              { id: 'password', label: '3. Reset Password', icon: 'shield_lock' }
             ].map((s) => (
               <div 
                 key={s.id} 
@@ -205,14 +205,14 @@ const SettingsPage = () => {
             {step === 'email' && (
               <form onSubmit={handleSendOtp} className="space-y-6">
                 <div>
-                  <label className="block text-[10px] font-black text-on-surface-variant/40 uppercase tracking-[0.2em] mb-3">Email synchronization</label>
+                  <label className="block text-[10px] font-black text-on-surface-variant/40 uppercase tracking-[0.2em] mb-3">Email Address</label>
                   <input
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="w-full h-12 bg-surface-container-low px-4 rounded-xl text-sm font-bold text-on-surface outline-none focus:ring-2 focus:ring-primary/20 border border-outline/30 focus:border-primary transition-all"
                     required
-                    placeholder="Enter system email..."
+                    placeholder="Enter your email address..."
                   />
                 </div>
 
@@ -221,7 +221,7 @@ const SettingsPage = () => {
                   disabled={sendOtpMutation.isPending}
                   className="btn-primary w-full h-12 shadow-primary/10"
                 >
-                  {sendOtpMutation.isPending ? 'Synchronizing...' : 'Request Auth Code'}
+                  {sendOtpMutation.isPending ? 'Sending...' : 'Send OTP'}
                 </button>
               </form>
             )}
@@ -252,7 +252,7 @@ const SettingsPage = () => {
                   disabled={!isOtpComplete || verifyOtpMutation.isPending}
                   className="btn-primary w-full h-12 shadow-primary/10"
                 >
-                  {verifyOtpMutation.isPending ? 'Verifying...' : 'Authenticate Access'}
+                  {verifyOtpMutation.isPending ? 'Verifying...' : 'Verify OTP'}
                 </button>
 
                 <div className="text-center space-y-3 pt-2">
@@ -265,7 +265,7 @@ const SettingsPage = () => {
                     disabled={timeLeft > 0 || sendOtpMutation.isPending}
                     className={`text-[10px] font-black uppercase tracking-widest transition-all ${timeLeft > 0 ? 'text-on-surface-variant/20' : 'text-primary hover:text-primary-dark underline'}`}
                   >
-                    {sendOtpMutation.isPending ? 'Restarting...' : 'Resend Protocol'}
+                    {sendOtpMutation.isPending ? 'Resending...' : 'Resend Code'}
                   </button>
                 </div>
               </div>
@@ -274,7 +274,7 @@ const SettingsPage = () => {
             {step === 'password' && (
               <form onSubmit={handleChangePassword} className="space-y-6">
                 <div>
-                  <label className="block text-[10px] font-black text-on-surface-variant/40 uppercase tracking-[0.2em] mb-3">New Security Protocol</label>
+                  <label className="block text-[10px] font-black text-on-surface-variant/40 uppercase tracking-[0.2em] mb-3">New Password</label>
                   <div className="relative">
                     <input
                       type={showPassword ? 'text' : 'password'}
@@ -282,7 +282,7 @@ const SettingsPage = () => {
                       onChange={(e) => setNewPassword(e.target.value)}
                       className="w-full h-12 bg-surface-container-low px-4 pr-12 rounded-xl text-sm font-bold text-on-surface outline-none focus:ring-2 focus:ring-primary/20 border border-outline/30 focus:border-primary transition-all"
                       required
-                      placeholder="Define new credentials..."
+                      placeholder="Enter new password..."
                     />
                     <button
                       type="button"
@@ -313,7 +313,7 @@ const SettingsPage = () => {
                   disabled={changePasswordMutation.isPending || !allConstraintsMet}
                   className="btn-primary w-full h-12 shadow-primary/10"
                 >
-                  {changePasswordMutation.isPending ? 'Encrypting...' : 'Commit Security Update'}
+                  {changePasswordMutation.isPending ? 'Updating...' : 'Update Password'}
                 </button>
               </form>
             )}

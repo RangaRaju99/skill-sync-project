@@ -1,5 +1,17 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSelector } from 'react-redux';
+import { 
+  Bell, 
+  CheckCircle2, 
+  XCircle, 
+  Calendar, 
+  Star, 
+  Info, 
+  Users, 
+  Trash2,
+  Check,
+  MoreVertical
+} from 'lucide-react';
 import notificationService from '../../services/notificationService';
 import PageLayout from '../../components/layout/PageLayout';
 import { useToast } from '../../components/ui/Toast';
@@ -40,15 +52,6 @@ const NotificationsPage = () => {
     },
   });
 
-  // Delete notification mutation
-  const deleteNotificationMutation = useMutation({
-    mutationFn: (id: number) => notificationService.deleteNotification(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['notifications'] });
-      queryClient.invalidateQueries({ queryKey: ['unread-notifications'] });
-    },
-  });
-
   const clearAllNotificationsMutation = useMutation({
     mutationFn: () => notificationService.clearAllNotifications(),
     onSuccess: () => {
@@ -58,94 +61,61 @@ const NotificationsPage = () => {
     },
   });
 
+  const deleteNotificationMutation = useMutation({
+    mutationFn: (id: number) => notificationService.deleteNotification(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+      queryClient.invalidateQueries({ queryKey: ['unread-notifications'] });
+    },
+  });
+
   const notifications = notificationsData?.content || [];
   const unreadCount = notifications.filter(n => !n.isRead).length;
 
   const handleDeleteNotification = async (notificationId: number) => {
-    const confirmed = await requestConfirmation({
-      title: 'Delete Notification?',
-      message: 'Are you sure you want to delete this notification?',
-      confirmLabel: 'Yes, delete notification',
-    });
-
-    if (!confirmed) {
-      return;
-    }
-
     deleteNotificationMutation.mutate(notificationId);
   };
 
   const handleDeleteAllNotifications = async () => {
     const confirmed = await requestConfirmation({
-      title: 'Delete All Notifications?',
-      message: 'Are you sure you want to delete all notifications? This cannot be undone.',
-      confirmLabel: 'Yes, delete all',
+      title: 'Clear All Notifications?',
+      message: 'This will permanently remove all your notification history. Continue?',
+      confirmLabel: 'Clear All',
     });
 
-    if (!confirmed) {
-      return;
+    if (confirmed) {
+      clearAllNotificationsMutation.mutate();
     }
-
-    clearAllNotificationsMutation.mutate();
   };
 
-  const getNotificationIcon = (type: string) => {
-    const icons: Record<string, string> = {
-      SESSION_REQUEST: '📅',
-      SESSION_REQUESTED: '📅',
-      SESSION_REQUESTED_CONFIRMATION: '📨',
-      SESSION_ACCEPTED: '✅',
-      SESSION_APPROVED: '✅',
-      SESSION_REJECTED: '❌',
-      SESSION_CANCELLED: '🚫',
-      SESSION_COMPLETED: '🏁',
-      MENTOR_APPROVED: '⭐',
-      REVIEW_RECEIVED: '⭐',
-      SYSTEM: 'ℹ️',
-      GROUP_INVITE: '👥',
+  const getNotificationConfig = (type: string) => {
+    const configs: Record<string, { icon: any; color: string }> = {
+      SESSION_REQUEST: { icon: Calendar, color: 'text-primary' },
+      SESSION_REQUESTED: { icon: Calendar, color: 'text-primary' },
+      SESSION_ACCEPTED: { icon: CheckCircle2, color: 'text-emerald-500' },
+      SESSION_APPROVED: { icon: CheckCircle2, color: 'text-emerald-500' },
+      SESSION_REJECTED: { icon: XCircle, color: 'text-error' },
+      SESSION_CANCELLED: { icon: XCircle, color: 'text-error' },
+      SESSION_COMPLETED: { icon: CheckCircle2, color: 'text-emerald-500' },
+      MENTOR_APPROVED: { icon: Star, color: 'text-amber-500' },
+      REVIEW_RECEIVED: { icon: Star, color: 'text-primary' },
+      SYSTEM: { icon: Info, color: 'text-on-surface-variant' },
+      GROUP_INVITE: { icon: Users, color: 'text-secondary' },
     };
-    return icons[type] || 'ℹ️';
-  };
-
-  const getNotificationColor = (type: string) => {
-    const colors: Record<string, string> = {
-      SESSION_REQUEST: 'border-l-blue-500',
-      SESSION_REQUESTED: 'border-l-blue-500',
-      SESSION_REQUESTED_CONFIRMATION: 'border-l-indigo-500',
-      SESSION_ACCEPTED: 'border-l-green-500',
-      SESSION_APPROVED: 'border-l-green-500',
-      SESSION_REJECTED: 'border-l-red-500',
-      SESSION_CANCELLED: 'border-l-red-500',
-      SESSION_COMPLETED: 'border-l-emerald-500',
-      MENTOR_APPROVED: 'border-l-amber-500',
-      REVIEW_RECEIVED: 'border-l-fuchsia-500',
-      SYSTEM: 'border-l-slate-500',
-      GROUP_INVITE: 'border-l-teal-500',
-    };
-    return colors[type] || 'border-l-slate-500';
+    return configs[type] || { icon: Info, color: 'text-on-surface-variant' };
   };
 
   return (
     <PageLayout>
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="bg-surface-container-lowest rounded-lg p-8 border border-outline-variant/20 shadow-sm">
-          <h1 className="text-3xl font-bold mb-2 text-on-surface">Notifications</h1>
-          <p className="text-on-surface-variant">Stay updated with your mentoring activities</p>
-        </div>
-
-        {/* Controls */}
-        <div className="flex flex-wrap justify-between items-center gap-3">
+      <div className="max-w-4xl mx-auto space-y-8 animate-in">
+        {/* Header Section */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-2">
           <div>
-            <p className="text-on-surface-variant">
-              {unreadCount > 0 ? (
-                <>
-                  You have <span className="font-bold text-primary">{unreadCount}</span> unread
-                  notification{unreadCount > 1 ? 's' : ''}
-                </>
-              ) : (
-                'All notifications read'
-              )}
+            <h1 className="text-4xl font-display font-bold text-on-surface tracking-tight mb-2">Notifications</h1>
+            <p className="text-on-surface-variant font-medium opacity-80">
+              {unreadCount > 0 
+                ? `You have ${unreadCount} unread update${unreadCount > 1 ? 's' : ''} waiting for review.`
+                : 'Your inbox is clear. We\'ll notify you of new activities here.'}
             </p>
           </div>
           <div className="flex items-center gap-3">
@@ -153,69 +123,95 @@ const NotificationsPage = () => {
               <button
                 onClick={() => markAllAsReadMutation.mutate()}
                 disabled={markAllAsReadMutation.isPending}
-                className="text-primary hover:opacity-80 font-medium text-sm disabled:opacity-50"
+                className="btn-secondary h-10 px-5 text-xs gap-2"
               >
+                <Check size={14} />
                 Mark all as read
               </button>
             )}
-
             {notifications.length > 0 && (
               <button
-                onClick={() => void handleDeleteAllNotifications()}
+                onClick={handleDeleteAllNotifications}
                 disabled={clearAllNotificationsMutation.isPending}
-                className="text-error hover:opacity-80 font-medium text-sm disabled:opacity-50"
+                className="w-10 h-10 flex items-center justify-center rounded-xl bg-surface-container-low border border-outline/10 text-on-surface-variant hover:text-error hover:bg-error/5 transition-all"
+                title="Clear all"
               >
-                Delete all
+                <Trash2 size={18} />
               </button>
             )}
           </div>
         </div>
 
-        {/* Notifications List */}
+        {/* List Section */}
         {isLoading ? (
-          <p className="text-center text-on-surface-variant py-8">Loading notifications...</p>
+          <div className="space-y-4">
+            {[1, 2, 3].map(i => (
+              <div key={i} className="h-24 surface-card animate-pulse" />
+            ))}
+          </div>
         ) : notifications.length > 0 ? (
           <div className="space-y-3">
-            {notifications.map((notification) => (
-              <div
-                key={notification.id}
-                className={`rounded-lg p-4 border-2 transition ${
-                  notification.isRead ? 'opacity-80 bg-surface-container-low border-outline-variant/20' : 'opacity-100 bg-surface-container-lowest border-outline-variant/30 ring-1 ring-primary/15'
-                } border-l-4 ${getNotificationColor(notification.type)}`}
-              >
-                <div className="flex items-start gap-4">
-                  <span className="text-2xl mt-1">{getNotificationIcon(notification.type)}</span>
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-on-surface">{notification.title}</h3>
-                    <p className="text-on-surface-variant text-sm mt-1">{notification.message}</p>
-                    <p className="text-xs text-on-surface-variant mt-2">{formatDateTimeIST(notification.createdAt)}</p>
+            {notifications.map((notification) => {
+              const { icon: Icon, color } = getNotificationConfig(notification.type);
+              return (
+                <div
+                  key={notification.id}
+                  className={`group relative surface-card p-5 flex items-start gap-5 transition-all duration-300 ${
+                    !notification.isRead ? 'border-primary/20 bg-primary/[0.02]' : 'opacity-70 hover:opacity-100'
+                  }`}
+                >
+                  <div className={`mt-1 w-10 h-10 rounded-xl bg-surface-container-high flex items-center justify-center border border-outline/5 transition-transform group-hover:scale-105 ${color}`}>
+                    <Icon size={20} />
                   </div>
-                  <div className="flex gap-2">
+                  
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-3 mb-1">
+                      <h3 className={`font-bold text-on-surface truncate ${!notification.isRead ? 'text-base' : 'text-sm'}`}>
+                        {notification.title}
+                      </h3>
+                      {!notification.isRead && (
+                        <span className="w-2 h-2 rounded-full bg-primary animate-pulse flex-shrink-0" />
+                      )}
+                    </div>
+                    <p className="text-sm text-on-surface-variant font-medium leading-relaxed mb-3">
+                      {notification.message}
+                    </p>
+                    <span className="text-[10px] font-black text-on-surface-variant/40 uppercase tracking-widest">
+                      {formatDateTimeIST(notification.createdAt)}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                     {!notification.isRead && (
                       <button
                         onClick={() => markAsReadMutation.mutate(notification.id)}
-                        disabled={markAsReadMutation.isPending}
-                        className="text-primary hover:opacity-80 text-xs font-medium disabled:opacity-50"
+                        className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-primary/10 text-primary transition-all"
+                        title="Mark as read"
                       >
-                        Mark read
+                        <Check size={16} />
                       </button>
                     )}
                     <button
-                      onClick={() => void handleDeleteNotification(notification.id)}
-                      disabled={deleteNotificationMutation.isPending}
-                      className="text-error hover:text-error text-xs font-medium disabled:opacity-50"
+                      onClick={() => handleDeleteNotification(notification.id)}
+                      className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-error/10 text-on-surface-variant hover:text-error transition-all"
+                      title="Delete"
                     >
-                      Delete
+                      <Trash2 size={16} />
                     </button>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         ) : (
-          <div className="text-center py-12 bg-surface-container-lowest rounded-lg border border-outline-variant/20">
-            <p className="text-lg text-on-surface-variant mb-4">No notifications yet</p>
-            <p className="text-sm text-on-surface-variant">You'll see updates here when you get session requests, approvals, and more</p>
+          <div className="surface-card p-20 text-center flex flex-col items-center border-dashed bg-transparent">
+            <div className="w-20 h-20 rounded-3xl bg-surface-container-low flex items-center justify-center mb-6 text-on-surface-variant/20">
+              <Bell size={40} />
+            </div>
+            <p className="text-xl font-bold text-on-surface mb-2">Inbox is clear</p>
+            <p className="text-on-surface-variant font-medium max-w-xs opacity-60">
+              You'll receive updates here about session bookings, reviews, and community activity.
+            </p>
           </div>
         )}
       </div>
