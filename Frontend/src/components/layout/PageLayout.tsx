@@ -16,11 +16,11 @@ const PageLayout = ({ children, rightPanel }: PageLayoutProps) => {
   const { isSidebarCollapsed } = useTheme();
 
   return (
-    <div className="flex h-screen bg-surface-container-lowest font-sans text-on-surface overflow-hidden relative">
-      {/* Cinematic Ambient Background */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0 opacity-40">
-        <div className="absolute top-[-10%] left-[-5%] w-[40%] h-[40%] bg-primary/10 blur-[120px] rounded-full animate-pulse" style={{ animationDuration: '8s' }} />
-        <div className="absolute bottom-[-5%] right-[-5%] w-[35%] h-[35%] bg-secondary/10 blur-[100px] rounded-full animate-pulse" style={{ animationDuration: '12s' }} />
+    <div className="flex h-screen bg-surface font-sans text-on-surface overflow-hidden relative">
+      {/* Subtle Atmospheric Background */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0 opacity-15">
+        <div className="absolute top-[-10%] left-[-5%] w-[30%] h-[30%] bg-primary/20 blur-[100px] rounded-full animate-pulse" style={{ animationDuration: '10s' }} />
+        <div className="absolute bottom-[-5%] right-[-5%] w-[25%] h-[25%] bg-secondary/20 blur-[80px] rounded-full animate-pulse" style={{ animationDuration: '15s' }} />
       </div>
 
       <Sidebar role={activeRole} />

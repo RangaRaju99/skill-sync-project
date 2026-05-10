@@ -135,73 +135,73 @@ const LearnerDashboardPage = () => {
   };
 
   const rightPanel = (
-    <div className="space-y-6 animate-in" style={{ animationDelay: '0.2s' }}>
-      <div className="surface-card p-6">
-        <h3 className="text-lg font-bold text-on-surface mb-2 flex items-center gap-2">
-          <Award size={20} className="text-primary" />
+    <div className="space-y-6 animate-in" style={{ animationDelay: '0.1s' }}>
+      <div className="surface-card p-6 border-primary/10">
+        <h3 className="text-lg font-bold text-on-surface mb-3 flex items-center gap-2">
+          <Award size={18} className="text-primary" />
           Become a Mentor
         </h3>
         {mentorApplied ? (
-          <div className={`p-4 rounded-xl border ${
+          <div className={`p-5 rounded-2xl border ${
             mentorStatus === 'APPROVED' ? 'bg-emerald-500/5 border-emerald-500/20' : 'bg-primary/5 border-primary/20'
           }`}>
-            <p className="text-sm font-bold text-on-surface flex items-center justify-between">
-              Status 
-              <span className={`px-2 py-0.5 rounded text-[10px] uppercase tracking-wider ${
+            <p className="text-xs font-black uppercase tracking-[0.1em] text-on-surface flex items-center justify-between">
+              Application Status 
+              <span className={`px-2 py-0.5 rounded-lg text-[9px] font-bold ${
                 mentorStatus === 'APPROVED' ? 'bg-emerald-500 text-white' : 'bg-primary text-white'
               }`}>
                 {mentorStatus || 'PENDING'}
               </span>
             </p>
-            <p className="text-xs text-on-surface-variant mt-3 leading-relaxed">
-              {mentorStatus === 'APPROVED' ? 'Authorization successful. Re-authenticate to access mentor protocols.' : 'Request is being processed by administration.'}
+            <p className="text-sm text-on-surface-variant mt-4 leading-relaxed font-medium">
+              {mentorStatus === 'APPROVED' ? 'Your authorization is active. Re-login to initialize mentor protocols.' : 'Administrative review in progress. No further action required.'}
             </p>
           </div>
         ) : (
           <>
-            <p className="text-sm text-on-surface-variant mb-6 leading-relaxed">
-              Share your protocols and scale your impact within the network.
+            <p className="text-sm text-on-surface-variant mb-6 leading-relaxed font-medium">
+              Initialize your mentorship protocols and share your specialization areas with the network.
             </p>
             <button
               onClick={() => setShowApplyForm(true)}
-              className="btn-primary w-full"
+              className="btn-primary w-full shadow-primary/10"
             >
-              Initialize Application
+              Start Application
             </button>
           </>
         )}
       </div>
 
       <div className="surface-card p-6">
-        <h3 className="text-lg font-bold text-on-surface mb-4 flex items-center gap-2">
-          <TrendingUp size={20} className="text-primary" />
+        <h3 className="text-lg font-bold text-on-surface mb-5 flex items-center gap-2">
+          <TrendingUp size={18} className="text-primary" />
           Network Resources
         </h3>
-        <div className="space-y-2">
+        <div className="space-y-1">
           {['LeetCode', 'HackerRank', 'GeeksforGeeks', 'CodeChef'].map((link) => (
-            <a key={link} href={`https://${link.toLowerCase()}.com`} target="_blank" rel="noreferrer" className="flex items-center justify-between p-2 rounded-lg hover:bg-white/5 text-sm font-semibold text-on-surface-variant hover:text-primary transition-all">
+            <a key={link} href={`https://${link.toLowerCase()}.com`} target="_blank" rel="noreferrer" className="flex items-center justify-between p-3 rounded-xl hover:bg-white/[0.03] text-sm font-bold text-on-surface-variant hover:text-on-surface transition-all group">
               {link}
-              <ExternalLink size={14} />
+              <ExternalLink size={14} className="opacity-0 group-hover:opacity-40 transition-opacity" />
             </a>
           ))}
         </div>
       </div>
 
       <div className="surface-card p-6">
-        <h3 className="text-lg font-bold text-on-surface mb-4 flex items-center gap-2">
-          <Users size={20} className="text-primary" />
-          Active Syncs
+        <h3 className="text-lg font-bold text-on-surface mb-5 flex items-center gap-2">
+          <Users size={18} className="text-primary" />
+          Active Connections
         </h3>
         {groups.length === 0 ? (
-          <div className="text-center py-6">
-            <p className="text-xs font-bold text-on-surface-variant uppercase tracking-widest mb-4 opacity-50">No Active Syncs</p>
-            <Link to="/groups" className="text-xs font-bold text-primary hover:underline">Establish Connection</Link>
+          <div className="text-center py-8">
+            <p className="text-[10px] font-black text-on-surface-variant/40 uppercase tracking-[0.2em] mb-4">No active syncs</p>
+            <Link to="/groups" className="text-xs font-bold text-primary hover:text-primary-dark transition-colors">Establishing connection...</Link>
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-2">
             {groups.slice(0, 4).map((g: any, i: number) => (
-              <div key={i} className="flex justify-between items-center p-2 rounded-lg hover:bg-white/5 transition-colors group cursor-pointer" onClick={() => navigate(`/groups/${g.id}`)}>
-                <span className="text-sm font-semibold text-on-surface group-hover:text-primary transition-colors">{g.name}</span>
+              <div key={i} className="flex justify-between items-center p-3 rounded-xl hover:bg-white/[0.03] transition-all group cursor-pointer border border-transparent hover:border-outline/10" onClick={() => navigate(`/groups/${g.id}`)}>
+                <span className="text-sm font-bold text-on-surface group-hover:text-primary transition-colors">{g.name}</span>
                 <ArrowRight size={14} className="text-on-surface-variant opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0" />
               </div>
             ))}
@@ -213,14 +213,14 @@ const LearnerDashboardPage = () => {
 
   return (
     <PageLayout rightPanel={rightPanel}>
-      <div className="space-y-12 animate-in">
+      <div className="space-y-10 animate-in">
         {/* Header Section */}
-        <section className="relative">
-          <h1 className="text-4xl lg:text-5xl font-display font-bold text-on-surface tracking-tight mb-2">
-            Welcome, <span className="text-primary">{user?.firstName}</span>
+        <section className="relative py-4">
+          <h1 className="text-4xl lg:text-5xl font-display font-bold text-on-surface tracking-tight mb-3">
+            Welcome back, <span className="text-primary">{user?.firstName}</span>
           </h1>
-          <p className="text-lg text-on-surface-variant font-medium max-w-2xl">
-            System operational. All synchronization protocols are active and ready for execution.
+          <p className="text-lg text-on-surface-variant font-medium max-w-2xl leading-relaxed">
+            System status: <span className="text-emerald-500/80">Operational</span>. All synchronization protocols are active and ready for execution.
           </p>
         </section>
 
@@ -228,12 +228,12 @@ const LearnerDashboardPage = () => {
         <section>
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-2xl font-bold text-on-surface flex items-center gap-3">
-              <Calendar size={24} className="text-primary" />
-              Scheduled Syncs
+              <Calendar size={20} className="text-primary" />
+              Upcoming Syncs
             </h2>
             {upSessions?.content?.length > 0 && (
-              <Link to="/sessions" className="text-sm font-bold text-primary hover:underline flex items-center gap-1">
-                View All <ArrowRight size={14} />
+              <Link to="/sessions" className="text-xs font-black uppercase tracking-widest text-on-surface-variant hover:text-primary transition-colors flex items-center gap-2">
+                Manage All <ArrowRight size={14} />
               </Link>
             )}
           </div>
@@ -243,32 +243,33 @@ const LearnerDashboardPage = () => {
               Array(2).fill(0).map((_, i) => <div key={i} className="h-24 surface-card animate-pulse" />)
             ) : upSessions?.content?.length > 0 ? (
               upSessions.content.map((session: any) => (
-                <div key={session.id} className="surface-card p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 group hover:border-primary/30">
+                <div key={session.id} className="surface-card p-6 flex flex-col md:flex-row md:items-center justify-between gap-6 group hover:border-primary/20">
                   <div className="flex items-center gap-5">
-                    <div className="w-12 h-12 rounded-xl bg-primary/20 text-primary flex items-center justify-center font-bold shadow-inner border border-primary/20">
+                    <div className="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center font-bold text-lg border border-primary/20 group-hover:scale-105 transition-transform">
                       {getInitials(getSessionMentorName(session))}
                     </div>
                     <div>
                       <h4 className="font-bold text-lg text-on-surface group-hover:text-primary transition-colors">{getSessionMentorName(session)}</h4>
-                      <p className="text-sm font-medium text-on-surface-variant">{session.topic || 'General Protocol Sync'}</p>
+                      <p className="text-sm font-bold text-on-surface-variant mt-0.5">{session.topic || 'General Protocol Sync'}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-8">
                     <div className="text-right hidden md:block">
                       <p className="text-sm font-bold text-on-surface">{formatDateTimeIST(getSessionDateTime(session))}</p>
-                      <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mt-1">Scheduled Time</p>
+                      <p className="text-[10px] font-black text-on-surface-variant/40 uppercase tracking-widest mt-1">Scheduled Time</p>
                     </div>
-                    <span className="px-3 py-1 bg-primary text-white text-[10px] font-bold uppercase tracking-widest rounded-lg shadow-[0_0_15px_rgba(139,92,246,0.3)]">
+                    <span className="px-4 py-1.5 bg-primary/10 text-primary text-[10px] font-black uppercase tracking-widest rounded-xl border border-primary/20">
                       {session.status}
                     </span>
                   </div>
                 </div>
               ))
             ) : (
-              <div className="surface-card p-12 text-center flex flex-col items-center">
-                <Calendar className="text-on-surface-variant/20 mb-4" size={48} />
-                <p className="text-lg font-bold text-on-surface-variant mb-6">No scheduled synchronizations</p>
-                <button onClick={() => navigate('/mentors')} className="btn-primary px-8">Establish Sync</button>
+              <div className="surface-card p-16 text-center flex flex-col items-center border-dashed">
+                <Calendar className="text-on-surface-variant/10 mb-6" size={56} />
+                <p className="text-xl font-bold text-on-surface mb-2">No active syncs found</p>
+                <p className="text-on-surface-variant font-medium mb-8 max-w-xs">Initialize a new mentor connection to start your learning journey.</p>
+                <button onClick={() => navigate('/mentors')} className="btn-primary px-10">Establish Connection</button>
               </div>
             )}
           </div>
@@ -276,61 +277,61 @@ const LearnerDashboardPage = () => {
 
         {/* Recommended Mentors */}
         <section>
-          <div className="flex justify-between items-center mb-6">
+          <div className="flex justify-between items-center mb-8">
             <h2 className="text-2xl font-bold text-on-surface flex items-center gap-3">
-              <Search size={24} className="text-primary" />
+              <Search size={20} className="text-primary" />
               Available Mentors
             </h2>
-            <Link to="/mentors" className="text-sm font-bold text-primary hover:underline flex items-center gap-1">
+            <Link to="/mentors" className="text-xs font-black uppercase tracking-widest text-on-surface-variant hover:text-primary transition-colors flex items-center gap-2">
               Explore All <ArrowRight size={14} />
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {loadingMentors ? (
-              Array(2).fill(0).map((_, i) => <div key={i} className="h-64 surface-card animate-pulse" />)
+              Array(2).fill(0).map((_, i) => <div key={i} className="h-72 surface-card animate-pulse" />)
             ) : mentors?.content?.map((mnt: any) => (
               <div key={mnt.id} className="surface-card p-8 flex flex-col hover:-translate-y-1 group">
-                <div className="flex items-start gap-5 mb-6">
+                <div className="flex items-start gap-6 mb-8">
                   <div className="relative">
-                    <div className="w-16 h-16 rounded-2xl bg-primary/20 text-primary flex items-center justify-center font-bold text-xl shadow-inner border border-primary/20 group-hover:scale-105 transition-transform">
+                    <div className="w-16 h-16 rounded-2xl bg-primary/10 text-primary flex items-center justify-center font-bold text-xl border border-primary/10 group-hover:scale-105 transition-transform">
                       {getInitials(`${mnt.firstName} ${mnt.lastName}`)}
                     </div>
-                    <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 rounded-full border-2 border-surface shadow-sm"></div>
+                    <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 rounded-full border-[3px] border-surface-container-low shadow-lg"></div>
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex justify-between items-start">
-                      <h3 className="text-xl font-bold text-on-surface leading-tight truncate">{mnt.firstName} {mnt.lastName}</h3>
-                      <div className="flex items-center gap-1 bg-primary/10 px-2 py-1 rounded text-[10px] font-bold text-primary">
-                        <Star size={12} fill="currentColor" />
+                      <h3 className="text-xl font-bold text-on-surface leading-tight truncate pr-4">{mnt.firstName} {mnt.lastName}</h3>
+                      <div className="flex items-center gap-1 bg-amber-500/10 px-2 py-1 rounded-lg text-[10px] font-bold text-amber-500 border border-amber-500/10">
+                        <Star size={10} fill="currentColor" />
                         {Number(mnt.avgRating || 0).toFixed(1)}
                       </div>
                     </div>
-                    <p className="text-sm font-medium text-on-surface-variant mt-2 line-clamp-2 leading-relaxed">{mnt.headline}</p>
+                    <p className="text-sm font-bold text-on-surface-variant mt-2 line-clamp-2 leading-relaxed opacity-80">{mnt.headline}</p>
                   </div>
                 </div>
 
                 <div className="flex flex-wrap gap-2 mb-8">
                   {(mnt.skills || []).slice(0, 3).map((skill: any, i: number) => (
-                    <span key={i} className="px-2.5 py-1 bg-surface-container-low text-[10px] font-bold text-on-surface-variant uppercase tracking-wider rounded-lg border border-outline">
-                      {typeof skill === 'string' ? skill : (skill.name || 'Protocol')}
+                    <span key={i} className="px-3 py-1 bg-surface-container-high text-[10px] font-black text-on-surface-variant/80 uppercase tracking-widest rounded-xl border border-outline/10">
+                      {typeof skill === 'string' ? skill : (skill.name || 'Skill')}
                     </span>
                   ))}
                   {mnt.skills?.length > 3 && (
-                    <span className="px-2.5 py-1 bg-surface-container-low text-[10px] font-bold text-on-surface-variant rounded-lg">+{mnt.skills.length - 3}</span>
+                    <span className="px-3 py-1 bg-surface-container-high text-[10px] font-black text-on-surface-variant/60 rounded-xl">+{mnt.skills.length - 3}</span>
                   )}
                 </div>
 
-                <div className="mt-auto pt-6 border-t border-white/5 flex items-center justify-between">
+                <div className="mt-auto pt-8 border-t border-outline/5 flex items-center justify-between">
                   <div>
-                    <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-1 opacity-60">Rate</p>
-                    <p className="text-2xl font-bold text-primary">₹{mnt.hourlyRate}<span className="text-sm font-semibold text-on-surface-variant">/hr</span></p>
+                    <p className="text-[10px] font-black text-on-surface-variant/40 uppercase tracking-[0.2em] mb-1">Session Rate</p>
+                    <p className="text-2xl font-bold text-on-surface">₹{mnt.hourlyRate}<span className="text-sm font-bold text-on-surface-variant/40 ml-1">/hr</span></p>
                   </div>
                   <button
                     onClick={() => navigate(`/mentors/${mnt.id}`)}
-                    className="h-12 px-8 bg-surface-container-high hover:bg-primary hover:text-white text-on-surface font-bold rounded-xl transition-all shadow-inner border border-outline hover:border-primary"
+                    className="btn-secondary px-8 py-3 h-auto"
                   >
-                    Sync Request
+                    View Details
                   </button>
                 </div>
               </div>
@@ -342,66 +343,66 @@ const LearnerDashboardPage = () => {
       {/* Mentor Application Modal */}
       {showApplyForm && !mentorApplied && (
         <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-md flex items-center justify-center p-4 animate-in">
-          <div className="w-full max-w-2xl surface-card p-8 relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-4">
-              <button onClick={() => setShowApplyForm(false)} className="w-10 h-10 rounded-full hover:bg-white/5 flex items-center justify-center text-on-surface-variant transition-colors">
+          <div className="w-full max-w-2xl bg-surface-container border border-outline/20 rounded-3xl p-8 lg:p-10 relative overflow-hidden shadow-2xl">
+            <div className="absolute top-0 right-0 p-6">
+              <button onClick={() => setShowApplyForm(false)} className="w-10 h-10 rounded-full hover:bg-white/5 flex items-center justify-center text-on-surface-variant hover:text-on-surface transition-all">
                 <ArrowRight className="rotate-180" size={24} />
               </button>
             </div>
 
             <h2 className="text-3xl font-display font-bold text-on-surface mb-2">Mentor Access Protocol</h2>
-            <p className="text-on-surface-variant mb-10 font-medium">Configure your specialization parameters for network approval.</p>
+            <p className="text-on-surface-variant mb-10 font-bold opacity-60">Configure your specialization parameters for network approval.</p>
 
             <div className="space-y-8">
               <div>
-                <label className="block text-[11px] font-bold text-on-surface-variant uppercase tracking-widest mb-3">Professional Bio</label>
+                <label className="block text-[11px] font-black text-on-surface-variant uppercase tracking-[0.2em] mb-4 opacity-50">Professional Bio</label>
                 <textarea
                   value={applyData.bio}
                   onChange={(e) => setApplyData((prev) => ({ ...prev, bio: e.target.value }))}
                   placeholder="Detail your professional journey and areas of specialization..."
                   rows={4}
-                  className="w-full bg-surface-container-low border border-outline rounded-xl p-4 text-on-surface font-medium outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all resize-none"
+                  className="w-full bg-surface-container-low border border-outline/30 rounded-2xl p-5 text-on-surface font-medium outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 transition-all resize-none placeholder:text-on-surface-variant/30"
                 />
-                <div className="flex justify-between mt-2">
-                  <span className={`text-[10px] font-bold uppercase tracking-widest ${applyData.bio.trim().length >= 50 ? 'text-emerald-500' : 'text-on-surface-variant/40'}`}>
-                    {applyData.bio.trim().length}/50 Min Chars
+                <div className="flex justify-between mt-3 px-1">
+                  <span className={`text-[10px] font-black uppercase tracking-[0.2em] ${applyData.bio.trim().length >= 50 ? 'text-emerald-500' : 'text-on-surface-variant/30'}`}>
+                    {applyData.bio.trim().length} / 50 characters required
                   </span>
                 </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div>
-                  <label className="block text-[11px] font-bold text-on-surface-variant uppercase tracking-widest mb-3">Exp (Cycles)</label>
+                  <label className="block text-[11px] font-black text-on-surface-variant uppercase tracking-[0.2em] mb-4 opacity-50">Exp (Cycles)</label>
                   <input
                     type="number"
                     value={applyData.experienceYears}
                     onChange={(e) => setApplyData((prev) => ({ ...prev, experienceYears: Number(e.target.value) }))}
-                    className="w-full h-12 bg-surface-container-low border border-outline rounded-xl px-4 text-on-surface font-bold outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                    className="w-full h-14 bg-surface-container-low border border-outline/30 rounded-2xl px-6 text-on-surface font-bold outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 transition-all"
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] font-bold text-on-surface-variant uppercase tracking-widest mb-3">Hourly Rate (₹)</label>
+                  <label className="block text-[11px] font-black text-on-surface-variant uppercase tracking-[0.2em] mb-4 opacity-50">Hourly Rate (₹)</label>
                   <input
                     type="number"
                     value={applyData.hourlyRate}
                     onChange={(e) => setApplyData((prev) => ({ ...prev, hourlyRate: Number(e.target.value) }))}
-                    className="w-full h-12 bg-surface-container-low border border-outline rounded-xl px-4 text-on-surface font-bold outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                    className="w-full h-14 bg-surface-container-low border border-outline/30 rounded-2xl px-6 text-on-surface font-bold outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 transition-all"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-[11px] font-bold text-on-surface-variant uppercase tracking-widest mb-3">Specializations (Max 10)</label>
-                <div className="max-h-48 overflow-y-auto pr-2 scrollbar-hide">
-                  <div className="flex flex-wrap gap-2">
+                <label className="block text-[11px] font-black text-on-surface-variant uppercase tracking-[0.2em] mb-4 opacity-50">Specializations (Max 10)</label>
+                <div className="max-h-56 overflow-y-auto pr-3 scrollbar-hide">
+                  <div className="flex flex-wrap gap-2.5">
                     {skills.map((skill: any) => {
                       const selected = applyData.skillIds.includes(skill.id);
                       return (
                         <button
                           key={skill.id}
                           onClick={() => toggleSkill(skill.id)}
-                          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all border ${
-                            selected ? 'bg-primary border-primary text-white shadow-lg shadow-primary/20' : 'bg-surface-container-low border-outline text-on-surface-variant hover:text-on-surface'
+                          className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all border ${
+                            selected ? 'bg-primary border-primary text-white shadow-lg shadow-primary/20' : 'bg-surface-container-high/50 border-outline/20 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest'
                           }`}
                         >
                           {skill.name}
@@ -412,19 +413,19 @@ const LearnerDashboardPage = () => {
                 </div>
               </div>
 
-              <div className="flex gap-4 pt-4">
+              <div className="flex gap-4 pt-6">
                 <button
                   onClick={submitMentorApplication}
                   disabled={applyMutation.isPending}
-                  className="btn-primary flex-1 h-14 text-lg"
+                  className="btn-primary flex-1 h-14 text-lg shadow-primary/20"
                 >
-                  {applyMutation.isPending ? 'Processing...' : 'Authorize Submission'}
+                  {applyMutation.isPending ? 'Processing...' : 'Submit Request'}
                 </button>
                 <button
                   onClick={() => setShowApplyForm(false)}
-                  className="flex-1 h-14 bg-surface-container hover:bg-surface-container-high text-on-surface font-bold rounded-2xl transition-all border border-outline"
+                  className="flex-1 h-14 bg-surface-container-high hover:bg-surface-container-highest text-on-surface font-bold rounded-2xl transition-all border border-outline/20"
                 >
-                  Terminate
+                  Cancel
                 </button>
               </div>
             </div>

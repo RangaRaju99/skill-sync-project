@@ -68,14 +68,14 @@ const GroupsPage = () => {
   return (
     <PageLayout>
       <div className="space-y-8 animate-in">
-        <div className="surface-card p-8">
+        <div className="surface-card p-8 border-primary/10">
           <h1 className="text-4xl font-bold text-on-surface tracking-tight">Learning Groups</h1>
-          <p className="text-on-surface-variant mt-2 font-medium">
-            Explore communities, join discussions, and collaborate with peers in real-time.
+          <p className="text-on-surface-variant mt-3 font-medium leading-relaxed max-w-2xl opacity-80">
+            Explore communities, join discussions, and collaborate with peers in real-time. System operational.
           </p>
         </div>
 
-        <div className="bg-surface-container-low p-1.5 inline-flex gap-1 rounded-2xl border border-outline shadow-inner">
+        <div className="bg-surface-container-low p-1.5 inline-flex gap-1 rounded-2xl border border-outline/10 shadow-inner">
           {['explore', 'mygroups'].map((tab) => (
             <button
               key={tab}
@@ -83,9 +83,9 @@ const GroupsPage = () => {
                 setActiveTab(tab as typeof activeTab);
                 setPage(0);
               }}
-              className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 capitalize ${activeTab === tab
-                  ? 'bg-primary text-white shadow-lg shadow-primary/20 scale-[1.02]'
-                  : 'text-on-surface-variant hover:text-on-surface'
+              className={`px-8 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 capitalize ${activeTab === tab
+                  ? 'bg-primary text-white shadow-lg shadow-primary/10 scale-[1.02]'
+                  : 'text-on-surface-variant hover:text-on-surface hover:bg-white/[0.03]'
                 }`}
             >
               {tab === 'explore' ? 'Explore Groups' : 'Joined Groups'}
@@ -95,23 +95,26 @@ const GroupsPage = () => {
 
         {activeTab === 'explore' && (
           <div className="space-y-6">
-            <div className="surface-card p-4 flex flex-col lg:flex-row items-stretch gap-4">
-              <input
-                type="text"
-                placeholder="Search groups..."
-                value={search}
-                onChange={(event) => {
-                  setSearch(event.target.value);
-                  setPage(0);
-                }}
-                className="flex-1 h-12 bg-surface-container-low px-4 rounded-xl text-sm font-semibold text-on-surface outline-none focus:ring-2 focus:ring-primary/20 border border-outline focus:border-primary transition-all"
-              />
+            <div className="surface-card p-5 flex flex-col lg:flex-row items-stretch gap-4 border-outline/5">
+              <div className="relative flex-1">
+                <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant/40">search</span>
+                <input
+                  type="text"
+                  placeholder="Search network groups..."
+                  value={search}
+                  onChange={(event) => {
+                    setSearch(event.target.value);
+                    setPage(0);
+                  }}
+                  className="w-full h-12 bg-surface-container-low pl-12 pr-4 rounded-xl text-sm font-bold text-on-surface outline-none focus:ring-2 focus:ring-primary/20 border border-outline/30 focus:border-primary transition-all placeholder:text-on-surface-variant/30"
+                />
+              </div>
               {role === 'ROLE_ADMIN' && (
                 <button
                   onClick={() => navigate('/admin/groups')}
                   className="btn-primary h-12 px-8"
                 >
-                  Manage Groups
+                  Manage Network
                 </button>
               )}
             </div>
@@ -119,45 +122,49 @@ const GroupsPage = () => {
             {exploreLoading ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {Array.from({ length: 3 }).map((_, index) => (
-                  <div key={index} className="h-44 surface-card animate-pulse" />
+                  <div key={index} className="h-56 surface-card animate-pulse" />
                 ))}
               </div>
             ) : exploreData?.content && exploreData.content.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {exploreData.content.map((group: any) => {
                   const isJoining = joinGroupMutation.isPending && joinGroupMutation.variables === group.id;
 
                   return (
                     <div
                       key={group.id}
-                      className="surface-card p-6 flex flex-col"
+                      className="surface-card p-8 flex flex-col hover:-translate-y-1 group"
                     >
-                      <h3 className="font-bold text-on-surface mb-2 text-lg tracking-tight">{group.name}</h3>
-                      <p className="text-sm text-on-surface-variant mb-6 line-clamp-2 leading-relaxed">{group.description}</p>
-                      <div className="flex items-center justify-between mb-6">
-                        <span className="text-[10px] bg-primary/10 text-primary px-2.5 py-1 rounded-lg font-bold uppercase tracking-wider border border-primary/10">
+                      <h3 className="font-bold text-on-surface mb-3 text-xl tracking-tight group-hover:text-primary transition-colors">{group.name}</h3>
+                      <p className="text-sm text-on-surface-variant mb-8 line-clamp-2 leading-relaxed font-medium opacity-80">{group.description}</p>
+                      
+                      <div className="flex items-center justify-between mb-8">
+                        <span className="text-[10px] bg-primary/10 text-primary px-3 py-1.5 rounded-xl font-black uppercase tracking-widest border border-primary/20">
                           {group.category}
                         </span>
-                        <span className="text-xs text-on-surface-variant font-bold">
-                          {group.memberCount} members
-                        </span>
+                        <div className="flex items-center gap-2 text-on-surface-variant/60">
+                          <span className="material-symbols-outlined text-[18px]">groups</span>
+                          <span className="text-[11px] font-black uppercase tracking-widest">
+                            {group.memberCount} Members
+                          </span>
+                        </div>
                       </div>
 
                       <div className="mt-auto">
                         {group.isJoined || role === 'ROLE_ADMIN' ? (
                           <button
                             onClick={() => navigate(`/groups/${group.id}`)}
-                            className="btn-primary w-full h-11"
+                            className="btn-primary w-full py-3 h-auto shadow-primary/10"
                           >
-                            {role === 'ROLE_ADMIN' ? 'Manage' : 'Open Group'}
+                            {role === 'ROLE_ADMIN' ? 'Manage Connection' : 'Access Portal'}
                           </button>
                         ) : (
                           <button
                             onClick={() => joinGroupMutation.mutate(group.id)}
                             disabled={isJoining}
-                            className="w-full h-11 bg-surface-container-high text-on-surface rounded-xl font-bold hover:bg-surface-container-highest transition-all disabled:opacity-50"
+                            className="w-full py-3 h-auto bg-surface-container-high hover:bg-surface-container-highest text-on-surface rounded-xl font-bold transition-all disabled:opacity-50 border border-outline/20 hover:border-primary/20"
                           >
-                            {isJoining ? 'Joining...' : 'Join Group'}
+                            {isJoining ? 'Initializing...' : 'Join Connection'}
                           </button>
                         )}
                       </div>
@@ -166,8 +173,10 @@ const GroupsPage = () => {
                 })}
               </div>
             ) : (
-              <div className="surface-card p-16 text-center">
-                <p className="text-on-surface-variant font-bold text-lg">No groups found</p>
+              <div className="surface-card p-20 text-center flex flex-col items-center">
+                <span className="material-symbols-outlined text-5xl text-on-surface-variant/10 mb-6">explore_off</span>
+                <p className="text-on-surface font-bold text-xl">No connections found</p>
+                <p className="text-on-surface-variant font-medium mt-2">The search parameters yielded zero network protocols.</p>
               </div>
             )}
 

@@ -114,121 +114,129 @@ const UserProfilePage = () => {
 
   return (
     <PageLayout>
-      <div className="w-full space-y-6">
+      <div className="w-full space-y-8 animate-in">
         {/* Header */}
-        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg p-8 text-white">
-          <h1 className="text-3xl font-bold">My Profile</h1>
-          <p className="text-blue-100 mt-2">Manage your personal information, bio, and profile image</p>
+        <div className="surface-card p-8 border-primary/10">
+          <h1 className="text-4xl font-bold text-on-surface tracking-tight mb-3">My Profile</h1>
+          <p className="text-lg text-on-surface-variant font-medium max-w-2xl opacity-80 leading-relaxed">
+            Manage your professional identity, bio, and connection credentials. Keep your profile updated for better network matching.
+          </p>
         </div>
 
         {/* Profile Card */}
-        <div className="bg-white rounded-lg p-8 shadow-sm border border-gray-200">
-          <div className="flex flex-col md:flex-row gap-8">
+        <div className="surface-card p-10 border-outline/5">
+          <div className="flex flex-col lg:flex-row gap-12">
             {/* Profile Picture */}
-            <div className="flex flex-col items-center">
-              <div className="relative">
-                <div className="w-32 h-32 rounded-full bg-blue-500 text-white flex items-center justify-center text-4xl font-bold border-4 border-gray-200">
+            <div className="flex flex-col items-center shrink-0">
+              <div className="relative group">
+                <div className="w-40 h-40 rounded-3xl bg-primary/10 text-primary flex items-center justify-center text-5xl font-black border border-primary/20 shadow-2xl group-hover:scale-105 transition-transform duration-500">
                   {(profile?.firstName?.[0] || '') + (profile?.lastName?.[0] || '') || 'U'}
                 </div>
+                <div className="absolute -bottom-2 -right-2 w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center text-white border-4 border-[#0f111a] shadow-lg">
+                  <span className="material-symbols-outlined text-[18px]">verified</span>
+                </div>
               </div>
-              <div className="text-center mt-4">
-                <p className="font-semibold text-gray-900">
-                  {[profile?.firstName, profile?.lastName].filter(Boolean).join(' ') || 'Your Profile'}
-                </p>
-                <p className="text-sm text-gray-500">{profile?.email}</p>
-                <span className="inline-block mt-2 bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-xs font-semibold">
-                  {(role || 'ROLE_LEARNER').replace('ROLE_', '')}
-                </span>
+              <div className="text-center mt-6">
+                <h3 className="text-xl font-bold text-on-surface">
+                  {[profile?.firstName, profile?.lastName].filter(Boolean).join(' ') || 'Network User'}
+                </h3>
+                <p className="text-sm font-medium text-on-surface-variant opacity-60 mt-1">{profile?.email}</p>
+                <div className="mt-4">
+                  <span className="inline-block bg-primary/10 text-primary px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest border border-primary/10">
+                    {(role || 'ROLE_LEARNER').replace('ROLE_', '')} Protocol
+                  </span>
+                </div>
               </div>
             </div>
 
             {/* Profile Form */}
             <div className="flex-1">
-              <form className="space-y-4">
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">First Name</label>
+              <form className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="block text-[10px] font-black text-on-surface-variant/40 uppercase tracking-[0.2em] px-1">First Name</label>
                   <input
                     type="text"
                     value={formData.firstName}
                     onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
                     disabled={!isEditing}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+                    className="w-full h-12 bg-surface-container-low px-4 rounded-xl text-sm font-bold text-on-surface outline-none focus:ring-2 focus:ring-primary/20 border border-outline/30 focus:border-primary transition-all disabled:opacity-40"
                   />
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
+                <div className="space-y-2">
+                  <label className="block text-[10px] font-black text-on-surface-variant/40 uppercase tracking-[0.2em] px-1">Last Name</label>
                   <input
                     type="text"
                     value={formData.lastName}
                     onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
                     disabled={!isEditing}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+                    className="w-full h-12 bg-surface-container-low px-4 rounded-xl text-sm font-bold text-on-surface outline-none focus:ring-2 focus:ring-primary/20 border border-outline/30 focus:border-primary transition-all disabled:opacity-40"
                   />
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Bio</label>
+                <div className="md:col-span-2 space-y-2">
+                  <label className="block text-[10px] font-black text-on-surface-variant/40 uppercase tracking-[0.2em] px-1">Professional Bio</label>
                   <textarea
                     value={formData.bio}
                     onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
                     disabled={!isEditing}
-                    rows={3}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
-                    placeholder="Tell us about yourself..."
+                    rows={4}
+                    className="w-full bg-surface-container-low p-4 rounded-xl text-sm font-medium text-on-surface outline-none focus:ring-2 focus:ring-primary/20 border border-outline/30 focus:border-primary transition-all disabled:opacity-40 resize-none leading-relaxed"
+                    placeholder="Describe your expertise and experience sync goals..."
                   />
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                <div className="space-y-2">
+                  <label className="block text-[10px] font-black text-on-surface-variant/40 uppercase tracking-[0.2em] px-1">Contact Protocol</label>
                   <input
                     type="tel"
                     value={formData.phone}
                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                     disabled={!isEditing}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+                    className="w-full h-12 bg-surface-container-low px-4 rounded-xl text-sm font-bold text-on-surface outline-none focus:ring-2 focus:ring-primary/20 border border-outline/30 focus:border-primary transition-all disabled:opacity-40"
+                    placeholder="+91 XXXXX XXXXX"
                   />
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
+                <div className="space-y-2">
+                  <label className="block text-[10px] font-black text-on-surface-variant/40 uppercase tracking-[0.2em] px-1">Station Location</label>
                   <input
                     type="text"
                     value={formData.location}
                     onChange={(e) => setFormData({ ...formData, location: e.target.value })}
                     disabled={!isEditing}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+                    className="w-full h-12 bg-surface-container-low px-4 rounded-xl text-sm font-bold text-on-surface outline-none focus:ring-2 focus:ring-primary/20 border border-outline/30 focus:border-primary transition-all disabled:opacity-40"
+                    placeholder="City, Country"
                   />
                 </div>
 
-                <div className="flex gap-2 pt-4">
+                <div className="md:col-span-2 pt-6">
                   {!isEditing ? (
                     <button
                       type="button"
                       onClick={() => setIsEditing(true)}
-                      className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition"
+                      className="btn-primary w-full h-14"
                     >
-                      Edit Profile
+                      Unlock Editing
                     </button>
                   ) : (
-                    <>
+                    <div className="flex gap-4">
                       <button
                         type="button"
                         onClick={handleSubmit}
                         disabled={updateProfileMutation.isPending || !canSaveEdits}
-                        className="flex-1 bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition disabled:opacity-50"
+                        className="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white h-14 rounded-xl font-bold shadow-lg shadow-emerald-500/20 transition-all disabled:opacity-50"
                       >
-                        Save Changes
+                        Commit Changes
                       </button>
                       <button
                         type="button"
                         onClick={() => setIsEditing(false)}
-                        className="flex-1 bg-gray-400 text-white py-2 rounded-lg hover:bg-gray-500 transition"
+                        className="flex-1 btn-secondary h-14"
                       >
-                        Cancel
+                        Abort
                       </button>
-                    </>
+                    </div>
                   )}
                 </div>
               </form>
@@ -237,22 +245,34 @@ const UserProfilePage = () => {
         </div>
 
         {/* Account Settings */}
-        <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
-          <h2 className="text-lg font-bold text-gray-900 mb-4">Account Settings</h2>
-          {profile?.profileCompletePct !== undefined && (
-            <div className="mb-4 rounded-lg border border-blue-100 bg-blue-50 px-4 py-3 text-sm text-blue-900">
-              Profile completion: {profile.profileCompletePct}%
-            </div>
-          )}
-          <div className="space-y-3">
-            <button
-              onClick={() => navigate('/settings/password')}
-              className="w-full text-left p-4 rounded bg-gray-50 hover:bg-gray-100 transition border border-gray-200"
-            >
-              <p className="font-medium text-gray-900">Change Password</p>
-              <p className="text-sm text-gray-500">Update your password regularly for security</p>
-            </button>
+        <div className="surface-card p-8 border-outline/5">
+          <div className="flex items-center justify-between mb-8">
+            <h2 className="text-xl font-bold text-on-surface">Account Parameters</h2>
+            {profile?.profileCompletePct !== undefined && (
+              <div className="flex items-center gap-3">
+                <span className="text-[10px] font-black text-on-surface-variant/40 uppercase tracking-widest">Integrity: {profile.profileCompletePct}%</span>
+                <div className="w-24 h-1.5 bg-surface-container rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-primary transition-all duration-1000" 
+                    style={{ width: `${profile.profileCompletePct}%` }}
+                  />
+                </div>
+              </div>
+            )}
           </div>
+          
+          <button
+            onClick={() => navigate('/settings/password')}
+            className="w-full text-left p-6 rounded-2xl bg-surface-container-low hover:bg-surface-container transition-all border border-outline/10 group"
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-bold text-on-surface group-hover:text-primary transition-colors">Access Credentials</p>
+                <p className="text-xs font-medium text-on-surface-variant opacity-60 mt-1">Update your authorization password regularly for security.</p>
+              </div>
+              <span className="material-symbols-outlined text-on-surface-variant group-hover:translate-x-1 transition-transform">chevron_right</span>
+            </div>
+          </button>
         </div>
       </div>
     </PageLayout>

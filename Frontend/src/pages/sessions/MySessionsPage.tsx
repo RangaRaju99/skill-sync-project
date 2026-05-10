@@ -111,23 +111,23 @@ const MySessionsPage = () => {
   return (
     <PageLayout>
       <div className="space-y-8 animate-in">
-        <div className="surface-card p-8">
-          <h1 className="text-4xl font-bold text-on-surface tracking-tight mb-2">My Sessions</h1>
-          <p className="text-on-surface-variant font-medium leading-relaxed max-w-2xl">
+        <div className="surface-card p-8 border-primary/10">
+          <h1 className="text-4xl font-bold text-on-surface tracking-tight mb-3">My Sessions</h1>
+          <p className="text-on-surface-variant font-medium leading-relaxed max-w-2xl opacity-80">
             {isMentor
-              ? 'Review learner bookings, manage incoming requests, and track your completed sessions in real-time.'
-              : 'Synchronize with your mentors, manage scheduled sessions, and review your learning progress.'}
+              ? 'Review learner bookings, manage incoming requests, and track your completed sessions in real-time. System operational.'
+              : 'Synchronize with your mentors, manage scheduled sessions, and review your learning progress. System operational.'}
           </p>
         </div>
 
-        <div className="bg-surface-container-low p-1.5 inline-flex gap-1 rounded-2xl border border-outline shadow-inner">
+        <div className="bg-surface-container-low p-1.5 inline-flex gap-1 rounded-2xl border border-outline/10 shadow-inner">
           {tabs.map((tab) => (
             <button
               key={tab}
               onClick={() => { setActiveTab(tab); setPage(0); }}
-              className={`whitespace-nowrap px-6 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 ${activeTab === tab
-                  ? 'bg-primary text-white shadow-lg shadow-primary/20 scale-[1.02]'
-                  : 'text-on-surface-variant hover:text-on-surface'
+              className={`whitespace-nowrap px-8 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 ${activeTab === tab
+                  ? 'bg-primary text-white shadow-lg shadow-primary/10 scale-[1.02]'
+                  : 'text-on-surface-variant hover:text-on-surface hover:bg-white/[0.03]'
                 }`}
             >
               {tab}
@@ -139,10 +139,10 @@ const MySessionsPage = () => {
           {isLoading ? (
             Array(3).fill(0).map((_, i) => <div key={i} className="h-28 surface-card animate-pulse" />)
           ) : isError ? (
-            <div className="surface-card p-12 text-center text-error font-bold">Protocol failure: Failed to load sessions.</div>
+            <div className="surface-card p-12 text-center text-error font-bold border-error/20">Protocol failure: Failed to load sessions.</div>
           ) : sessions.length === 0 ? (
-            <div className="surface-card p-20 text-center flex flex-col items-center">
-              <Calendar className="text-on-surface-variant/20 mb-6" size={64} />
+            <div className="surface-card p-20 text-center flex flex-col items-center border-dashed">
+              <Calendar className="text-on-surface-variant/10 mb-6" size={64} />
               <p className="text-xl font-bold text-on-surface mb-2">No records found</p>
               <p className="text-on-surface-variant font-medium">System reports zero active sessions in this category.</p>
             </div>
@@ -151,24 +151,24 @@ const MySessionsPage = () => {
               const displayName = getSessionLabel(session);
               const sessionDateTime = session.startTime || session.sessionDate;
 
-              let statusVariant = 'bg-primary/10 text-primary border-primary/10';
-              if (session.status === 'REQUESTED') statusVariant = 'bg-amber-500/10 text-amber-500 border-amber-500/10';
-              if (session.status === 'ACCEPTED') statusVariant = 'bg-primary text-white border-primary/20 shadow-[0_0_15px_rgba(139,92,246,0.3)]';
-              if (session.status === 'COMPLETED') statusVariant = 'bg-emerald-500/10 text-emerald-500 border-emerald-500/10';
-              if (session.status === 'CANCELLED') statusVariant = 'bg-error/10 text-error border-error/10';
+              let statusVariant = 'bg-primary/5 text-primary border-primary/10';
+              if (session.status === 'REQUESTED') statusVariant = 'bg-amber-500/5 text-amber-500 border-amber-500/10';
+              if (session.status === 'ACCEPTED') statusVariant = 'bg-primary text-white border-primary/20 shadow-lg shadow-primary/10';
+              if (session.status === 'COMPLETED') statusVariant = 'bg-emerald-500/5 text-emerald-500 border-emerald-500/10';
+              if (session.status === 'CANCELLED') statusVariant = 'bg-error/5 text-error border-error/10';
 
               return (
                 <div key={session.id} className="surface-card p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 group hover:border-primary/20 transition-all">
                   
                   {/* Participant Info */}
-                  <div className="flex items-center gap-5 min-w-[280px]">
-                    <div className="w-14 h-14 rounded-2xl bg-primary/20 text-primary flex items-center justify-center font-bold text-xl shadow-inner border border-primary/10 group-hover:scale-105 transition-transform">
+                  <div className="flex items-center gap-5 min-w-[300px]">
+                    <div className="w-14 h-14 rounded-2xl bg-primary/10 text-primary flex items-center justify-center font-bold text-xl border border-primary/10 group-hover:scale-105 transition-transform">
                       {getInitials(displayName)}
                     </div>
                     <div>
                       <h3 className="font-bold text-lg text-on-surface leading-tight group-hover:text-primary transition-colors">{displayName}</h3>
-                      <div className="flex items-center gap-2 text-xs font-bold text-on-surface-variant mt-1.5 uppercase tracking-widest opacity-80">
-                        <Clock size={12} className="text-primary" />
+                      <div className="flex items-center gap-2 text-[10px] font-black text-on-surface-variant/60 mt-2 uppercase tracking-widest">
+                        <Clock size={12} className="text-primary/60" />
                         <span>{formatDateTimeIST(sessionDateTime)}</span>
                       </div>
                     </div>
@@ -176,16 +176,16 @@ const MySessionsPage = () => {
 
                   {/* Topic Section */}
                   <div className="flex-1 md:px-8 w-full">
-                    <div className="bg-surface-container-low px-4 py-3 rounded-xl border border-outline/5 group-hover:bg-primary/5 transition-colors">
-                      <p className="text-sm font-bold text-on-surface-variant group-hover:text-on-surface transition-colors line-clamp-1">
-                        {session.topic || 'General Knowledge Exchange'}
+                    <div className="bg-surface-container-low px-5 py-3.5 rounded-2xl border border-outline/10 group-hover:border-primary/20 transition-all">
+                      <p className="text-sm font-bold text-on-surface-variant group-hover:text-on-surface transition-colors line-clamp-1 opacity-80 group-hover:opacity-100">
+                        {session.topic || 'General Protocol Sync'}
                       </p>
                     </div>
                   </div>
 
                   {/* Actions & Status */}
                   <div className="flex items-center justify-between md:justify-end gap-6 w-full md:w-auto">
-                    <span className={`px-3 py-1 rounded-lg text-[10px] font-bold uppercase tracking-widest border transition-all ${statusVariant}`}>
+                    <span className={`px-4 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest border transition-all ${statusVariant}`}>
                       {session.status}
                     </span>
 
@@ -194,13 +194,13 @@ const MySessionsPage = () => {
                         <>
                           <button
                             onClick={() => handleMentorSessionAction(session.id, 'reject')}
-                            className="h-10 px-4 bg-error/10 text-error rounded-xl text-xs font-bold hover:bg-error hover:text-white transition-all border border-error/10"
+                            className="h-11 px-5 bg-error/5 text-error rounded-xl text-xs font-bold hover:bg-error hover:text-white transition-all border border-error/10"
                           >
                             Reject
                           </button>
                           <button
                             onClick={() => handleMentorSessionAction(session.id, 'accept')}
-                            className="btn-primary h-10 px-6 text-xs"
+                            className="btn-primary h-11 px-7 text-xs shadow-primary/10"
                           >
                             Accept Sync
                           </button>
@@ -211,22 +211,23 @@ const MySessionsPage = () => {
                         <button
                           onClick={() => void handleLearnerCancel(session.id)}
                           disabled={cancelMutation.isPending}
-                          className="h-10 px-4 bg-error/10 text-error rounded-xl text-xs font-bold hover:bg-error hover:text-white transition-all border border-error/10 disabled:opacity-50"
+                          className="h-11 px-5 bg-error/5 text-error rounded-xl text-xs font-bold hover:bg-error hover:text-white transition-all border border-error/10 disabled:opacity-50"
                         >
-                          Terminate
+                          Cancel
                         </button>
                       )}
 
                       {!isMentor && session.status === 'ACCEPTED' && (
-                        <div className="flex items-center gap-2">
-                          <button className="h-10 px-6 bg-emerald-500 text-white rounded-xl text-xs font-bold flex items-center gap-2 hover:bg-emerald-600 transition-all shadow-lg shadow-emerald-500/20">
+                        <div className="flex items-center gap-3">
+                          <button className="h-11 px-7 bg-emerald-500 text-white rounded-xl text-xs font-bold flex items-center gap-2 hover:bg-emerald-600 transition-all shadow-lg shadow-emerald-500/10">
                             <Video size={14} />
                             Join Session
                           </button>
                           <button
                             onClick={() => void handleLearnerCancel(session.id)}
                             disabled={cancelMutation.isPending}
-                            className="w-10 h-10 flex items-center justify-center text-on-surface-variant hover:text-error transition-colors"
+                            className="w-11 h-11 flex items-center justify-center text-on-surface-variant hover:text-error hover:bg-error/5 rounded-xl transition-all border border-transparent hover:border-error/10"
+                            title="Cancel Session"
                           >
                             <XCircle size={20} />
                           </button>
@@ -236,7 +237,7 @@ const MySessionsPage = () => {
                       {isMentor && session.status === 'ACCEPTED' && (
                         <button
                           onClick={() => handleMentorSessionAction(session.id, 'complete')}
-                          className="h-10 px-6 bg-emerald-500/10 text-emerald-500 rounded-xl text-xs font-bold hover:bg-emerald-500 hover:text-white transition-all border border-emerald-500/10"
+                          className="h-11 px-7 bg-emerald-500/5 text-emerald-500 rounded-xl text-xs font-bold hover:bg-emerald-500 hover:text-white transition-all border border-emerald-500/10"
                         >
                           Complete Sync
                         </button>
@@ -245,9 +246,9 @@ const MySessionsPage = () => {
                       {!isMentor && session.status === 'COMPLETED' && (
                         <button
                           onClick={() => setReviewModalData({ isOpen: true, mentorId: session.mentorId, sessionId: session.id })}
-                          className="h-10 px-6 bg-primary/10 text-primary rounded-xl text-xs font-bold hover:bg-primary hover:text-white transition-all border border-primary/20"
+                          className="btn-secondary h-11 px-7 text-xs"
                         >
-                          Log Feedback
+                          Leave Review
                         </button>
                       )}
                     </div>
@@ -255,26 +256,26 @@ const MySessionsPage = () => {
                 </div>
               );
             })
-          )}
-        </div>
+          </div>
+        )}
 
         {/* Pagination */}
         {data?.totalElements > 10 && (
-          <div className="flex justify-center items-center gap-4 pt-8">
+          <div className="flex justify-center items-center gap-4 pt-10">
             <button
               onClick={() => setPage(p => Math.max(0, p - 1))}
               disabled={page === 0}
-              className="w-12 h-12 surface-card flex items-center justify-center text-on-surface disabled:opacity-30"
+              className="w-12 h-12 surface-card flex items-center justify-center text-on-surface hover:border-primary/40 disabled:opacity-30 transition-all"
             >
               <ChevronLeft size={20} />
             </button>
-            <span className="text-sm font-bold text-on-surface-variant uppercase tracking-widest">
-              Protocol {page + 1} / {Math.ceil(data.totalElements / 10)}
+            <span className="text-[10px] font-black text-on-surface-variant uppercase tracking-[0.3em] px-4">
+              Page {page + 1} / {Math.ceil(data.totalElements / 10)}
             </span>
             <button
               onClick={() => setPage(p => p + 1)}
               disabled={page >= Math.ceil(data.totalElements / 10) - 1}
-              className="w-12 h-12 surface-card flex items-center justify-center text-on-surface disabled:opacity-30"
+              className="w-12 h-12 surface-card flex items-center justify-center text-on-surface hover:border-primary/40 disabled:opacity-30 transition-all"
             >
               <ChevronRight size={20} />
             </button>

@@ -115,24 +115,29 @@ const DiscoverMentorsPage = () => {
   return (
     <PageLayout>
       {/* Header */}
-      <div className="mb-2">
-        <h1 className="text-4xl font-extrabold text-on-surface tracking-tight mb-2">Discover Mentors</h1>
-        <p className="text-on-surface-variant text-lg">Learn from industry experts and accelerate your career path.</p>
-        <p className="text-sm font-bold text-primary mt-4 bg-primary/10 inline-block px-3 py-1 rounded-full">
-          {totalElements} experts available
+      <div className="mb-8 animate-in">
+        <h1 className="text-4xl lg:text-5xl font-display font-bold text-on-surface tracking-tight mb-3">Discover Mentors</h1>
+        <p className="text-lg text-on-surface-variant font-medium max-w-2xl leading-relaxed opacity-80">
+          Learn from industry experts and accelerate your career path. Access verified specialization protocols.
         </p>
+        <div className="mt-6 flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          <p className="text-[10px] font-black text-primary uppercase tracking-[0.2em] bg-primary/10 px-4 py-1.5 rounded-xl border border-primary/10">
+            {totalElements} active experts available
+          </p>
+        </div>
       </div>
 
       {/* Filter Bar */}
-      <div className="bg-surface-container-lowest p-4 rounded-xl shadow-sm border border-outline-variant/15 flex flex-col md:flex-row gap-4 items-end mb-6">
+      <div className="surface-card p-6 flex flex-col md:flex-row gap-5 items-end mb-10 border-outline/5 animate-in" style={{ animationDelay: '0.1s' }}>
         <div className="flex-1 w-full">
-          <label className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest block mb-1">Filter by Skills</label>
+          <label className="text-[10px] font-black text-on-surface-variant/40 uppercase tracking-[0.2em] block mb-3 px-1">Filter by Skills</label>
           <select 
             value={draftFilters.skill} 
             onChange={(e) => setDraftFilters(prev => ({ ...prev, skill: e.target.value }))}
-            className="w-full h-10 bg-surface-container px-3 rounded-lg text-sm font-semibold outline-none focus:ring-1 focus:ring-primary border border-transparent"
+            className="w-full h-12 bg-surface-container-low px-4 rounded-xl text-sm font-bold text-on-surface outline-none focus:ring-2 focus:ring-primary/20 border border-outline/30 focus:border-primary transition-all appearance-none cursor-pointer"
           >
-            <option value="">All Skills</option>
+            <option value="">All Specializations</option>
             {skills.map((s: any) => (
               <option key={typeof s === 'string' ? s : (s.id ?? s.name)} value={typeof s === 'string' ? s : s.name}>
                 {typeof s === 'string' ? s : s.name}
@@ -142,11 +147,11 @@ const DiscoverMentorsPage = () => {
         </div>
         
         <div className="flex-1 w-full">
-          <label className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest block mb-1">Rating</label>
+          <label className="text-[10px] font-black text-on-surface-variant/40 uppercase tracking-[0.2em] block mb-3 px-1">Rating</label>
           <select 
             value={draftFilters.rating} 
             onChange={(e) => setDraftFilters(prev => ({ ...prev, rating: e.target.value }))}
-            className="w-full h-10 bg-surface-container px-3 rounded-lg text-sm font-semibold outline-none focus:ring-1 focus:ring-primary border border-transparent"
+            className="w-full h-12 bg-surface-container-low px-4 rounded-xl text-sm font-bold text-on-surface outline-none focus:ring-2 focus:ring-primary/20 border border-outline/30 focus:border-primary transition-all appearance-none cursor-pointer"
           >
             <option value="">Any Rating</option>
             <option value="4">4+ Stars</option>
@@ -156,11 +161,11 @@ const DiscoverMentorsPage = () => {
         </div>
 
         <div className="flex-1 w-full">
-          <label className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest block mb-1">Price Range</label>
+          <label className="text-[10px] font-black text-on-surface-variant/40 uppercase tracking-[0.2em] block mb-3 px-1">Price Range</label>
           <select 
             value={draftFilters.priceRange} 
             onChange={(e) => setDraftFilters(prev => ({ ...prev, priceRange: e.target.value }))}
-            className="w-full h-10 bg-surface-container px-3 rounded-lg text-sm font-semibold outline-none focus:ring-1 focus:ring-primary border border-transparent"
+            className="w-full h-12 bg-surface-container-low px-4 rounded-xl text-sm font-bold text-on-surface outline-none focus:ring-2 focus:ring-primary/20 border border-outline/30 focus:border-primary transition-all appearance-none cursor-pointer"
           >
             <option value="">Any Price</option>
             <option value="under50">Under ₹50</option>
@@ -169,95 +174,105 @@ const DiscoverMentorsPage = () => {
           </select>
         </div>
 
-        <button 
-          onClick={applyFilters}
-          className="w-full md:w-auto px-6 h-10 gradient-btn text-white font-bold rounded-lg shadow-sm hover:shadow-md transition-all active:scale-95 shrink-0"
-        >
-          Apply
-        </button>
+        <div className="flex gap-3 w-full md:w-auto shrink-0">
+          <button 
+            onClick={applyFilters}
+            className="flex-1 md:flex-none btn-primary h-12 px-8 shadow-primary/10"
+          >
+            Apply
+          </button>
+          <button 
+            onClick={clearFilters}
+            className="w-12 h-12 flex items-center justify-center bg-surface-container-high hover:bg-surface-container-highest text-on-surface-variant hover:text-on-surface rounded-xl border border-outline/20 transition-all"
+            title="Reset Filters"
+          >
+            <span className="material-symbols-outlined text-[20px]">restart_alt</span>
+          </button>
+        </div>
       </div>
 
       {/* Grid */}
       {isLoading && page === 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {Array(6).fill(0).map((_, i) => (
-            <div key={i} className="h-80 bg-surface-container rounded-xl animate-pulse"></div>
+            <div key={i} className="h-80 surface-card animate-pulse"></div>
           ))}
         </div>
       ) : mentorsList.length === 0 ? (
-        <div className="bg-surface-container-lowest rounded-xl p-12 flex flex-col items-center justify-center text-center shadow-sm border border-outline-variant/15">
-          <span className="material-symbols-outlined text-6xl text-outline-variant mb-4">person_search</span>
-          <h3 className="text-xl font-bold text-on-surface mb-2">No mentors found matching your criteria</h3>
-          <p className="text-sm text-on-surface-variant mb-6">Try adjusting your filters to find the perfect expert.</p>
-          <button onClick={clearFilters} className="bg-surface-container-high hover:bg-outline-variant/30 text-on-surface font-bold px-6 py-2 rounded-xl transition-colors">
-            Clear Filters
+        <div className="surface-card p-20 flex flex-col items-center justify-center text-center border-dashed animate-in">
+          <span className="material-symbols-outlined text-6xl text-on-surface-variant/10 mb-6">person_search</span>
+          <h3 className="text-2xl font-bold text-on-surface mb-2">No experts found</h3>
+          <p className="text-on-surface-variant font-medium mb-10 max-w-sm">The current search parameters yielded zero active specialization protocols.</p>
+          <button onClick={clearFilters} className="btn-secondary px-10 h-14">
+            Reset Filters
           </button>
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 animate-in" style={{ animationDelay: '0.2s' }}>
             {mentorsList.map((mentor) => {
               const avgRating = Number(mentor.avgRating ?? mentor.rating ?? 0);
               const sessionsHeld = Number(mentor.totalSessions ?? 0);
               const isNewMentor = sessionsHeld === 0;
 
               return (
-                <div key={mentor.id} className="bg-surface-container-lowest rounded-xl overflow-hidden shadow-sm border border-outline-variant/10 hover:-translate-y-1 hover:shadow-xl hover:border-primary/20 transition-all duration-300 group flex flex-col">
-                  <div className="h-48 bg-gradient-to-br from-surface-container to-surface-container-high relative flex items-center justify-center p-4 overflow-hidden">
+                <div key={mentor.id} className="surface-card rounded-3xl overflow-hidden hover:-translate-y-1 group flex flex-col border-outline/5">
+                  <div className="h-44 bg-surface-container-high relative flex items-center justify-center p-4 overflow-hidden border-b border-outline/5">
                     <div className="absolute inset-0 bg-primary/5 group-hover:bg-primary/10 transition-colors"></div>
-                    <div className={`w-20 h-20 rounded-full bg-gradient-to-tr ${getAvatarColor(mentor.firstName)} text-white flex items-center justify-center text-2xl font-black shadow-lg z-10 ring-4 ring-white`}>
+                    <div className={`w-20 h-20 rounded-2xl bg-gradient-to-tr ${getAvatarColor(mentor.firstName)} text-white flex items-center justify-center text-3xl font-black shadow-2xl z-10 ring-[6px] ring-black/10`}>
                       {getInitials(mentor.firstName, mentor.lastName)}
                     </div>
                   </div>
                   
-                  <div className="p-5 flex flex-col flex-1">
-                    <div className="flex items-start justify-between gap-3 mb-4">
+                  <div className="p-8 flex flex-col flex-1">
+                    <div className="flex items-start justify-between gap-4 mb-6">
                       <div className="min-w-0">
-                        <h3 className="text-xl font-extrabold text-on-surface leading-tight mb-1 group-hover:text-primary transition-colors">
+                        <h3 className="text-xl font-bold text-on-surface leading-tight mb-2 group-hover:text-primary transition-colors">
                           {mentor.firstName} {mentor.lastName}
                         </h3>
-                        <p className="text-sm font-medium text-on-surface-variant truncate" title={mentor.headline}>
-                          {mentor.headline || 'Industry Expert'}
+                        <p className="text-sm font-bold text-on-surface-variant opacity-60 truncate" title={mentor.headline}>
+                          {mentor.headline || 'Network Expert'}
                         </p>
                       </div>
 
                       <div className="text-right shrink-0">
-                        <p className="text-xs font-black text-on-surface">
-                          {isNewMentor ? '★ NEW' : `★ ${avgRating.toFixed(1)}`}
-                        </p>
-                        <p className="text-[11px] font-semibold text-on-surface-variant">
-                          {sessionsHeld} session{sessionsHeld === 1 ? '' : 's'} held
+                        <div className="flex items-center gap-1 bg-amber-500/10 px-2 py-1 rounded-lg text-[10px] font-black text-amber-500 border border-amber-500/10">
+                          <span className="material-symbols-outlined text-[14px] filled">star</span>
+                          {isNewMentor ? 'NEW' : avgRating.toFixed(1)}
+                        </div>
+                        <p className="text-[10px] font-black text-on-surface-variant/40 mt-2 uppercase tracking-widest">
+                          {sessionsHeld} Session{sessionsHeld === 1 ? '' : 's'}
                         </p>
                       </div>
                     </div>
                   
-                    <div className="flex flex-wrap gap-1.5 mb-6 mt-auto">
+                    <div className="flex flex-wrap gap-2 mb-10 mt-auto">
                       {(mentor.skills || []).slice(0, 3).map((skill: any, i: number) => (
-                        <span key={i} className="bg-surface-container-low text-on-surface-variant text-[10px] font-bold px-2 py-1 rounded-md uppercase tracking-wider border border-outline-variant/10">
-                          {typeof skill === 'string' ? skill : (skill.name || `Skill #${skill.skillId}`)}
+                        <span key={i} className="px-3 py-1 bg-surface-container-low text-[10px] font-black text-on-surface-variant uppercase tracking-widest rounded-xl border border-outline/10">
+                          {typeof skill === 'string' ? skill : (skill.name || `Protocol`)}
                         </span>
                       ))}
                       {(mentor.skills?.length > 3) && (
-                        <span className="bg-surface-container-low text-on-surface-variant text-[10px] font-bold px-2 py-1 rounded-md border border-outline-variant/10">
+                        <span className="px-3 py-1 bg-surface-container-low text-[10px] font-black text-on-surface-variant/60 rounded-xl">
                           +{mentor.skills.length - 3}
                         </span>
                       )}
                     </div>
 
-                    <div className="flex justify-between items-end mb-4 border-t border-outline-variant/10 pt-4">
-                      <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest flex flex-col">
-                        Price
-                        <span className="text-lg font-black text-primary lowercase tracking-normal -mt-0.5">
-                          ₹{mentor.hourlyRate}<span className="text-xs text-on-surface-variant font-semibold">/hr</span>
-                        </span>
-                      </span>
+                    <div className="flex justify-between items-center mb-6 border-t border-outline/5 pt-8">
+                      <div>
+                        <p className="text-[10px] font-black text-on-surface-variant/40 uppercase tracking-[0.2em] mb-1">Session Rate</p>
+                        <p className="text-2xl font-bold text-on-surface">
+                          ₹{mentor.hourlyRate}<span className="text-sm font-bold text-on-surface-variant/40 ml-1">/hr</span>
+                        </p>
+                      </div>
                     </div>
 
                     <button 
                       onClick={() => navigate(`/mentors/${mentor.id}`)}
-                      className="w-full flex items-center justify-center gap-2 h-10 gradient-btn text-white text-sm font-bold rounded-lg shadow-sm group-hover:shadow-md transition-all active:scale-95"
+                      className="btn-primary w-full py-4 h-auto shadow-primary/10"
                     >
-                      Book Session <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
+                      Connect Protocol
                     </button>
                   </div>
                 </div>
@@ -266,14 +281,13 @@ const DiscoverMentorsPage = () => {
           </div>
 
           {!isLast && (
-            <div className="mt-8 flex justify-center">
+            <div className="mt-12 flex justify-center pb-10">
               <button 
                 onClick={() => setPage(p => p + 1)} 
                 disabled={isLoading}
-                className="flex items-center gap-2 bg-white hover:bg-surface-container-low text-primary font-bold px-6 py-2.5 rounded-full shadow-sm border border-outline-variant/20 hover:border-primary/30 transition-all disabled:opacity-50"
+                className="btn-secondary px-10 h-14"
               >
-                {isLoading ? 'Loading...' : 'See More Mentors'} 
-                <span className="material-symbols-outlined text-[20px]">{isLoading ? 'hourglass_empty' : 'expand_more'}</span>
+                {isLoading ? 'Loading Protocols...' : 'Load More Experts'} 
               </button>
             </div>
           )}

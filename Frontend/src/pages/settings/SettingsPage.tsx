@@ -172,135 +172,152 @@ const SettingsPage = () => {
 
   return (
     <PageLayout>
-      <div className="w-full">
-        <div className="bg-gradient-to-r from-indigo-600 to-blue-600 rounded-lg p-8 text-white">
-          <h1 className="text-3xl font-bold">Change Password</h1>
-          <p className="text-indigo-100 mt-2">Secure your account with OTP verification.</p>
+      <div className="w-full animate-in">
+        <div className="surface-card p-8 border-primary/10">
+          <h1 className="text-4xl font-bold text-on-surface tracking-tight mb-3">Settings</h1>
+          <p className="text-lg text-on-surface-variant font-medium opacity-80">
+            Secure your professional profile and manage authorization protocols.
+          </p>
         </div>
 
-        <div className="bg-surface-container-lowest rounded-lg p-6 shadow-sm border border-outline-variant/20 mt-6">
-          <div className="mb-5 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-on-surface-variant">
-            <span className={step === 'email' ? 'text-primary' : ''}>Step 1: Email</span>
-            <span>•</span>
-            <span className={step === 'otp' ? 'text-primary' : ''}>Step 2: Verify OTP</span>
-            <span>•</span>
-            <span className={step === 'password' ? 'text-primary' : ''}>Step 3: New Password</span>
+        <div className="surface-card p-10 border-outline/5 mt-8">
+          <div className="flex items-center gap-6 mb-10 overflow-x-auto pb-4 no-scrollbar">
+            {[
+              { id: 'email', label: '1. Identity verification', icon: 'person' },
+              { id: 'otp', label: '2. Code Authorization', icon: 'key' },
+              { id: 'password', label: '3. Security Update', icon: 'shield_lock' }
+            ].map((s) => (
+              <div 
+                key={s.id} 
+                className={`flex items-center gap-3 shrink-0 transition-all ${step === s.id ? 'opacity-100' : 'opacity-30'}`}
+              >
+                <span className={`w-8 h-8 rounded-lg flex items-center justify-center text-[18px] material-symbols-outlined ${step === s.id ? 'bg-primary text-white' : 'bg-surface-container-high text-on-surface-variant'}`}>
+                  {s.icon}
+                </span>
+                <span className="text-[10px] font-black uppercase tracking-widest text-on-surface">
+                  {s.label}
+                </span>
+              </div>
+            ))}
           </div>
 
-          {step === 'email' && (
-            <form onSubmit={handleSendOtp} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-on-surface mb-1">Email</label>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-4 py-2 border border-outline-variant/30 rounded-lg bg-surface-container-low text-on-surface focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  required
-                />
-              </div>
-
-              <button
-                type="submit"
-                disabled={sendOtpMutation.isPending}
-                className="w-full bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition disabled:opacity-50"
-              >
-                {sendOtpMutation.isPending ? 'Sending OTP...' : 'Send OTP'}
-              </button>
-            </form>
-          )}
-
-          {step === 'otp' && (
-            <div className="space-y-4">
-              <div className="flex justify-between gap-2">
-                {otp.map((digit, idx) => (
+          <div className="max-w-md">
+            {step === 'email' && (
+              <form onSubmit={handleSendOtp} className="space-y-6">
+                <div>
+                  <label className="block text-[10px] font-black text-on-surface-variant/40 uppercase tracking-[0.2em] mb-3">Email synchronization</label>
                   <input
-                    key={idx}
-                    ref={(el) => {
-                      inputRefs.current[idx] = el;
-                    }}
-                    type="text"
-                    inputMode="numeric"
-                    maxLength={1}
-                    value={digit}
-                    onChange={(e) => handleOtpChange(idx, e.target.value)}
-                    onKeyDown={(e) => handleOtpKeyDown(idx, e)}
-                    className="w-12 h-14 text-center text-xl font-bold border border-outline-variant/30 rounded-xl bg-surface-container-low text-on-surface focus:ring-2 focus:ring-primary"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="w-full h-12 bg-surface-container-low px-4 rounded-xl text-sm font-bold text-on-surface outline-none focus:ring-2 focus:ring-primary/20 border border-outline/30 focus:border-primary transition-all"
+                    required
+                    placeholder="Enter system email..."
                   />
-                ))}
-              </div>
+                </div>
 
-              <button
-                type="button"
-                onClick={handleVerifyOtp}
-                disabled={!isOtpComplete || verifyOtpMutation.isPending}
-                className="w-full bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition disabled:opacity-50"
-              >
-                {verifyOtpMutation.isPending ? 'Verifying...' : 'Verify OTP'}
-              </button>
+                <button
+                  type="submit"
+                  disabled={sendOtpMutation.isPending}
+                  className="btn-primary w-full h-12 shadow-primary/10"
+                >
+                  {sendOtpMutation.isPending ? 'Synchronizing...' : 'Request Auth Code'}
+                </button>
+              </form>
+            )}
 
-              <div className="text-center space-y-1">
-                <p className="text-sm font-semibold text-on-surface-variant">
-                  {timeLeft > 0 ? `${formatTime(timeLeft)} remaining` : 'OTP expired'}
-                </p>
+            {step === 'otp' && (
+              <div className="space-y-8">
+                <div className="flex justify-between gap-3">
+                  {otp.map((digit, idx) => (
+                    <input
+                      key={idx}
+                      ref={(el) => {
+                        inputRefs.current[idx] = el;
+                      }}
+                      type="text"
+                      inputMode="numeric"
+                      maxLength={1}
+                      value={digit}
+                      onChange={(e) => handleOtpChange(idx, e.target.value)}
+                      onKeyDown={(e) => handleOtpKeyDown(idx, e)}
+                      className="w-full h-16 text-center text-2xl font-bold border border-outline/30 rounded-2xl bg-surface-container-low text-on-surface focus:ring-2 focus:ring-primary transition-all"
+                    />
+                  ))}
+                </div>
+
                 <button
                   type="button"
-                  onClick={handleResendOtp}
-                  disabled={timeLeft > 0 || sendOtpMutation.isPending}
-                  className={`text-sm font-bold ${timeLeft > 0 ? 'text-outline' : 'text-primary hover:underline'}`}
+                  onClick={handleVerifyOtp}
+                  disabled={!isOtpComplete || verifyOtpMutation.isPending}
+                  className="btn-primary w-full h-12 shadow-primary/10"
                 >
-                  {sendOtpMutation.isPending ? 'Resending...' : 'Resend OTP'}
+                  {verifyOtpMutation.isPending ? 'Verifying...' : 'Authenticate Access'}
                 </button>
-              </div>
-            </div>
-          )}
 
-          {step === 'password' && (
-            <form onSubmit={handleChangePassword} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-on-surface mb-1">New Password</label>
-                <div className="relative">
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                    className="w-full px-4 py-2 pr-12 border border-outline-variant/30 rounded-lg bg-surface-container-low text-on-surface focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    required
-                  />
+                <div className="text-center space-y-3 pt-2">
+                  <p className="text-[10px] font-black text-on-surface-variant/60 uppercase tracking-widest">
+                    {timeLeft > 0 ? `Code expires in ${formatTime(timeLeft)}` : 'Authentication expired'}
+                  </p>
                   <button
                     type="button"
-                    onClick={() => setShowPassword((prev) => !prev)}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 rounded-md hover:bg-surface-container text-on-surface-variant"
-                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    onClick={handleResendOtp}
+                    disabled={timeLeft > 0 || sendOtpMutation.isPending}
+                    className={`text-[10px] font-black uppercase tracking-widest transition-all ${timeLeft > 0 ? 'text-on-surface-variant/20' : 'text-primary hover:text-primary-dark underline'}`}
                   >
-                    <span className="material-symbols-outlined text-[20px]">{showPassword ? 'visibility_off' : 'visibility'}</span>
+                    {sendOtpMutation.isPending ? 'Restarting...' : 'Resend Protocol'}
                   </button>
                 </div>
               </div>
+            )}
 
-              <div className="rounded-xl border border-outline-variant/20 bg-surface-container-low p-4 space-y-2">
-                {constraints.map((constraint) => (
-                  <p
-                    key={constraint.label}
-                    className={`flex items-center text-sm font-medium ${constraint.met ? 'text-emerald-600' : 'text-on-surface-variant'}`}
-                  >
-                    <span className="material-symbols-outlined text-[16px] mr-2">
-                      {constraint.met ? 'check_circle' : 'radio_button_unchecked'}
-                    </span>
-                    {constraint.label}
-                  </p>
-                ))}
-              </div>
+            {step === 'password' && (
+              <form onSubmit={handleChangePassword} className="space-y-6">
+                <div>
+                  <label className="block text-[10px] font-black text-on-surface-variant/40 uppercase tracking-[0.2em] mb-3">New Security Protocol</label>
+                  <div className="relative">
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      className="w-full h-12 bg-surface-container-low px-4 pr-12 rounded-xl text-sm font-bold text-on-surface outline-none focus:ring-2 focus:ring-primary/20 border border-outline/30 focus:border-primary transition-all"
+                      required
+                      placeholder="Define new credentials..."
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((prev) => !prev)}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 flex items-center justify-center text-on-surface-variant/40 hover:text-on-surface transition-colors"
+                    >
+                      <span className="material-symbols-outlined text-[18px]">{showPassword ? 'visibility_off' : 'visibility'}</span>
+                    </button>
+                  </div>
+                </div>
 
-              <button
-                type="submit"
-                disabled={changePasswordMutation.isPending || !allConstraintsMet}
-                className="w-full bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition disabled:opacity-50"
-              >
-                {changePasswordMutation.isPending ? 'Updating...' : 'Save New Password'}
-              </button>
-            </form>
-          )}
+                <div className="rounded-2xl border border-outline/10 bg-surface-container-lowest p-6 space-y-3">
+                  {constraints.map((constraint) => (
+                    <p
+                      key={constraint.label}
+                      className={`flex items-center text-[11px] font-black uppercase tracking-widest ${constraint.met ? 'text-emerald-500' : 'text-on-surface-variant/40'}`}
+                    >
+                      <span className="material-symbols-outlined text-[14px] mr-3">
+                        {constraint.met ? 'verified' : 'radio_button_unchecked'}
+                      </span>
+                      {constraint.label}
+                    </p>
+                  ))}
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={changePasswordMutation.isPending || !allConstraintsMet}
+                  className="btn-primary w-full h-12 shadow-primary/10"
+                >
+                  {changePasswordMutation.isPending ? 'Encrypting...' : 'Commit Security Update'}
+                </button>
+              </form>
+            )}
+          </div>
         </div>
       </div>
     </PageLayout>
